@@ -1,0 +1,38 @@
+@use 'apps/solace-message-client-testing-app/src/styles/solace-client-theme' as app-theme;
+@use '~@angular/material/theming';
+
+:host {
+  display: grid;
+  margin: .25em;
+
+  > mat-card > mat-card-content {
+    > header {
+      font-size: theming.mat-font-size(app-theme.$typography, title);
+      margin-bottom: .25em;
+    }
+
+    > span.sub-title {
+      font-size: theming.mat-font-size(app-theme.$typography, subheading-1);
+      color: theming.mat-color(app-theme.$foreground, secondary-text);
+    }
+
+    > form {
+      display: grid;
+      grid-auto-rows: max-content;
+      row-gap: 1em;
+      margin-top: 3em;
+
+      textarea.message {
+        height: 10em;
+      }
+    }
+  }
+
+  > mat-card-footer section.error {
+    margin: .75em;
+    border: 1px solid theming.mat-color(app-theme.$warn);
+    background-color: theming.mat-color(app-theme.$warn, 100);
+    border-radius: 3px;
+    padding: 1em;
+  }
+}

@@ -1,0 +1,13 @@
+<header>Session Properties</header>
+
+<ng-container *ngFor="let prop of $any(sessionProperties) | keyvalue">
+  <span>{{prop.key}}:</span><span>{{prop.value}}</span>
+</ng-container>
+
+<div class="buttons">
+  <button mat-mini-fab color="accent" (click)="onCopyToClipboard()" title="Copy to clipboard">
+    <mat-icon>content_copy</mat-icon>
+  </button>
+  <button mat-button color="accent" (click)="onClose()">Dismiss</button>
+</div>
+

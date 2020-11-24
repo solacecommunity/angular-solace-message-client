@@ -1,0 +1,44 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "baseUrl": "./",
+    "outDir": "./dist/out-tsc",
+    "sourceMap": true,
+    "declaration": false,
+    "downlevelIteration": true,
+    "experimentalDecorators": true,
+    "module": "es2020",
+    "moduleResolution": "node",
+    "importHelpers": true,
+    "target": "es2015",
+    "typeRoots": [
+      "node_modules/@types"
+    ],
+    "lib": [
+      "es2018",
+      "dom"
+    ],
+    "paths": {
+      "solace-message-client": [
+        "dist/solace-message-client"
+      ]
+    }
+    /*
+     * +=====================================+
+     * |  solace-message-client-testing-app  |
+     * |                                     |
+     * |    PATH-OVERRIDE-FOR-DEVELOPMENT    |
+     * |   DO NOT ACTIVATE FOR PRODUCTION!   |
+     * +=====================================+
+     */
+    //    "paths": {
+    //      "solace-message-client": [
+    //        "projects/solace-message-client/src/public-api"
+    //      ],
+    //    }
+  },
+  "angularCompilerOptions": {
+    "fullTemplateTypeCheck": true,
+    "strictInjectionParameters": true
+  }
+}

@@ -1,0 +1,30 @@
+@use '~@angular/cdk/a11y';
+@use '~@angular/cdk/overlay';
+@use '~@angular/material/theming';
+@use 'styles/solace-client-theme' as app-theme;
+
+$theme: theming.mat-light-theme((
+  color: (
+    primary: app-theme.$primary,
+    accent: app-theme.$accent,
+    warn: app-theme.$warn,
+  )
+));
+
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+@include a11y.cdk-a11y();
+@include overlay.cdk-overlay();
+@include theming.mat-core();
+@include theming.angular-material-theme($theme);
+
+
+body {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  font-size: theming.mat-font-size(app-theme.$typography, body-1);
+  font-family: theming.mat-font-family(app-theme.$typography);
+}
+

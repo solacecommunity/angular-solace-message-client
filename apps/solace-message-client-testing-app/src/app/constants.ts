@@ -1,0 +1,1 @@
+export const SOLACE_CONNECT_PROPERTIES_SESSION_KEY = 'solace';

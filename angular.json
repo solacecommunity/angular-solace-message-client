@@ -1,0 +1,152 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "newProjectRoot": "projects",
+  "projects": {
+    "solace-message-client": {
+      "projectType": "library",
+      "root": "projects/solace-message-client",
+      "sourceRoot": "projects/solace-message-client/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "tsConfig": "projects/solace-message-client/tsconfig.lib.json",
+            "project": "projects/solace-message-client/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/solace-message-client/tsconfig.lib.prod.json"
+            }
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/solace-message-client/src/test.ts",
+            "tsConfig": "projects/solace-message-client/tsconfig.spec.json",
+            "karmaConfig": "projects/solace-message-client/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "projects/solace-message-client/tsconfig.lib.json",
+              "projects/solace-message-client/tsconfig.spec.json"
+            ],
+            "exclude": [
+              "**/node_modules/**"
+            ]
+          }
+        }
+      }
+    },
+    "solace-message-client.e2e": {
+      "projectType": "application",
+      "root": "projects/solace-message-client.e2e",
+      "architect": {
+        "e2e": {
+          "builder": "@angular-devkit/build-angular:protractor",
+          "options": {
+            "protractorConfig": "projects/solace-message-client.e2e/protractor.conf.js",
+            "devServerTarget": "solace-message-client-testing-app:serve",
+            "webdriverUpdate": false
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "solace-message-client-testing-app:serve:production"
+            }
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": "projects/solace-message-client.e2e/tsconfig.json",
+            "exclude": [
+              "**/node_modules/**"
+            ]
+          }
+        }
+      }
+    },
+    "solace-message-client-testing-app": {
+      "projectType": "application",
+      "root": "apps/solace-message-client-testing-app",
+      "sourceRoot": "apps/solace-message-client-testing-app/src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:browser",
+          "options": {
+            "outputPath": "dist/solace-message-client-testing-app",
+            "index": "apps/solace-message-client-testing-app/src/index.html",
+            "main": "apps/solace-message-client-testing-app/src/main.ts",
+            "polyfills": "apps/solace-message-client-testing-app/src/polyfills.ts",
+            "tsConfig": "apps/solace-message-client-testing-app/tsconfig.app.json",
+            "aot": true,
+            "assets": [
+              "apps/solace-message-client-testing-app/src/favicon.ico",
+              "apps/solace-message-client-testing-app/src/assets"
+            ],
+            "styles": [
+              "apps/solace-message-client-testing-app/src/styles.scss"
+            ],
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "apps/solace-message-client-testing-app/src/styles"
+              ]
+            },
+            "scripts": []
+          },
+          "configurations": {
+            "production": {
+              "fileReplacements": [
+                {
+                  "replace": "apps/solace-message-client-testing-app/src/environments/environment.ts",
+                  "with": "apps/solace-message-client-testing-app/src/environments/environment.prod.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "buildOptimizer": true,
+              "baseHref": "/angular-solace-message-client/"
+            }
+          }
+        },
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "browserTarget": "solace-message-client-testing-app:build"
+          },
+          "configurations": {
+            "production": {
+              "browserTarget": "solace-message-client-testing-app:build:production"
+            }
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "apps/solace-message-client-testing-app/tsconfig.app.json"
+            ],
+            "exclude": [
+              "**/node_modules/**"
+            ]
+          }
+        }
+      },
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      }
+    }
+  }
+}
