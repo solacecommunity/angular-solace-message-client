@@ -1,0 +1,39 @@
+@use 'apps/solace-message-client-testing-app/src/styles/solace-client-theme' as app-theme;
+@use '~@angular/material/theming';
+
+:host {
+  display: flex;
+  flex-direction: column;
+
+  > header {
+    flex: none;
+    align-self: flex-end;
+    display: grid;
+    grid-template-columns: auto max-content max-content;
+    column-gap: .5em;
+
+    > div.connection-state {
+      border-radius: 3px;
+      padding: .25em 1em;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+
+      &.connected {
+        border: 1px solid #24be6f;
+        background-color: #caffe6;
+      }
+
+      &:not(.connected) {
+        border: 1px solid theming.mat-color(app-theme.$warn);
+        background-color: theming.mat-color(app-theme.$warn, 100);
+      }
+    }
+  }
+
+  > sci-sashbox {
+    flex: auto;
+    margin-top: 5em;
+  }
+}

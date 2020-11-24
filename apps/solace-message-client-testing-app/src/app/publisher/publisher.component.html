@@ -1,0 +1,38 @@
+<mat-card>
+  <mat-card-content>
+    <header>Publisher</header>
+    <span class="sub-title">Publish a message to a topic destination.</span>
+
+    <form [formGroup]="form">
+      <!-- Topic -->
+      <mat-form-field>
+        <mat-label>Topic</mat-label>
+        <input matInput [formControlName]="TOPIC">
+      </mat-form-field>
+
+      <!-- Message -->
+      <mat-form-field>
+        <mat-label>Message</mat-label>
+        <textarea matInput [formControlName]="MESSAGE" class="message"></textarea>
+      </mat-form-field>
+
+      <!-- Format -->
+      <mat-form-field>
+        <mat-label>Format</mat-label>
+        <mat-select [formControlName]="FORMAT">
+          <mat-option [value]="MessageBodyFormat.BINARY">Binary</mat-option>
+          <mat-option [value]="MessageBodyFormat.TEXT">Text</mat-option>
+          <mat-option [value]="MessageBodyFormat.JSON">Text (JSON)</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <button mat-stroked-button color="primary" (click)="onPublish()" [disabled]="form.invalid">Publish</button>
+    </form>
+  </mat-card-content>
+
+  <mat-card-footer *ngIf="publishError">
+    <section class="error">
+      {{publishError}}
+    </section>
+  </mat-card-footer>
+</mat-card>

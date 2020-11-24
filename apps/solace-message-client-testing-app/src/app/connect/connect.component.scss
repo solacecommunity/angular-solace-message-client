@@ -1,0 +1,32 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  > h3 {
+    flex: none;
+    margin-top: 1em;
+  }
+
+  > mat-card {
+    flex: none;
+
+    > mat-card-content > form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      row-gap: .75em;
+
+      > mat-form-field {
+        grid-column: -1/1;
+      }
+
+      > button.reset {
+        justify-self: flex-start;
+      }
+
+      > button.connect {
+        justify-self: flex-end;
+      }
+    }
+  }
+}

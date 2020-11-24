@@ -1,0 +1,33 @@
+<header>
+  <div class="connection-state"
+       [class.connected]="solaceMessageClient.connected$ | async"
+       (click)="onSessionPropertiesOpen()"
+       title="Click to see session properties">
+    <ng-container *ngIf="solaceMessageClient.connected$ | async; then connected_template; else disconnected_template"></ng-container>
+  </div>
+
+  <button mat-stroked-button (click)="onDisconnect()" *ngIf="solaceMessageClient.connected$ | async">Disconnect</button>
+  <button mat-stroked-button (click)="onConnect()" *ngIf="(solaceMessageClient.connected$ | async) === false">Connect</button>
+  <button mat-stroked-button (click)="onLogout()">Logout</button>
+</header>
+
+<sci-sashbox>
+  <ng-template sciSash>
+    <sci-viewport>
+      <app-publisher></app-publisher>
+    </sci-viewport>
+  </ng-template>
+
+  <ng-template sciSash>
+    <sci-viewport>
+      <app-subscriber></app-subscriber>
+    </sci-viewport>
+  </ng-template>
+</sci-sashbox>
+
+<ng-template #connected_template>
+  Connected to the Solace Message Broker
+</ng-template>
+<ng-template #disconnected_template>
+  Disconnected from the Solace Message Broker
+</ng-template>
