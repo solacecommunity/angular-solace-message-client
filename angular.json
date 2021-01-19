@@ -115,7 +115,7 @@
               "extractLicenses": true,
               "vendorChunk": false,
               "buildOptimizer": true,
-              "baseHref": "/solace-message-client/"
+              "baseHref": "/angular-solace-message-client/"
             }
           }
         },
