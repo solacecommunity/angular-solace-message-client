@@ -1,6 +1,6 @@
 # Angular Solace Message Client
 
-Provides a message client to communicate with a Solace messaging broker for sending and receiving messages using the native SMF protocol (Solace Message Format) over web socket. The library is designed to be used in Angular applications.
+Provides a message client to communicate with a Solace messaging broker for sending and receiving messages using the native [SMF protocol](https://docs.solace.com/PubSub-ConceptMaps/Component-Maps.htm#SMF) (Solace Message Format) over web socket. The library is designed to be used in [Angular](https://angular.io/) applications.
 
 See https://docs.solace.com/API-Developer-Online-Ref-Documentation/js/index.html for more information about the Solace Web API.
 
