@@ -118,4 +118,4 @@ jobs:
         with:
           dir: dist/solace-message-client-testing-app
           branch: gh-pages
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ secrets.SC_GH_PAGES_TOKEN }}
