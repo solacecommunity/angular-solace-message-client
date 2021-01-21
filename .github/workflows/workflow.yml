@@ -114,8 +114,9 @@ jobs:
           name: solace-message-client-testing-app
           path: dist/solace-message-client-testing-app
       - name: 'Deploying testing app to GitHub pages'
-        uses: tsunematsu21/actions-publish-gh-pages@v1.0.1
+        uses: JamesIves/github-pages-deploy-action@3.7.1
         with:
-          dir: dist/solace-message-client-testing-app
-          branch: gh-pages
-          token: ${{ secrets.SC_GH_PAGES_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.SC_GH_PAGES_TOKEN }}
+          BRANCH: gh-pages # The branch the action should deploy to.
+          FOLDER: dist/solace-message-client-testing-app # The folder the action should deploy.
+          CLEAN: true # Automatically remove deleted files from the deploy branch
