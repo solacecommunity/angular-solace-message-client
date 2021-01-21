@@ -16,4 +16,4 @@ Open your browser and enter following URL: http://localhost:4200
 
 ## See the hosted version
 
-[hosted version](https://greenrover.github.io/solace-message-client)
+[hosted version](https://solacecommunity.github.io/angular-solace-message-client)
