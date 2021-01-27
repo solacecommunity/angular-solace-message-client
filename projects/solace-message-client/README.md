@@ -57,8 +57,22 @@ public class TemperaturePublisher {
 }
 ```
 
-### Contributing
-We encourage other developers to join the project and contribute to making this library constantly better and more stable. If you are missing a feature, please create a feature request so we can discuss it and coordinate further development. To report a bug, please check existing issues first, and if found, leave a comment on the issue. Otherwise, file a bug or create a pull request with a proposed fix.
+#### Extract topic parts:
+
+```
+public class TemperatureReceiver {
+
+  constructor(solaceMessageClient: SolaceMessageClient) {
+    solaceMessageClient.observe$('myhome/:room/temperature').subscribe(envelope => {
+        // The solace subscription will be "myhome/*/temperature"
+        console.log(
+          envelope.message,
+          envelope.params.room
+        );
+    });
+  }
+}
+```
 
 ### Commands for working on the toolkit.internal library
 
