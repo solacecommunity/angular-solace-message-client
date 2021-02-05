@@ -81,7 +81,10 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
           session.on(solace.SessionEventCode.DOWN_ERROR, (event: solace.SessionEvent) => this._event$.next(event));
 
           // Emits when the session attempted to connect but was unsuccessful.
-          session.on(solace.SessionEventCode.CONNECT_FAILED_ERROR, (event: solace.SessionEvent) => this._event$.next(event));
+          session.on(solace.SessionEventCode.CONNECT_FAILED_ERROR, (event: solace.SessionEvent) => {
+            this._event$.next(event);
+            reject(event);
+          });
 
           // When the session connect operation failed, or the session that was once up, is now disconnected.
           session.on(solace.SessionEventCode.DISCONNECTED, (event: solace.SessionEvent) => this._event$.next(event));
