@@ -1,12 +1,13 @@
 // tslint:disable:no-redundant-jsdoc
-import * as solace from 'solclientjs/lib-browser/solclient-full.js';
+
+/**
+ * NOTE: THE SOLACE TYPE DEFINITIONS CONTAINED IN THIS FILE ARE NOT GENERATED BUT DERIVED MANUALLY BASED ON THE API OF SOLCLIENTJS:10.5.1
+ */
 
 /**
  * Represents a session properties object.
  *
  * Passed in to solace.SolclientFactory.createSession when creating a solace.Session instance.
- *
- * This typings are hand made and based on: solclientjs:10.5.1
  *
  * @see solace.SessionProperties
  * @see https://docs.solace.com/API-Developer-Online-Ref-Documentation/js/index.html
