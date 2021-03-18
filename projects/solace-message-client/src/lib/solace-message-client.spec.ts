@@ -1172,7 +1172,7 @@ describe('SolaceMessageClient', () => {
   }
 
   /**
-   * Captures the most recent invocation to {@link solace.Session#subscribe}.
+   * Captures the most recent invocation to {@link solace.Session.subscribe}.
    */
   function installSessionSubscribeCaptor(): SessionSubscribeCaptor {
     const captor = new SessionSubscribeCaptor();
@@ -1184,7 +1184,7 @@ describe('SolaceMessageClient', () => {
   }
 
   /**
-   * Captures the most recent invocation to {@link solace.Session#unsubscribe}.
+   * Captures the most recent invocation to {@link solace.Session.unsubscribe}.
    */
   function installSessionUnsubscribeCaptor(): SessionSubscribeCaptor {
     const captor = new SessionSubscribeCaptor();
@@ -1196,7 +1196,7 @@ describe('SolaceMessageClient', () => {
   }
 
   /**
-   * Captures the most recent invocation to {@link solace.Session#send}.
+   * Captures the most recent invocation to {@link solace.Session.send}.
    */
   function installSessionSendCaptor(): SessionSendCaptor {
     const captor = new SessionSendCaptor();

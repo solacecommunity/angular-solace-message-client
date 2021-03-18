@@ -100,12 +100,12 @@ export abstract class SessionProperties {
    * therefore, if `connectRetries === 2`, the host list will be traversed up to three times: once
    * for the initial try, and twice more for the retries. Each retry begins with the first host
    * listed. After each unsuccessful attempt to connect to a host, the API waits for the amount
-   * of time set for {@link SessionProperties#reconnectRetryWaitInMsecs} before attempting
+   * of time set for {@link SessionProperties.reconnectRetryWaitInMsecs} before attempting
    * another connection. The next connection attempt may be to the same host,
-   * see {@link SessionProperties#connectRetriesPerHost}.
+   * see {@link SessionProperties.connectRetriesPerHost}.
    *
    * If an established connection fails, the reconnection is attempted with
-   * {@link SessionProperties#reconnectRetries} retries instead.
+   * {@link SessionProperties.reconnectRetries} retries instead.
    *
    *  * The valid range is connectRetries >= -1.
    *  * -1 means try to connect forever.
@@ -134,7 +134,7 @@ export abstract class SessionProperties {
    * If a connect attempt is not successful, the API waits for the amount of time
    * specified, and then makes another attempt to connect.
    *
-   * {@link SessionProperties#connectRetriesPerHost} sets how many connection
+   * {@link SessionProperties.connectRetriesPerHost} sets how many connection
    * attempts will be made before moving on to the next host in the list.
    *
    * The valid range is >= 0 and <= 60000.
@@ -149,9 +149,9 @@ export abstract class SessionProperties {
    * `reconnectRetries === 2`, the host list will be traversed up to three times: once
    * for the initial try, and twice more for the retries. Each retry begins with the first host
    * listed. After each unsuccessful attempt to connect to a host, the API waits for the amount
-   * of time set for {@link SessionProperties#reconnectRetryWaitInMsecs} before attempting
+   * of time set for {@link SessionProperties.reconnectRetryWaitInMsecs} before attempting
    * another connection. The next reconnect attempt may be to the same host,
-   * see {@link SessionProperties#connectRetriesPerHost}.
+   * see {@link SessionProperties.connectRetriesPerHost}.
    *
    *  * The valid range is reconnectRetries >= -1.
    *  * -1 means try to reconnect forever.
@@ -207,7 +207,7 @@ export abstract class SessionProperties {
 
   /**
    * A read-only string that indicates the default reply-to destination used for any request messages sent from this session.
-   * See {@link solace.Session#sendRequest}.
+   * See {@link solace.Session.sendRequest}.
    *
    * This parameter is only valid when the session is connected.
    *
@@ -237,7 +237,7 @@ export abstract class SessionProperties {
   public ignoreSubscriptionNotFoundError?: boolean;
 
   /**
-   * Set to 'true' to have the API remember subscriptions and reapply them upon calling {@link solace.Session#connect} on a disconnected session.
+   * Set to 'true' to have the API remember subscriptions and reapply them upon calling {@link solace.Session.connect} on a disconnected session.
    *
    * @default  false
    */
@@ -259,7 +259,7 @@ export abstract class SessionProperties {
 
   /**
    * The timeout period (in milliseconds) for a reply to come back from the Solace Message Router. This timeout serves as the default
-   * request timeout for {@link solace.Session#subscribe},  {@link solace.Session#unsubscribe}, {@link solace.Session#updateProperty}.
+   * request timeout for {@link solace.Session.subscribe},  {@link solace.Session.unsubscribe}, {@link solace.Session.updateProperty}.
    * The valid range is >= 0.
    *
    * @default 10000
@@ -299,7 +299,7 @@ export abstract class SessionProperties {
 
 /**
  * Represents authentication schemes that can be used. The corresponding session
- * property is {@link SolaceModel#authenticationScheme}.
+ * property is {@link solace.authenticationScheme}.
  *
  * @see solace.AuthenticationScheme
  */
@@ -313,11 +313,11 @@ export enum AuthenticationScheme {
    * @name solace.AuthenticationScheme.CLIENT_CERTIFICATE
    * @default AuthenticationScheme_clientCertificate
    * @description Client-side certificate based authentication scheme.
-   * @see {@link solace.SessionProperties#sslPfx}
-   * @see {@link solace.SessionProperties#sslPfxPassword}
-   * @see {@link solace.SessionProperties#sslPrivateKey}
-   * @see {@link solace.SessionProperties#sslPrivateKeyPassword}
-   * @see {@link solace.SessionProperties#sslCertificate}
+   * @see {@link solace.SessionProperties.sslPfx}
+   * @see {@link solace.SessionProperties.sslPfxPassword}
+   * @see {@link solace.SessionProperties.sslPrivateKey}
+   * @see {@link solace.SessionProperties.sslPrivateKeyPassword}
+   * @see {@link solace.SessionProperties.sslCertificate}
    * @type {String}
    * @target node
    */
@@ -341,7 +341,7 @@ export interface MessagePublisherProperties {
    * When enabled, a Guaranteed Messaging Publisher is automatically created when a session is connected.
    *
    * The default value is the same as the value provided to {@link solace.SolclientFactory.init},
-   * in the profile, {@link solace.SolclientFactoryProperties#profile}, in the field {@link solace.FactoryProfile#guaranteedMessagingEnabled}.
+   * in the profile, {@link solace.SolclientFactoryProperties.profile}, in the field {@link solace.FactoryProfile#guaranteedMessagingEnabled}.
    */
   enabled: boolean;
 

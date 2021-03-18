@@ -54,7 +54,7 @@ export abstract class SolaceMessageClient {
    *
    * The Observable never completes, unless invoking {@link disconnect}. If not connected to the broker yet, or if the connect attempt failed, the Observable errors.
    *
-   *  You can subscribe to multiple topics simultaneously by using wildcard segments in the topic. Topics are case-sensitive and consist of one or more segments, each
+   * You can subscribe to multiple topics simultaneously by using wildcard segments in the topic. Topics are case-sensitive and consist of one or more segments, each
    * separated by a forward slash.
    *
    * **Single-Level Wildcard Character (`*`)**:
@@ -101,7 +101,7 @@ export abstract class SolaceMessageClient {
    * message transmission. Direct Messaging enables applications to efficiently publish messages to a large number of
    * clients with matching subscriptions.
    *
-   * You can change the message delivery mode via the {@link PublishOptions#deliveryMode} property.
+   * You can change the message delivery mode via the {@link PublishOptions.deliveryMode} property.
    * For more information, see https://docs.solace.com/PubSub-Basics/Basic-Guaranteed-Messsaging-Operation.htm.
    *
    * @param  topic - Specifies the topic to which the message should be sent.
@@ -200,7 +200,7 @@ export interface PublishOptions {
    * Specifies if to publish a Guaranteed Message DMQ (Dead Message Queue) eligible message.
    * When this property is set, when the message expires in the network,
    * the message is saved on a appliance dead message queue. Otherwise the expired message is
-   * discarded. See {@link PublishOptions#setTimeToLive}.
+   * discarded. See {@link PublishOptions.setTimeToLive}.
    *
    * Note: Property is ignored if providing a {@link solace.Message} payload object.
    */
@@ -228,7 +228,7 @@ export interface PublishOptions {
    * Specifies the type of the message payload. If not set, the payload is serialized to JSON.
    *
    * For full control, provide a function to return a structured container (Structured Data Type),
-   * allowing to use the structured data API {@link solace.Message#setSdtContainer} to add containers
+   * allowing to use the structured data API {@link solace.Message.setSdtContainer} to add containers
    * (maps or streams) and their fields to the binary payload or to the User Property map contained
    * within the binary metadata.
    *
@@ -247,7 +247,7 @@ export enum MessageBodyFormat {
   TEXT,
   /**
    * Structured text message serialized in the JSON (JavaScript Object Notation) format.
-   * If choosing this format, the payload is serialized to JSON using {@link JSON#stringify}.
+   * If choosing this format, the payload is serialized to JSON using {@link JSON.stringify}.
    */
   JSON,
   /**

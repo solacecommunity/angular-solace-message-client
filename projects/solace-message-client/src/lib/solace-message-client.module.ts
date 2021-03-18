@@ -68,7 +68,7 @@ export class SolaceMessageClientModule {
   }
 
   /**
-   * Invoke this method to import this module into the root injector, app module. In lazy loaded modules, invoke {@link SolaceMessageClientModule#forChild}
+   * Invoke this method to import this module into the root injector, app module. In lazy loaded modules, invoke {@link SolaceMessageClientModule.forChild}
    * instead.
    *
    * Call `forRoot` only in the root application module. Calling it in any other module, particularly in a lazy-loaded module, will throw a runtime error.
