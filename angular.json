@@ -119,7 +119,7 @@
               "extractLicenses": true,
               "vendorChunk": false,
               "buildOptimizer": true,
-              "baseHref": "/angular-solace-message-client/"
+              "baseHref": "/angular-solace-message-client/tryme/"
             }
           }
         },
