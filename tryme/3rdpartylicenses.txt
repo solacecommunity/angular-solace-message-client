@@ -69,6 +69,9 @@ MIT
 @scion/toolkit
 EPL-2.0
 
+@solace-community/angular-solace-message-client
+MIT
+
 css-loader
 MIT
 Copyright JS Foundation and other contributors
@@ -298,8 +301,6 @@ Apache-2.0
  limitations under the License.
  
 
-
-solace-message-client
 
 solclientjs
 SEE LICENSE IN LICENSE.txt
