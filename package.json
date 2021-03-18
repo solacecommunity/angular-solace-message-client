@@ -27,7 +27,7 @@
     "solace-message-client-testing-app:await": "wait-on http-get://localhost:4200",
     "solace-message-client-testing-app:await-then-protractor": "run-s solace-message-client-testing-app:await solace-message-client:protractor"
   },
-  "private": false,
+  "private": true,
   "dependencies": {
     "@angular/animations": "11.0.2",
     "@angular/cdk": "11.0.1",

@@ -24,10 +24,9 @@
       ]
     }
     /*
-     * +=====================================+
-     * |  solace-message-client-testing-app  |
-     * |                                     |
+     * ======================================+
      * |    PATH-OVERRIDE-FOR-DEVELOPMENT    |
+     * |                                     |
      * |   DO NOT ACTIVATE FOR PRODUCTION!   |
      * +=====================================+
      */

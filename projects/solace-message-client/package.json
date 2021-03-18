@@ -1,7 +1,19 @@
 {
-  "name": "solace-message-client",
+  "name": "@solace-community/angular-solace-message-client",
   "version": "11.0.0",
   "description": "Message client to communicate with a Solace messaging broker for sending and receiving messages using the native SMF protocol (Solace Message Format) over web socket. The library is designed to be used in Angular applications.",
+  "license": "MIT",
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://github.com/solacecommunity/angular-solace-message-client",
+  "bugs": {
+    "url": "https://github.com/solacecommunity/angular-solace-message-client/issues"
+  },
+  "author": {
+    "name": "Solace Community contributors"
+  },
   "peerDependencies": {
     "@angular/common": "^11.0.0-rc.0 || ^11.0.0",
     "@angular/core": "^11.0.0-rc.0 || ^11.0.0",
@@ -11,5 +23,18 @@
   },
   "dependencies": {
     "tslib": "^2.0.0"
+  },
+  "keywords": [
+    "angular-solace-message-client",
+    "solace",
+    "message client",
+    "messaging",
+    "SMF",
+    "Solace Message Format",
+    "angular"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/solacecommunity/angular-solace-message-client.git"
   }
 }

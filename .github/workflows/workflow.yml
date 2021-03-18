@@ -33,8 +33,15 @@ jobs:
     name: 'Building solace-message-client'
     needs: install
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.solace-message-client-package-json.outputs.version }}
     steps:
       - uses: actions/checkout@v2
+      - name: 'Reading package.json version of solace-message-client'
+        uses: SchweizerischeBundesbahnen/scion-toolkit/.github/actions/package-json@master
+        id: solace-message-client-package-json
+        with:
+          path: projects/solace-message-client/package.json
       - name: 'Restoring NPM modules from cache'
         uses: actions/cache@v2
         with:
@@ -103,10 +110,30 @@ jobs:
           name: solace-message-client-testing-app
           path: dist/solace-message-client-testing-app
       - run: npm run solace-message-client:e2e-ci
+  release-guard:
+    name: 'Release Guard'
+    if: github.ref == 'refs/heads/master'
+    needs:
+      - build-solace-message-client
+      - build-testing-app
+      - lint
+      - test
+      - e2e
+    runs-on: ubuntu-latest
+    outputs:
+      should-release: ${{ steps.tag-release-commit.outputs.is-release-commit }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: 'If release commit present, add release tag'
+        uses: SchweizerischeBundesbahnen/scion-toolkit/.github/actions/tag-release-commit@master
+        id: tag-release-commit
+        with:
+          release-commit-message-pattern: 'release\(solace-message-client\): v(.*)'
+          expected-version: ${{ needs.build-solace-message-client.outputs.version }}
   deploy:
     name: 'Deploying TypeDoc and TryMe application to GitHub pages'
-    if: github.ref == 'refs/heads/master'
-    needs: [build-solace-message-client, build-testing-app, test, e2e, lint]
+    if: ${{ needs.release-guard.outputs.should-release == 'true' }}
+    needs: [ release-guard ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -126,3 +153,21 @@ jobs:
           branch: gh-pages
           folder: dist
           clean: true
+  release:
+    name: 'Releasing @solace-community/angular-solace-message-client'
+    if: ${{ needs.release-guard.outputs.should-release == 'true' }}
+    needs: [ release-guard ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: 'Downloading dist/solace-message-client'
+        uses: actions/download-artifact@v2
+        with:
+          name: solace-message-client
+          path: dist/solace-message-client
+      - name: 'Publishing @solace-community/angular-solace-message-client to NPM'
+        uses: SchweizerischeBundesbahnen/scion-toolkit/.github/actions/npm-publish@master
+        with:
+          dist-folder: dist/solace-message-client
+          npm-token: ${{ secrets.NPM_PUBLISH_TOKEN }}
+          dry-run: false
