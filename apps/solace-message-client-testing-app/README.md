@@ -1,10 +1,9 @@
 # Solace message client testing app
 
-This is a primitive testing app similar to the Solace 'Try Me' client.
+Testing app for the `Angular Solace Message Client` library similar to the Solace 'Try Me' client.
+This application is deployed to https://solacecommunity.github.io/angular-solace-message-client/tryme.
 
-The main purpose of this testing app is to run e2e tests. However, it can also be used as a development starter.
-
-## How to start the testing app locally
+## How to start the testing app
 
 ```
 npm install
@@ -13,7 +12,3 @@ npm run solace-message-client-testing-app:serve
 ```
 
 Open your browser and enter following URL: http://localhost:4200
-
-## See the hosted version
-
-[hosted version](https://solacecommunity.github.io/angular-solace-message-client)

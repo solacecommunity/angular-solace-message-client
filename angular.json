@@ -87,8 +87,12 @@
             "tsConfig": "apps/solace-message-client-testing-app/tsconfig.app.json",
             "aot": true,
             "assets": [
-              "apps/solace-message-client-testing-app/src/favicon.ico",
-              "apps/solace-message-client-testing-app/src/assets"
+              "apps/solace-message-client-testing-app/src/assets",
+              {
+                "glob": "favicon.ico",
+                "input": "resources/branding",
+                "output": "/"
+              }
             ],
             "styles": [
               "apps/solace-message-client-testing-app/src/styles.scss"
