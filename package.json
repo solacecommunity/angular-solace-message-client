@@ -7,18 +7,25 @@
     "test": "run-s **:*:test",
     "test:headless": "cross-env HEADLESS=true run-s **:*:test",
     "e2e": "run-s **:*:e2e",
-    "e2e:headless": "cross-env HEADLESS=HEADLESS run-s **:*:e2e",
+    "e2e:headless": "cross-env HEADLESS=true run-s **:*:e2e",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s && markdown-include docs/site/changelog/changelog.template.json",
     "postinstall": "ngcc",
+
     "solace-message-client:lint": "ng lint solace-message-client",
     "solace-message-client.e2e:lint": "ng lint solace-message-client.e2e",
     "solace-message-client:test": "ng test solace-message-client",
-    "solace-message-client:e2e": "npx webdriver-manager update --versions.chrome=86.0.4240.22 && ng e2e solace-message-client.e2e",
     "solace-message-client:build": "ng build --prod solace-message-client",
+    "solace-message-client:e2e": "npx webdriver-manager update --versions.chrome=86.0.4240.22 && ng e2e solace-message-client.e2e",
+    "solace-message-client:e2e-ci": "cross-env HEADLESS=true run-p -r solace-message-client-testing-app:http-server solace-message-client-testing-app:await-then-protractor",
+    "solace-message-client:protractor": "npx webdriver-manager update --versions.chrome=86.0.4240.22 && ng e2e solace-message-client.e2e --dev-server-target",
     "solace-message-client:typedoc": "typedoc --plugin typedoc-plugin-extras --tsconfig projects/solace-message-client/tsconfig.lib.prod.typedoc.json --favicon resources/branding/favicon.ico",
+
     "solace-message-client-testing-app:serve": "ng serve solace-message-client-testing-app",
+    "solace-message-client-testing-app:http-server": "cd dist/solace-message-client-testing-app && http-server --silent --port 4200",
     "solace-message-client-testing-app:lint": "ng lint solace-message-client-testing-app",
-    "solace-message-client-testing-app:build": "ng build --configuration=production solace-message-client-testing-app"
+    "solace-message-client-testing-app:build": "ng build --configuration=production solace-message-client-testing-app",
+    "solace-message-client-testing-app:await": "wait-on http-get://localhost:4200",
+    "solace-message-client-testing-app:await-then-protractor": "run-s solace-message-client-testing-app:await solace-message-client:protractor"
   },
   "private": false,
   "dependencies": {
@@ -47,6 +54,7 @@
     "codelyzer": "6.0.0",
     "conventional-changelog-cli": "2.1.1",
     "cross-env": "7.0.2",
+    "http-server": "0.12.3",
     "jasmine-core": "3.5.0",
     "jasmine-spec-reporter": "5.0.2",
     "karma": "5.1.1",
@@ -65,5 +73,6 @@
     "typedoc": "0.20.32",
     "typedoc-plugin-extras": "1.1.7",
     "typescript": "4.0.5",
+    "wait-on": "5.1.0"
   }
 }
