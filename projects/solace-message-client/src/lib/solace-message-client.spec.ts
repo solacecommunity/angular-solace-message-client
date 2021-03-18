@@ -141,6 +141,40 @@ describe('SolaceMessageClient', () => {
       expect(sessionProvider.provide).toHaveBeenCalledWith(jasmine.objectContaining({url: 'some-url', vpnName: 'some-vpn'}));
     }));
 
+    it('should clear pending subscriptions when the connection goes down', fakeAsync(() => {
+      const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+
+      // Connect to the broker
+      solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
+      simulateLifecycleEvent(solace.SessionEventCode.UP_NOTICE);
+
+      const sessionSubscribeCaptor = installSessionSubscribeCaptor();
+
+      // Subscribe to topic-1 (success)
+      solaceMessageClient.observe$('topic-1').subscribe();
+      flushMicrotasks();
+      simulateLifecycleEvent(solace.SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+
+      // Subscribe to topic-2 (pending confirmation)
+      solaceMessageClient.observe$('topic-2').subscribe();
+      flushMicrotasks();
+
+      // Simulate the connection to be permanently down
+      simulateLifecycleEvent(solace.SessionEventCode.DOWN_ERROR);
+
+      // Reconnect to the broker
+      solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
+      simulateLifecycleEvent(solace.SessionEventCode.UP_NOTICE);
+      session.subscribe.calls.reset();
+
+      // Subscribe to topic-3 (success)
+      solaceMessageClient.observe$('topic-3').subscribe();
+      flushMicrotasks();
+      simulateLifecycleEvent(solace.SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+      expect(session.subscribe).toHaveBeenCalledTimes(1);
+      expect(session.subscribe).toHaveBeenCalledWith(jasmine.objectContaining({name: 'topic-3'}), true /* requestConfirmation */, sessionSubscribeCaptor.correlationKey /* correlationKey */, undefined /* requestTimeout*/);
+    }));
+
     describe('core functionality', () => {
 
       beforeEach(() => {
@@ -161,6 +195,7 @@ describe('SolaceMessageClient', () => {
 
       // Subscribe to topic-1
       const sessionSubscribeCaptor = installSessionSubscribeCaptor();
+      const sessionUnsubscribeCaptor = installSessionUnsubscribeCaptor();
       const subscription1 = solaceMessageClient.observe$('topic-1').subscribe();
       flushMicrotasks();
       expect(sessionSubscribeCaptor.correlationKey).toBeDefined();
@@ -209,15 +244,20 @@ describe('SolaceMessageClient', () => {
       // Unsubscribe from topic-1 (subscription 2)
       subscription2.unsubscribe();
       flushMicrotasks();
+      expect(sessionUnsubscribeCaptor.correlationKey).toBeDefined();
       expect(session.unsubscribe).toHaveBeenCalledTimes(1);
-      expect(session.unsubscribe).toHaveBeenCalledWith(jasmine.objectContaining({name: 'topic-1'}), false /* requestConfirmation */, undefined /* correlationKey */, undefined /* requestTimeout*/);
+      expect(session.unsubscribe).toHaveBeenCalledWith(jasmine.objectContaining({name: 'topic-1'}), true /* requestConfirmation */, sessionUnsubscribeCaptor.correlationKey /* correlationKey */, undefined /* requestTimeout*/);
+      simulateLifecycleEvent(solace.SessionEventCode.SUBSCRIPTION_OK, sessionUnsubscribeCaptor.correlationKey);
       session.unsubscribe.calls.reset();
+      sessionUnsubscribeCaptor.resetValues();
 
       // Unsubscribe from topic-2 (subscription 4)
       subscription4.unsubscribe();
       flushMicrotasks();
+      expect(sessionUnsubscribeCaptor.correlationKey).toBeDefined();
       expect(session.unsubscribe).toHaveBeenCalledTimes(1);
-      expect(session.unsubscribe).toHaveBeenCalledWith(jasmine.objectContaining({name: 'topic-2'}), false /* requestConfirmation */, undefined /* correlationKey */, undefined /* requestTimeout*/);
+      expect(session.unsubscribe).toHaveBeenCalledWith(jasmine.objectContaining({name: 'topic-2'}), true /* requestConfirmation */, sessionUnsubscribeCaptor.correlationKey /* correlationKey */, undefined /* requestTimeout*/);
+      simulateLifecycleEvent(solace.SessionEventCode.SUBSCRIPTION_OK, sessionUnsubscribeCaptor.correlationKey);
     }));
 
     it('should error when failing to subscribe to a topic on the Solace session', fakeAsync(async () => {
@@ -251,6 +291,7 @@ describe('SolaceMessageClient', () => {
 
       // Subscribe to a topic
       const sessionSubscribeCaptor = installSessionSubscribeCaptor();
+      const sessionUnsubscribeCaptor = installSessionUnsubscribeCaptor();
       const observeCaptor = new ObserveCaptor<solace.Message>();
       solaceMessageClient.observe$('topic').subscribe(observeCaptor);
       flushMicrotasks();
@@ -285,14 +326,16 @@ describe('SolaceMessageClient', () => {
       // Unsubscribe from the topic
       subscription.unsubscribe();
       flushMicrotasks();
-
+      expect(sessionUnsubscribeCaptor.correlationKey).toBeDefined();
       expect(session.unsubscribe).toHaveBeenCalledTimes(1);
-      expect(session.unsubscribe).toHaveBeenCalledWith(jasmine.objectContaining({name: 'topic'}), false /* requestConfirmation */, undefined /* correlationKey */, undefined /* requestTimeout*/);
+      expect(session.unsubscribe).toHaveBeenCalledWith(jasmine.objectContaining({name: 'topic'}), true /* requestConfirmation */, sessionUnsubscribeCaptor.correlationKey, undefined /* requestTimeout*/);
+      simulateLifecycleEvent(solace.SessionEventCode.SUBSCRIPTION_OK, sessionUnsubscribeCaptor.correlationKey);
     }));
 
     it('should not unsubscribe more specific topics when unsubscribing from a wildcard topic', fakeAsync(async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
       const sessionSubscribeCaptor = installSessionSubscribeCaptor();
+      const sessionUnsubscribeCaptor = installSessionUnsubscribeCaptor();
       simulateLifecycleEvent(solace.SessionEventCode.UP_NOTICE);
 
       // Subscribe to topic 'myhome/*/temperature'
@@ -321,9 +364,11 @@ describe('SolaceMessageClient', () => {
       // Unsubscribe wildcard subscription
       wildcardSubscription.unsubscribe();
       flushMicrotasks();
-
+      expect(sessionUnsubscribeCaptor.correlationKey).toBeDefined();
       expect(session.unsubscribe).toHaveBeenCalledTimes(1);
-      expect(session.unsubscribe).toHaveBeenCalledWith(jasmine.objectContaining({name: 'myhome/*/temperature'}), false /* requestConfirmation */, undefined /* correlationKey */, undefined /* requestTimeout*/);
+      expect(session.unsubscribe).toHaveBeenCalledWith(jasmine.objectContaining({name: 'myhome/*/temperature'}), true /* requestConfirmation */, sessionUnsubscribeCaptor.correlationKey, undefined /* requestTimeout*/);
+      simulateLifecycleEvent(solace.SessionEventCode.SUBSCRIPTION_OK, sessionUnsubscribeCaptor.correlationKey);
+      sessionUnsubscribeCaptor.resetValues();
 
       // Simulate receiving message published to 'myhome/livingroom/temperature'
       const message2 = createTopicMessage('myhome/livingroom/temperature');
@@ -338,9 +383,11 @@ describe('SolaceMessageClient', () => {
       // Unsubscribe exact subscription
       exactSubscription.unsubscribe();
       flushMicrotasks();
-
+      expect(sessionUnsubscribeCaptor.correlationKey).toBeDefined();
       expect(session.unsubscribe).toHaveBeenCalledTimes(1);
-      expect(session.unsubscribe).toHaveBeenCalledWith(jasmine.objectContaining({name: 'myhome/livingroom/temperature'}), false /* requestConfirmation */, undefined /* correlationKey */, undefined /* requestTimeout*/);
+      expect(session.unsubscribe).toHaveBeenCalledWith(jasmine.objectContaining({name: 'myhome/livingroom/temperature'}), true /* requestConfirmation */, sessionUnsubscribeCaptor.correlationKey, undefined /* requestTimeout*/);
+      simulateLifecycleEvent(solace.SessionEventCode.SUBSCRIPTION_OK, sessionUnsubscribeCaptor.correlationKey);
+      sessionSubscribeCaptor.resetValues();
 
       // Simulate receiving message published to 'myhome/livingroom/temperature'
       const message3 = createTopicMessage('myhome/livingroom/temperature');
@@ -355,10 +402,12 @@ describe('SolaceMessageClient', () => {
 
       // Subscribe to topic-1
       const observeCaptor1_topic1 = new ObserveCaptor<solace.Message>(extractMessage);
-      const sessionSubscribeCaptor1 = installSessionSubscribeCaptor();
+      const sessionSubscribeCaptor = installSessionSubscribeCaptor();
+      const sessionUnsubscribeCaptor = installSessionUnsubscribeCaptor();
+
       const subscription1_topic1 = solaceMessageClient.observe$('topic-1').subscribe(observeCaptor1_topic1);
       flushMicrotasks();
-      simulateLifecycleEvent(solace.SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor1.correlationKey);
+      simulateLifecycleEvent(solace.SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
 
       // Simulate receiving a message from the Solace broker
       const message1 = createTopicMessage('topic-1');
@@ -377,10 +426,9 @@ describe('SolaceMessageClient', () => {
 
       // Subscribe to topic-2
       const observeCaptor2_topic2 = new ObserveCaptor<solace.Message>(extractMessage);
-      const sessionSubscribeCaptor2 = installSessionSubscribeCaptor();
       const subscription2_topic2 = solaceMessageClient.observe$('topic-2').subscribe(observeCaptor2_topic2);
       flushMicrotasks();
-      simulateLifecycleEvent(solace.SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor2.correlationKey);
+      simulateLifecycleEvent(solace.SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
 
       // Simulate receiving a message from the Solace broker
       const message4 = createTopicMessage('topic-1');
@@ -402,10 +450,9 @@ describe('SolaceMessageClient', () => {
 
       // Subscribe to topic-2 anew
       const observeCaptor3_topic2 = new ObserveCaptor<solace.Message>(extractMessage);
-      const sessionSubscribeCaptor3 = installSessionSubscribeCaptor();
       const subscription3_topic2 = solaceMessageClient.observe$('topic-2').subscribe(observeCaptor3_topic2);
       flushMicrotasks();
-      simulateLifecycleEvent(solace.SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor3.correlationKey);
+      simulateLifecycleEvent(solace.SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
 
       // Simulate receiving a message from the Solace broker
       const message7 = createTopicMessage('topic-1');
@@ -431,6 +478,7 @@ describe('SolaceMessageClient', () => {
       // Unsubscribe subscription 3 (topic-2)
       subscription3_topic2.unsubscribe();
       flushMicrotasks();
+      simulateLifecycleEvent(solace.SessionEventCode.SUBSCRIPTION_OK, sessionUnsubscribeCaptor.correlationKey);
 
       // Simulate receiving a message from the Solace broker
       const message10 = createTopicMessage('topic-1');
@@ -456,6 +504,7 @@ describe('SolaceMessageClient', () => {
       // Unsubscribe subscription 1 (topic-1)
       subscription1_topic1.unsubscribe();
       flushMicrotasks();
+      simulateLifecycleEvent(solace.SessionEventCode.SUBSCRIPTION_OK, sessionUnsubscribeCaptor.correlationKey);
 
       // Simulate receiving a message from the Solace broker
       const message13 = createTopicMessage('topic-1');
@@ -481,6 +530,7 @@ describe('SolaceMessageClient', () => {
       // Unsubscribe subscription 2 (topic-2)
       subscription2_topic2.unsubscribe();
       flushMicrotasks();
+      simulateLifecycleEvent(solace.SessionEventCode.SUBSCRIPTION_OK, sessionUnsubscribeCaptor.correlationKey);
 
       // Simulate receiving a message from the Solace broker
       const message16 = createTopicMessage('topic-1');
@@ -966,8 +1016,122 @@ describe('SolaceMessageClient', () => {
       expect(session.unsubscribe).toHaveBeenCalledTimes(0);
       expect(observeCaptor.hasCompleted()).toBeTrue();
     }));
-  }
 
+    it('should subscribe sequentially', fakeAsync(async () => {
+      const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+      simulateLifecycleEvent(solace.SessionEventCode.UP_NOTICE);
+
+      const sessionSubscribeCaptor = installSessionSubscribeCaptor();
+
+      // subscribe to `topic 1`
+      solaceMessageClient.observe$('topic-1').subscribe();
+      flushMicrotasks();
+
+      // subscribe to `topic 2`
+      solaceMessageClient.observe$('topic-2').subscribe();
+      flushMicrotasks();
+
+      // subscribe to `topic 3`
+      const topic3SubscribeCaptor = new ObserveCaptor();
+      solaceMessageClient.observe$('topic-3').subscribe(topic3SubscribeCaptor);
+      flushMicrotasks();
+
+      // subscribe to `topic 4`
+      solaceMessageClient.observe$('topic-4').subscribe();
+      flushMicrotasks();
+
+      // expect single call to `session.subscribe` for subscription of `topic-1`
+      expect(session.subscribe).toHaveBeenCalledTimes(1);
+      expect(session.subscribe).toHaveBeenCalledWith(jasmine.objectContaining({name: 'topic-1'}), true /* requestConfirmation */, jasmine.any(String), undefined /* requestTimeout*/);
+      session.subscribe.calls.reset();
+
+      // simulate confirmation of subscription for topic `topic-1`
+      simulateLifecycleEvent(solace.SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+
+      // expect single call to `session.subscribe` for subscription of `topic-2`
+      expect(session.subscribe).toHaveBeenCalledTimes(1);
+      expect(session.subscribe).toHaveBeenCalledWith(jasmine.objectContaining({name: 'topic-2'}), true /* requestConfirmation */, jasmine.any(String), undefined /* requestTimeout*/);
+      session.subscribe.calls.reset();
+
+      // simulate confirmation of subscription for topic `topic-2`
+      simulateLifecycleEvent(solace.SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+
+      // expect single call to `session.subscribe` for subscription of `topic-3`
+      expect(session.subscribe).toHaveBeenCalledTimes(1);
+      expect(session.subscribe).toHaveBeenCalledWith(jasmine.objectContaining({name: 'topic-3'}), true /* requestConfirmation */, jasmine.any(String), undefined /* requestTimeout*/);
+      session.subscribe.calls.reset();
+
+      // simulate error confirmation of subscription for topic `topic-3`
+      simulateLifecycleEvent(solace.SessionEventCode.SUBSCRIPTION_ERROR, sessionSubscribeCaptor.correlationKey);
+      expect(topic3SubscribeCaptor.hasErrored()).toBeTrue();
+
+      // expect single call to `session.subscribe` for subscription of `topic-4`
+      expect(session.subscribe).toHaveBeenCalledTimes(1);
+      expect(session.subscribe).toHaveBeenCalledWith(jasmine.objectContaining({name: 'topic-4'}), true /* requestConfirmation */, jasmine.any(String), undefined /* requestTimeout*/);
+      session.subscribe.calls.reset();
+      flushMicrotasks();
+    }));
+
+    it('should subscribe and unsubscribe sequentially on the same topic', fakeAsync(async () => {
+      const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+      simulateLifecycleEvent(solace.SessionEventCode.UP_NOTICE);
+
+      const sessionSubscribeCaptor = installSessionSubscribeCaptor();
+      const sessionUnsubscribeCaptor = installSessionUnsubscribeCaptor();
+
+      // subscribe to `topic`
+      const subscription1 = solaceMessageClient.observe$('topic').subscribe();
+      flushMicrotasks();
+
+      // unsubscribe from `topic` (Solace confirmation is pending)
+      subscription1.unsubscribe();
+      flushMicrotasks();
+
+      // subscribe to `topic` (Solace confirmations are pending)
+      const subscription2 = solaceMessageClient.observe$('topic').subscribe();
+      flushMicrotasks();
+
+      // unsubscribe from `topic` (Solace confirmations are pending)
+      subscription2.unsubscribe();
+      flushMicrotasks();
+
+      // expect single call to `session.subscribe` (subscription 1)
+      expect(session.subscribe).toHaveBeenCalledTimes(1);
+      expect(session.subscribe).toHaveBeenCalledWith(jasmine.objectContaining({name: 'topic'}), true /* requestConfirmation */, sessionSubscribeCaptor.correlationKey, undefined /* requestTimeout*/);
+      session.subscribe.calls.reset();
+      session.unsubscribe.calls.reset();
+
+      // simulate confirmation of subscription 1
+      simulateLifecycleEvent(solace.SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+
+      // expect single call to `session.unsubscribe` (subscription 1)
+      expect(session.subscribe).toHaveBeenCalledTimes(0);
+      expect(session.unsubscribe).toHaveBeenCalledTimes(1);
+      expect(session.unsubscribe).toHaveBeenCalledWith(jasmine.objectContaining({name: 'topic'}), true /* requestConfirmation */, sessionUnsubscribeCaptor.correlationKey, undefined /* requestTimeout*/);
+      session.subscribe.calls.reset();
+      session.unsubscribe.calls.reset();
+
+      // simulate confirmation of unsubscription 1
+      simulateLifecycleEvent(solace.SessionEventCode.SUBSCRIPTION_OK, sessionUnsubscribeCaptor.correlationKey);
+
+      // expect single call to `session.subscribe` (subscription 2)
+      expect(session.subscribe).toHaveBeenCalledTimes(1);
+      expect(session.unsubscribe).toHaveBeenCalledTimes(0);
+      expect(session.subscribe).toHaveBeenCalledWith(jasmine.objectContaining({name: 'topic'}), true /* requestConfirmation */, sessionSubscribeCaptor.correlationKey, undefined /* requestTimeout*/);
+      session.subscribe.calls.reset();
+      session.unsubscribe.calls.reset();
+
+      // simulate confirmation of subscription 2
+      simulateLifecycleEvent(solace.SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+
+      // expect single call to `session.unsubscribe` (subscription 2)
+      expect(session.subscribe).toHaveBeenCalledTimes(0);
+      expect(session.unsubscribe).toHaveBeenCalledTimes(1);
+      expect(session.unsubscribe).toHaveBeenCalledWith(jasmine.objectContaining({name: 'topic'}), true /* requestConfirmation */, sessionUnsubscribeCaptor.correlationKey, undefined /* requestTimeout*/);
+      session.subscribe.calls.reset();
+      session.unsubscribe.calls.reset();
+    }));
+  }
 
   /**
    * Simulates the Solace message broker to publish a message to the Solace session.
@@ -1013,6 +1177,18 @@ describe('SolaceMessageClient', () => {
   function installSessionSubscribeCaptor(): SessionSubscribeCaptor {
     const captor = new SessionSubscribeCaptor();
     session.subscribe.and.callFake((topic: solace.Destination, requestConfirmation: boolean, correlationKey: string, _requestTimeout: number) => {
+      captor.topic = topic.getName();
+      captor.correlationKey = correlationKey;
+    });
+    return captor;
+  }
+
+  /**
+   * Captures the most recent invocation to {@link solace.Session#unsubscribe}.
+   */
+  function installSessionUnsubscribeCaptor(): SessionSubscribeCaptor {
+    const captor = new SessionSubscribeCaptor();
+    session.unsubscribe.and.callFake((topic: solace.Destination, requestConfirmation: boolean, correlationKey: string, _requestTimeout: number) => {
       captor.topic = topic.getName();
       captor.correlationKey = correlationKey;
     });

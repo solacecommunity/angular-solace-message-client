@@ -1,7 +1,7 @@
 import * as solace from 'solclientjs/lib-browser/solclient-full';
 import { Injectable, NgZone, OnDestroy, Optional } from '@angular/core';
-import { ConnectableObservable, merge, MonoTypeOperatorFunction, Observable, Observer, OperatorFunction, Subject, TeardownLogic, throwError } from 'rxjs';
-import { distinctUntilChanged, filter, finalize, map, mergeMapTo, publishReplay, take, takeUntil, tap } from 'rxjs/operators';
+import { ConnectableObservable, EMPTY, merge, MonoTypeOperatorFunction, noop, Observable, Observer, of, OperatorFunction, Subject, TeardownLogic } from 'rxjs';
+import { distinctUntilChanged, filter, finalize, map, mergeMap, publishReplay, take, takeUntil, tap } from 'rxjs/operators';
 import { UUID } from '@scion/toolkit/uuid';
 import { MessageBodyFormat, MessageEnvelope, ObserveOptions, PublishOptions, SolaceMessageClient } from './solace-message-client';
 import { TopicMatcher } from './topic-matcher';
@@ -9,6 +9,8 @@ import { observeInside } from '@scion/toolkit/operators';
 import { SolaceSessionProvider } from './solace-session-provider';
 import { SolaceMessageClientConfig } from './solace-message-client.config';
 import { SessionProperties } from './solace.model';
+import { TopicSubscriptionCounter } from './topic-subscription-counter';
+import { SerialExecutor } from './serial-executor.service';
 
 @Injectable()
 export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { // tslint:disable-line:class-name
@@ -17,10 +19,12 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
   private _message$ = new Subject<solace.Message>();
   private _event$ = new Subject<solace.SessionEvent>();
 
-  private _subscriptionCounts = new Map<string, number>();
   private _session: Promise<solace.Session>;
   private _whenDestroy = this._destroy$.pipe(take(1)).toPromise();
   private _sessionDispose$ = new Subject<void>();
+
+  private _subscriptionExecutor: SerialExecutor;
+  private _subscriptionCounter: TopicSubscriptionCounter;
 
   public connected$: ConnectableObservable<boolean> = this._event$
     .pipe(
@@ -66,6 +70,9 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
       this._zone.runOutsideAngular(() => {
         try {
           console.log('[SolaceMessageClient] Connecting to Solace message broker: ', {...sessionProperties, password: '***'});
+          this._subscriptionExecutor = new SerialExecutor();
+          this._subscriptionCounter = new TopicSubscriptionCounter();
+
           const session: solace.Session = this._sessionProvider.provide(new solace.SessionProperties(sessionProperties));
 
           // When the Session is ready to send/receive messages and perform control operations.
@@ -118,12 +125,13 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
 
     this._session = null;
     this._sessionDispose$.next();
+    this._subscriptionExecutor.destroy();
+    this._subscriptionCounter.destroy();
 
     await this._zone.runOutsideAngular(() => session.then(it => {
-      // Disconnect the session. The session attempts to disconnect cleanly, concluding all operations in progress. The disconnected session
-      // event solace.SessionEventCode#event:DISCONNECTED is emitted when these operations complete and the session has completely disconnected.
+      // Disconnect the session gracefully.
       it.disconnect();
-      // Release all resources associated with the session. It is recommended to call disconnect() first for proper handshake with the message-router.
+      // Release all resources associated with the session.
       it.dispose();
     }));
   }
@@ -131,7 +139,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
   public observe$(topic: string, options?: ObserveOptions): Observable<MessageEnvelope> {
     return new Observable((observer: Observer<MessageEnvelope>): TeardownLogic => {
       const unsubscribe$ = new Subject<void>();
-      const correlationKey = UUID.randomUUID();
+
       // Replace named segments with a single-level wildcard character (`*`).
       const solaceTopic = topic.split('/').map(segment => isNamedWildcardSegment(segment) ? '*' : segment).join('/');
 
@@ -140,16 +148,10 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
         .subscribe(() => observer.complete());
 
       this.session
-        .then(session => {
+        .then(() => {
           // Create Observable that errors when failed to subscribe to the topic
           let subscriptionErrored = false;
-          const subscriptionError$ = this._event$
-            .pipe(
-              filter(event => event.sessionEventCode === solace.SessionEventCode.SUBSCRIPTION_ERROR),
-              filter(event => event.correlationKey === correlationKey),
-              tap(() => subscriptionErrored = true),
-              mergeMapTo(throwError(`[SolaceMessageClient] Failed to subscribe to topic ${solaceTopic}.`)),
-            );
+          const subscriptionError$ = new Subject<void>();
 
           // Filter messages sent to the given topic.
           merge(this._message$, subscriptionError$)
@@ -161,28 +163,21 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
               takeUntil(merge(this._destroy$, unsubscribe$)),
               finalize(async () => {
                 // Unsubscribe from the topic on the Solace session, but only if being the last subscription on that topic and if successfully subscribed to the Solace broker.
-                // IMPORTANT: Do not unsubscribe from the Solace session after a DOWN_ERROR, as solclientjs would enter an invalid state and crash.
-                //            In such case, the current session instance was set to `null`.
-                if (this.decrementTopicSubscriptionCountAndGet(solaceTopic) === 0 && !subscriptionErrored) {
-                  (await this._session)?.unsubscribe(
-                    solace.SolclientFactory.createTopicDestination(solaceTopic),
-                    false,
-                    undefined,
-                    undefined,
-                  );
+                if (this._subscriptionCounter.decrementAndGet(solaceTopic) === 0 && !subscriptionErrored) {
+                  this.unsubscribeFromTopic(solaceTopic);
                 }
               }),
             )
             .subscribe(observer);
 
-          // Subscribe to the topic in the Solace broker.
-          if (this.incrementTopicSubscriptionCountAndGet(solaceTopic) === 1) {
-            session.subscribe(
-              solace.SolclientFactory.createTopicDestination(solaceTopic),
-              true,
-              correlationKey,
-              options && options.requestTimeout,
-            );
+          // Subscribe to the topic on the Solace session, but only if being the first subscription on that topic.
+          if (this._subscriptionCounter.incrementAndGet(solaceTopic) === 1) {
+            this.subscribeToTopic(solaceTopic, options).then(success => {
+              if (!success) {
+                subscriptionErrored = true;
+                subscriptionError$.error(`[SolaceMessageClient] Failed to subscribe to topic ${solaceTopic}.`);
+              }
+            });
           }
         })
         .catch(error => {
@@ -193,6 +188,93 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
         unsubscribe$.next();
       };
     });
+  }
+
+  /**
+   * Subscribes to the given topic on the Solace session.
+   */
+  private subscribeToTopic(topic: string, subscribeOptions: ObserveOptions): Promise<boolean> {
+    // Calls to `solace.Session.subscribe` and `solace.Session.unsubscribe` must be executed one after the other until the Solace Broker confirms
+    // the operation. Otherwise a previous unsubscribe may cancel a later subscribe on the same topic.
+    return this._subscriptionExecutor.scheduleSerial(async () => {
+      // IMPORTANT: Do not subscribe when the session is down, that is, after received a DOWN_ERROR. Otherwise, solclientjs would crash.
+      // When the session is down, the session Promise resolves to `null`.
+      const session = await this._session;
+      if (!session) {
+        return false;
+      }
+
+      const subscribeCorrelationKey = UUID.randomUUID();
+      const whenSubscribed = this.whenSubscriptionConfirmed(subscribeCorrelationKey, {topic, operation: 'subscribe'});
+
+      session.subscribe(
+        solace.SolclientFactory.createTopicDestination(topic),
+        true,
+        subscribeCorrelationKey,
+        subscribeOptions && subscribeOptions.requestTimeout,
+      );
+      return whenSubscribed;
+    });
+  }
+
+  /**
+   * Unsubscribes from the given topic on the Solace session.
+   */
+  private unsubscribeFromTopic(topic: string): Promise<boolean> {
+    // Calls to `solace.Session.subscribe` and `solace.Session.unsubscribe` must be executed one after the other until the Solace Broker confirms
+    // the operation. Otherwise a previous unsubscribe may cancel a later subscribe on the same topic.
+    return this._subscriptionExecutor.scheduleSerial(async () => {
+      // IMPORTANT: Do not unsubscribe when the session is down, that is, after received a DOWN_ERROR. Otherwise, solclientjs would crash.
+      // When the session is down, the session Promise resolves to `null`.
+      const session = await this._session;
+      if (!session) {
+        return false;
+      }
+
+      const unsubscribeCorrelationKey = UUID.randomUUID();
+      const whenUnsubscribed = this.whenSubscriptionConfirmed(unsubscribeCorrelationKey, {topic, operation: 'unsubscribe'});
+
+      session.unsubscribe(
+        solace.SolclientFactory.createTopicDestination(topic),
+        true,
+        unsubscribeCorrelationKey,
+        undefined,
+      );
+      return whenUnsubscribed;
+    });
+  }
+
+  /**
+   * Promise that resolves to `true` when the Solace broker reports that the subscribe or unsubscribe operation succeeded, or that
+   * resolves to `false` otherwise. The Promise is never rejected.
+   *
+   * In order not to miss the Solace confirmation, this method must be called before the actual subscription or unsubscription.
+   */
+  private whenSubscriptionConfirmed(correlationKey: string, logContext: { topic: string, operation: 'subscribe' | 'unsubscribe' }): Promise<boolean> {
+    return this._event$
+      .pipe(
+        assertNotInAngularZone(),
+        filter(event => event.correlationKey === correlationKey),
+        mergeMap(event => {
+          if (event.sessionEventCode === solace.SessionEventCode.SUBSCRIPTION_OK) {
+            return of(true);
+          }
+          if (event.sessionEventCode === solace.SessionEventCode.SUBSCRIPTION_ERROR) {
+            console.warn('[SolaceMessageClient] Subscription or unsubscription rejected by the Solace broker:', logContext, event); // tslint:disable-line:no-console
+            return of(false);
+          }
+          return EMPTY;
+        }),
+        take(1),
+        takeUntil(this._destroy$),
+      )
+      .toPromise()
+      .then((success: boolean | undefined) => {
+        if (success === undefined) {
+          return new Promise(noop); // do not resolve the Promise on shutdown
+        }
+        return Promise.resolve(success);
+      });
   }
 
   public async publish<T>(topic: string, payload: T | solace.Message | undefined, options?: PublishOptions): Promise<void> {
@@ -238,23 +320,6 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
       }
     }
     session.send(message);
-  }
-
-  private incrementTopicSubscriptionCountAndGet(topic: string): number {
-    const count = (this._subscriptionCounts.get(topic) || 0) + 1;
-    this._subscriptionCounts.set(topic, count);
-    return count;
-  }
-
-  private decrementTopicSubscriptionCountAndGet(topic: string): number {
-    const count = Math.max(0, (this._subscriptionCounts.get(topic) || 0) - 1);
-    if (count === 0) {
-      this._subscriptionCounts.delete(topic);
-    }
-    else {
-      this._subscriptionCounts.set(topic, count);
-    }
-    return count;
   }
 
   public get session(): Promise<solace.Session> {
