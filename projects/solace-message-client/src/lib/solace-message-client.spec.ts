@@ -107,11 +107,10 @@ describe('SolaceMessageClient', () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
       // Connect
-      let connected = solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
+      expectAsync(solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'})).toBeResolved();
       simulateLifecycleEvent(solace.SessionEventCode.UP_NOTICE);
       await expectAsync(solaceMessageClient.session).toBeResolved();
 
-      await connected;
       expect(session.connect).toHaveBeenCalledTimes(1);
       expect(sessionProvider.provide).toHaveBeenCalledWith(jasmine.objectContaining({url: 'some-url', vpnName: 'some-vpn'}));
       session.connect.calls.reset();
@@ -125,13 +124,21 @@ describe('SolaceMessageClient', () => {
       session.disconnect.calls.reset();
 
       // Connect
-      connected = solaceMessageClient.connect({url: 'some-other-url', vpnName: 'some-other-vpn'});
+      expectAsync(solaceMessageClient.connect({url: 'some-other-url', vpnName: 'some-other-vpn'})).toBeResolved();
       simulateLifecycleEvent(solace.SessionEventCode.UP_NOTICE);
       await expectAsync(solaceMessageClient.session).toBeResolved();
 
-      await connected;
       expect(session.connect).toHaveBeenCalledTimes(1);
       expect(sessionProvider.provide).toHaveBeenCalledWith(jasmine.objectContaining({url: 'some-other-url', vpnName: 'some-other-vpn'}));
+    }));
+
+    it('should reject the connect Promise when the connect attempt fails', fakeAsync(() => {
+      const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+
+      expectAsync(solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'})).toBeRejected();
+      simulateLifecycleEvent(solace.SessionEventCode.CONNECT_FAILED_ERROR, undefined);
+      expect(session.connect).toHaveBeenCalledTimes(1);
+      expect(sessionProvider.provide).toHaveBeenCalledWith(jasmine.objectContaining({url: 'some-url', vpnName: 'some-vpn'}));
     }));
 
     describe('core functionality', () => {
