@@ -34,7 +34,6 @@ This library is currently limited to topic-based communication. A queue API is n
 
 
 [![Project version](https://img.shields.io/npm/v/@solace-community/angular-solace-message-client.svg)][link-download]
-[![Project version](https://img.shields.io/npm/v/@solace-community/angular-solace-message-client/next.svg)][link-download]
 [![Continuous Integration and Delivery][link-github-actions-workflow:status]][link-github-actions-workflow]
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg)](CODE_OF_CONDUCT.md)
 
