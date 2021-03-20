@@ -15,7 +15,7 @@ underlying *solclient* library.
 - [**Getting Started**](https://github.com/solacecommunity/angular-solace-message-client/blob/master/docs/site/getting-started.md) \
   Learn how to install and use this library in an Angular application.
 
-- [**Try Me**](https://solacecommunity.github.io/angular-solace-message-client/api) \
+- [**Try Me**](https://solacecommunity.github.io/angular-solace-message-client/tryme) \
   See this library in action. The *Try Me* application lets you connect to your message broker for publishing and receiving messages.
 
 - [**API Documentation**](https://solacecommunity.github.io/angular-solace-message-client/api) \
