@@ -29,7 +29,10 @@ export class TryMeComponent {
   }
 
   public onConnect(): void {
-    this.solaceMessageClient.connect(this._sessionProperties).then();
+    this.solaceMessageClient.connect(this._sessionProperties).then(
+      () => console.log('Connected'),
+      err => console.error('Connection failed', err)
+    );
   }
 
   public onSessionPropertiesOpen(): void {
