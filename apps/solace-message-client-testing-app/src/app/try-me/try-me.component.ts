@@ -29,7 +29,10 @@ export class TryMeComponent {
   }
 
   public onConnect(): void {
-    this.solaceMessageClient.connect(this._sessionProperties).then();
+    this.solaceMessageClient.connect(this._sessionProperties).then(
+      () => console.log('Connected to Solace message broker'),
+      error => console.error('Failed to connect to Solace message broker', error),
+    );
   }
 
   public onSessionPropertiesOpen(): void {
