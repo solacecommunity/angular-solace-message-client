@@ -48,6 +48,7 @@ export class ConnectComponent {
       password: this.form.get(PASSWORD).value ?? undefined,
       reapplySubscriptions: this.form.get(REAPPLY_SUBSCRIPTIONS).value ?? undefined,
       reconnectRetries: this.form.get(RECONNECT_RETRIES).value ?? undefined,
+      connectRetries: this.form.get(RECONNECT_RETRIES).value ?? undefined,
     };
 
     sessionStorage.setItem(SOLACE_CONNECT_PROPERTIES_SESSION_KEY, JSON.stringify(solaceConnectProperties));
