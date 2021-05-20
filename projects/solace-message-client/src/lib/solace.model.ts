@@ -428,3 +428,781 @@ export enum MessageDeliveryModeType {
    */
   NON_PERSISTEN = 2,
 }
+
+/**
+ * Defines the properties for a solace.MessageConsumer.
+ */
+export abstract class MessageConsumerProperties {
+  /**
+   * The Application Acknowledgement mode for the Message Consumer.
+   * When the acknowledgement mode is solace.MessageConsumerAcknowledgeMode.CLIENT,
+   * a message is Application Acknowledged when the application calls solace.Message#acknowledge on that message.
+   *
+   * When the acknowledge mode is solace.MessageConsumerAcknowledgeMode.AUTO,
+   * a message is Application Acknowledged by the API after all solace.MessageConsumerEventName#event:MESSAGE
+   * listeners are called and none throw an exception. If a message handler throws,
+   * the message can still be acknowledged by calling solace.Message#acknowledge, but this would not be a recommended practice.
+   *
+   * When received messages are Application Acknowledged they are removed from the Guaranteed Message storage on the Solace Message Router.
+   * Message Consumer Application Acknowledged, only remove messages from the Solace Message Router.
+   *
+   * In particular, withholding Message Consumer Acknowledgemnts does not stop message delivery.
+   * For Message Consumer flow control (aka transport acknowledgemeent) see solace.MessageConsumer.stop/solace.MessageConsumer.start.
+   * Message Consumer flow control may also be imlpemented by removing the solace.MessageConsumerEventName#event:MESSAGE listener.
+   *
+   * Flow control and transport acknowledgements characteristics are defined by
+   * solace.MessageConsumerProperties.transportAcknowledgeTimeoutInMsecs
+   *
+   * @default {MessageConsumerAcknowledgeMode.AUTO}
+   */
+  public acknowledgeMode?: MessageConsumerAcknowledgeMode;
+  /**
+   * When enabled, a Guaranteed Messaging Consumer requests Active and Inactive events from the router and emits them to interested listeners.
+   * See {solace.MessageConsumerEvent.ACTIVE}
+   * See {solace.MessageConsumerEvent.INACTIVE}
+   *
+   * @default false
+   */
+  public activeIndicationEnabled?: boolean;
+  /**
+   * Gets and sets the maximum number of bind attempts when creating a connection to the Solace Message Router.
+   * The valid range is >= 1.
+   *
+   * @default 3
+   */
+  public connectAttempts?: number;
+  /**
+   * The bind timeout in milliseconds when creating a connection to the Solace Message Router.
+   * The valid range is >= 50.
+   *
+   * @default 10000
+   */
+  public connectTimeoutInMsecs?: number;
+  /**
+   * When enabled, a Guaranteed Messaging Consumer does not receive messages published in the same Session,
+   * even if the endpoint contains a subscription that matches the published message.
+   *
+   * @default false
+   */
+  public noLocal?: boolean;
+  public queueDescriptor: QueueDescriptor;
+  public queueProperties: QueueProperties;
+  /**
+   * When a connected flow receives an unsolicited unbind event with subcode REPLAY_STARTED or GM_UNAVAILABLE,
+   * the SDK can reconnect the flow automatically. This property controls the flow auto reconnect feature:
+   *   0: Disable flow auto reconnect for this consumer flow.
+   *  -1: Enable flow auto reconnect for this consumer flow, infiinite retries (default)
+   *
+   * <n, positive number>: Enable flow auto reconnect for this consumer flow, n retries.
+   *
+   * When the flow auto rebind is enabled, DOWN_ERRORs with REPLAY_STARTED and GM_UNAVAILABLE are handled internally,
+   * and not (immediately) emitted to the application. A RECONNECTING event (with the same subcode) is emitted instead,
+   * ideally followed by a RECONNECTED event when the reconnect succeedes. In case of REPLAY_STARTED,
+   * the window of message IDs and acknowledgements are reset to allow replay packets to be passed to the application without marking them as duplicates.
+   * In case of GM_UNAVAILABLE, flow state is preserved.
+   *
+   * If reconnecting fails after exhausting the number of retries, a DOWN_ERROR is emitted with the details of the last retry.
+   *
+   * @default -1
+   */
+  public reconnectAttempts?: number;
+  /**
+   * Time to wait between flow auto reconnect attempts, in milliseconds.
+   * See solace.MessageConsumerProperties.reconnectAttempts Defaults to 3 seconds (3000)
+   * The valid range is >= 50.
+   *
+   * @default 3000
+   */
+  public reconnectIntervalInMsecs?: number;
+  /**
+   * When a Flow is created, the application may request replay of messages from the replay log,
+   * even messages that have been previously delivered and removed the from topic endpoint or queue.
+   * The default is undefined, and indicates that no replay is requested.
+   *
+   * When defined the replay start location must be a {solace.ReplayStartLocation} object as returned by
+   * {SolClientFactory.createReplayStartLocationBeginning()} or {SolClientFactory.createReplayStartLocationDate()}.
+   *
+   * The {solace.ReplayStartLocation} returned by {SolClientFactory.createReplayStartLocationBeginning()}
+   * indicate that all messages available should be replayed.
+   *
+   * The replay start location returned by {SolClientFactory.createReplayStartLocationDate()}
+   * indicates that all messages logged since a given date must be retrieved.
+   *
+   * @default undefined
+   */
+  public replayStartLocation?: ReplayStartLocation;
+  /**
+   * The transport acknowledgement timeout for guaranteed messaging.
+   * When the solace.MessageConsumerProperties.transportAcknowledgeTimeoutInMsecs is not exceeded,
+   * acknowledgements will be returned to the router at intervals not less than this value.
+   *
+   * The valid range is 20 <= transportAcknowledgeTimeoutInMsecs <= 1500.
+   *
+   * @default 1000
+   */
+  public transportAcknowledgeTimeoutInMsecs?: number;
+  /**
+   * The window size for Guaranteed Message delivery.
+   * This is the maximum number of messages that will be prefetched from the
+   * Solace Messaging Router and queued internally by the API while waiting for the application to accept delivery of the messages.
+   *
+   * The valid range is 1 <= windowSize <= 255.
+   *
+   * @default 255
+   */
+  public windowSize?: number;
+}
+
+export abstract class QueueDescriptor {
+  /**
+   * The remote name to which this specification refers.
+   */
+  public name: string;
+  /**
+   * The type of queue for this specification.
+   */
+  public type: QueueType;
+
+  /**
+   * true if this refers to a durable queue.
+   *
+   * @default true
+   */
+  public durable?: boolean;
+}
+
+/**
+ * Specifies the type of remote resource to which an solace.AbstractQueueDescriptor refers.
+ */
+export enum QueueType {
+  QUEUE = 'QUEUE',
+  TOPIC_ENDPOINT = 'TOPIC_ENDPOINT'
+}
+
+/**
+ * An enumeration of consumer acknowledgement modes.
+ * The corresponding MessageConsumer property solace.MessageConsumerProperties#acknowledgeMode
+ * configures how acknowledgments are generated for received Guaranteed messages.
+ *
+ * When received messages are acknowledged they are removed from the Guaranteed Message storage
+ * on the Solace Message Router. Message Consumer acknowledgements, only remove messages from the Solace Message Router.
+ *
+ * In particular, withholding Message Consumer Acknowledgemnts does not stop message delivery.
+ * For Message Consumer flow control see solace.MessageConsumer.stop/solace.MessageConsumer.start.
+ * Message Consumer flow control may also be imlpemented by removing the solace.MessageConsumerEventName#event:MESSAGE listener.
+ */
+export enum MessageConsumerAcknowledgeMode {
+  /**
+   * The API acknowledges a message only when the application calls solace.Message#acknowledge.
+   */
+  CLIENT = 'CLIENT',
+  /**
+   * The API automatically acknowledges any message that was delivered to all solace.MessageConsumerEventName#event:MESSAGE listeners with no exception thrown on any of them.
+   */
+  AUTO = 'AUTO'
+}
+
+/**
+ * Represents a queue properties object.
+ * May be passed in to solace.Session#createMessageConsumer when creating a solace.MessageConsumer object.
+ * Upon creation of a queue, undefined queue properties are set to default values chosen by the router.
+ */
+export abstract class QueueProperties {
+  /**
+   * Gets/sets the access type for this queue.
+   * This parameter must NOT be set when creating a temporary queue via solace.Session#createMessageConsumer.
+   * Such a queue has its access type determined by the remote message router.
+   *
+   * @default undefined
+   */
+  public accessType?: QueueAccessType;
+  /**
+   * Gets/sets the discard behavior for this queue.
+   *
+   * @default {QueueDiscardBehavior.NOTIFY_SENDER_OFF}
+   */
+  public discardBehavior?: QueueDiscardBehavior;
+  /**
+   * Gets/sets the maximum number of times to attempt message redelivery for this queue.
+   *
+   * The valid range is 0 <= maxMessageRedelivery <= 255
+   * A value of 0 means retry forever.
+   *
+   * @default undefined
+   */
+  public maxMessageRedelivery?: number;
+  /**
+   * Gets/sets the maximum message size, in bytes, for any single message spooled on this queue.
+   *
+   * @default undefined
+   */
+  public maxMessageSize?: number;
+  /**
+   * Gets/sets permissions for this queue.
+   * When creating a temporary queue, these are the permissions that apply to all other users;
+   * the user creating the temporary queue is always granted DELETE permissions.
+   *
+   * @default undefined
+   */
+  public permissions?: QueuePermissions;
+  /**
+   * Gets/sets the quota, in megabytes, for this queue.
+   *
+   * - The allowed values are (0 <= quotaMB) || undefined.
+   * - A value of 0 configures the queue to act as a Last-Value-Queue (LVQ),
+   *   where the router enforces a Queue depth of one, and only the most current message is spooled by the queue.
+   *   When a new message is received, the current queued message is first automatically deleted from the queue,
+   *   then the new message is spooled.
+   *
+   *   @default undefined
+   */
+  public quotaMB?: number;
+  /**
+   * Gets/sets whether this queue respects Time To Live on messages.
+   *
+   * @default false
+   */
+  public respectsTTL?: boolean;
+}
+
+/**
+ * Represents the possible endpoint access types. The corresponding endpoint property is solace.QueueProperties#accessType.
+ */
+export enum QueueAccessType {
+  /**
+   * An exclusive endpoint. The first client to bind receives the stored messages on the Endpoint.
+   */
+  EXCLUSIVE = 'EXCLUSIVE',
+  /**
+   * A non-exclusive (shared) Queue. Each client to bind receives messages in a round robin fashion.
+   */
+  NONEXCLUSIVE = 'NONEXCLUSIVE'
+}
+
+/**
+ * Enumerates the behavior options when a message cannot be added to an endpoint
+ * (for example, the maximum quota solace.QueueProperties#quotaMB was exceeded).
+ */
+export enum QueueDiscardBehavior {
+  /**
+   * Discard the message and acknowledge it.
+   */
+  NOTIFY_SENDER_OFF = 'NOTIFY_SENDER_OFF',
+  /**
+   * Send the publisher a message reject notification.
+   */
+  NOTIFY_SENDER_ON = 'NOTIFY_SENDER_ON'
+}
+
+/**
+ * Represents the permissions applicable to a queue.
+ *
+ * The corresponding endpoint property is solace.QueueProperties#permissions.
+ *
+ * The access controls:
+ *
+ * the permissions for all other users of the queue, this only applies to non-durable queues solace.QueueProperties#permissions;
+ * for the current Message Consumer on a queue or endpoint, solace.MessageConsumer.permissions
+ * For example, creating a temporary topic endpoint with MODIFY_TOPIC will allow other users to modify the topic subscribed to that endpoint.
+ */
+export enum QueuePermissions {
+  /**
+   * Client may read and consume messages.
+   */
+  CONSUME = 'CONSUME',
+  /**
+   * Client may read and consume messages, modify topic(s) associated with the queue, and delete the queue.
+   */
+  DELETE = 'DELETE',
+  /**
+   * Client may read and consume messages, and modify topic(s) associated with the queue.
+   */
+  MODIFY_TOPIC = 'MODIFY_TOPIC',
+  /**
+   * No client other than the queue's owner may access the endpoint.
+   */
+  NONE = 'NONE',
+  /**
+   * Client may read messages but not consume them.
+   */
+  READ_ONLY = 'READ_ONLY'
+}
+
+/**
+ * This class is not exposed for construction by API users. Users should obtain an instances from one of the following:
+ * solace.SolclientFactory.createReplayStartLocationBeginning
+ * solace.SolclientFactory.createReplayStartLocationDate
+ * Defines the ReplayStartLocation class.
+ * The ReplayStartLocation is set in the corresponding MessageConsumer property solace.MessageConsumerProperties#replayStartLocation
+ * The single member variable, _replayStartTime is undefined in ReplayStartLocationBeginning and contains the elapsed time in milliseconds since the epoch in ReplayStartLocationDate
+ */
+export abstract class ReplayStartLocation {
+}
+
+export abstract class QueueBrowserProperties {
+  /**
+   * Gets and sets the maximum number of bind attempts when creating a connection to the Solace Message Router.
+   *
+   * The valid range is >= 1.
+   * @default 3
+   */
+  public connectAttempts?: number;
+  /**
+   * The bind timeout in milliseconds when creating a connection to the Solace Message Router.
+   *
+   * The valid range is >= 50.
+   *
+   * @default 10000
+   */
+  public connectTimeoutInMsecs?: number;
+  /**
+   * Defines the queue from which to consume.
+   *
+   * For durable queues and durable topic endpoints, this must be a solace.QueueDescriptor.
+   */
+  public queueDescriptor: QueueDescriptor;
+  /**
+   * The threshold for sending an acknowledgement, as a percentage.
+   * The API sends a transport acknowledgment every N messages where N is calculated as this percentage of the
+   * transport window size if the endpoint's max-delivered-unacked-msgs-per-flow setting at bind time is
+   * greater than or equal to the transport window size. Otherwise, N is calculated as this percentage
+   * of the endpoint's max-delivered-unacked-msgs-per-flow setting at bind time.
+   *
+   * The valid range is 1 <= transportAcknowledgeThresholdPercentage <= 75.
+   * @default 60
+   */
+  public transportAcknowledgeThresholdPercentage?: number;
+  /**
+   * The transport acknowledgement timeout for guaranteed messaging in milliseconds.
+   * When the solace.QueueBrowserProperties.transportAcknowledgeTimeoutInMsecs is not exceeded,
+   * acknowledgements will be returned to the router at intervals not less than this value.
+   *
+   * The valid range is 20 <= transportAcknowledgeTimeoutInMsecs <= 1500.
+   *
+   * @default 1000
+   */
+  public transportAcknowledgeTimeoutInMsecs?: number;
+  /**
+   * The window size for Guaranteed Message delivery.
+   * This is the maximum number of messages that will be prefetched from the Solace Messaging Router
+   * and queued internally by the API while waiting for the application to accept delivery of the messages.
+   *
+   * The valid range is 1 <= windowSize <= 255.
+   *
+   * @default 255
+   */
+  public windowSize?: number;
+}
+
+/**
+ * This class is not exposed for construction by API users. Users should obtain an instance from solace.SolclientFactory.createMessage
+ * A message is a container that can be used to store and send messages to and from the Solace Message Router.
+ * Applications manage the lifecycle of a message; a message is created by calling solace.SolclientFactory.createMessage and is freed by dereferencing it.
+ * API operations that cache or mutate messages always take a copy. A message may be created, mutated by the API user, and sent multiple times.
+ * The Message Object provides methods to manipulate the common Solace message header fields that are optionally sent in the binary metadata
+ * portion of the Solace message.
+ * Applications can also use the structured data API solace.Message#setSdtContainer to add containers (maps or streams) and
+ * their fields to the binary payload or to the User Property map contained within the binary metadata.
+ * This does not prevent applications from ignoring these methods and sending payload in the binary payload
+ * as an opaque binary field for end-to-end communications
+ */
+export abstract class Message {
+  /**
+   * Acknowledges this message.
+   *
+   * If the solace.MessageConsumer on which this message was received is configured to use solace.MessageConsumerAckMode.CLIENT,
+   * then when a message is received by an application, the application must call this method to explicitly acknowledge reception of the message.
+   * This frees local and router resources associated with an unacknowledged message.
+   * The API does not send acknowledgments immediately. It stores the state for acknowledged messages internally and acknowledges messages,
+   * in bulk, when a threshold or timer is reached.
+   */
+  public abstract acknowledge(): void;
+
+  /**
+   * Produces a human-readable dump of the message's properties and contents.
+   * Applications must not parse the output, as its format is not a defined part of the API and subject to change.
+   *
+   * Output can be controlled by the flags parameter. The values are:
+   * @param flags
+   *    MessageDumpFlag.MSGDUMP_BRIEF Display only the length of the binary attachment, xml attachment, and user property map
+   *    MessageDumpFlag.MSGDUMP_FULL Display the entire message.
+   */
+  public abstract dump(flags: number): string;
+
+  /**
+   * Gets the application-provided message ID.
+   */
+  public abstract getApplicationMessageId(): string;
+
+  /**
+   * Gets the application message type. This value is used by applications only, and is passed through the API and Solace Message Router untouched.
+   */
+  public abstract getApplicationMessageType(): string;
+
+  /**
+   * Gets the binary attachment part of the message.
+   * Backward compatibility note: Using the version10 factory profile or older,
+   * the binary attachment is returned as a 'latin1' String:
+   * Each character has a code in the range * 0-255 representing the value of a single received byte at that position.
+   */
+  public abstract getBinaryAttachment(): Uint8Array;
+
+  /**
+   * Given a Message containing a cached message, return the cache Request Id that the application set in the call to solace.CacheSession#sendCacheRequest.
+   */
+  public abstract getCacheRequestId(): number;
+
+  /**
+   * Gets the cache status of this message.
+   */
+  public abstract getCacheStatus(): any; // MessageCacheStatus;
+  /**
+   * Gets the correlation ID.
+   * The message Correlation Id is carried in the Solace message headers unmodified by the API and the Solace Message Router.
+   * This field may be used for peer-to-peer message synchronization and is commonly used for correlating a request to a reply.
+   * See solace.Session#sendRequest.
+   */
+  public abstract getCorrelationId(): string;
+
+  /**
+   * Gets the correlation Key.
+   * A correlation key is used to correlate a message with its acknowledgement or rejection.
+   * The correlation key is an object that is passed back to the client during the router acknowledgement or rejection.
+   * The correlation key is a local reference used by applications generating Guaranteed messages.
+   * Messages that are sent in either solace.MessageDeliveryModeType.PERSISTENT or solace.MessageDeliveryModeType.NON_PERSISTENT mode may set the correlation key.
+   */
+  public abstract getCorrelationKey(): any;
+
+  /**
+   * Gets the delivery mode of the message.
+   */
+  public abstract getDeliveryMode(): MessageDeliveryModeType;
+
+  /**
+   * Gets the destination to which the message was published.
+   */
+  public abstract getDestination(): Destination;
+
+  /**
+   * The Guaranteed Message expiration value.
+   * The expiration time is the UTC time (that is, the number of milliseconds from midnight January 1, 1970 UTC) when the message is to expire.
+   */
+  public abstract getGMExpiration(): number;
+
+  /**
+   * Returns the Guaranteed Message MessageID for this message.
+   */
+  public abstract getGuaranteedMessageId(): number;
+
+  /**
+   * Gets the Message Priority Parameter (JMS Priority) value for the message.
+   * Numerical values between 0 and 255 are valid return values, undefined means the parameter is not present.
+   * If destination queues and topic endpoints for this message are configured to respect message priority,
+   * the values 0 through 9 can be used to affect the priority of delivery to consumers of those queues or topic endpoints.
+   * For the purposes of prioritized message delivery, values larger than 9 are treated the same as 9.
+   */
+  public abstract getPriority(): number;
+
+  /**
+   * Gets the receive timestamp (in milliseconds, from midnight, January 1, 1970 UTC).
+   */
+  public abstract getReceiverTimestamp(): number;
+
+  /**
+   * Gets the replyTo destination
+   */
+  public abstract getReplyTo(): Destination;
+
+  /**
+   * Gets the message's structured data container, if this is a structured data message.
+   */
+  public abstract getSdtContainer(): SDTField | null;
+
+  /**
+   * Returns the Sender's ID.
+   */
+  public abstract getSenderId(): string;
+
+  /**
+   * Gets the send timestamp (in milliseconds, from midnight, January 1, 1970 UTC).
+   */
+  public abstract getSenderTimestamp(): number;
+
+  /**
+   * Gets the sequence number.
+   * This is an application-defined field, see solace.Message#setSequenceNumber().
+   */
+  public abstract getSequenceNumber(): number;
+
+  /**
+   * The Guaranteed Message TTL, in milliseconds
+   */
+  public abstract getTimeToLive(): number;
+
+  /**
+   * Returns the Topic Sequence Number. If there is no topic sequence number undefined is returned.
+   */
+  public abstract getTopicSequenceNumber(): number;
+
+  public abstract getType(): MessageType;
+
+  public abstract getUserCos(): MessageUserCosType;
+
+  /**
+   * Gets the user data part of the message.
+   */
+  public abstract getUserData(): string;
+
+  /**
+   * Gets the user property map carried in the message binary metadata.
+   */
+  public abstract getUserPropertyMap(): SDTMapContainer;
+
+  /**
+   * Gets the XML content part of the message.
+   * Notice that the content is encoded as UTF-8 characters, it needs to be decoded as JavaScript surrogate pair: decodeURIComponent(escape(value))
+   */
+  public abstract getXmlContent(): string;
+
+  /**
+   * Gets the XML content part of the message decoded from UTF-8 encoding of the characters.
+   */
+  public abstract getXmlContentDecoded(): string;
+
+  /**
+   * Gets the message's XML metadata section.
+   */
+  public abstract getXmlMetadata(): string;
+
+  /**
+   * Test if the Acknowledge Immediately message property is set or not.
+   * When the Acknowledge Immediately property is set to true on an outgoing Guaranteed Message,
+   * it indicates that the Solace Message Router should Acknowledge this message immediately upon receipt.
+   * This property, when set by a publisher, may or may not be removed by the Solace Message Router prior to delivery to a consumer,
+   * so message consumers must not expect the property value indicates how the message was originally published
+   */
+  public abstract isAcknowledgeImmediately(): boolean;
+
+  /**
+   * Indicates whether one or more messages have been discarded prior to the current message.
+   * This indicates congestion discards only and is not affected by message eliding.
+   */
+  public abstract isDiscardIndication(): boolean;
+
+  /**
+   * Whether this message is Guaranteed Message DMQ eligible
+   */
+  public abstract isDMQEligible(): boolean;
+
+  /**
+   * Returns whether the message is eligible for eliding.
+   * Message eliding enables filtering of data to avoid transmitting every single update to a subscribing client.
+   * This property does not indicate whether the message was elided.
+   */
+  public abstract isElidingEligible(): boolean;
+
+  /**
+   * ndicates whether the message has been marked as redelivered by the Solace Message Router.
+   */
+  public abstract isRedelivered(): boolean;
+
+  /**
+   * Returns whether the message's reply field is set, indicating that this message is a reply to a previous request. See solace.Session#sendRequest.
+   */
+  public abstract isReplyMessage(): boolean;
+
+  /**
+   * Releases all memory associated with this message.
+   * All values are reinitialized to defaults.
+   * The message is no longer associated with any session or consumer.
+   */
+  public abstract reset(): void;
+
+  public abstract setAcknowledgeImmediately(value: boolean): void;
+
+  public abstract setApplicationMessageId(value: string): void;
+
+  public abstract setApplicationMessageType(value: string): void;
+
+  public abstract setAsReplyMessage(value: boolean): void;
+
+  public abstract setBinaryAttachment(value: Uint8Array): void;
+
+  public abstract setCorrelationId(value: string): void;
+
+  public abstract setCorrelationKey(value: any): void;
+
+  public abstract setDeliverToOne(value: boolean): void;
+
+  public abstract setDeliveryMode(value: MessageDeliveryModeType): void;
+
+  public abstract setDestination(value: Destination): void;
+
+  public abstract setDMQEligible(value: boolean): void;
+
+  public abstract setElidingEligible(value: boolean): void;
+
+  public abstract setGMExpiration(value: number): void;
+
+  public abstract setPriority(value: number): void;
+
+  public abstract setReplyTo(value: Destination): void;
+
+  public abstract setSdtContainer(container: SDTField): void;
+
+  public abstract setSenderId(value: string): void;
+
+  public abstract setSenderTimestamp(value: number): void;
+
+  public abstract setSequenceNumber(value: number): void;
+
+  public abstract setTimeToLive(value: number): void;
+
+  public abstract setUserCos(value: MessageUserCosType): void;
+
+  public abstract setUserData(value: string): void;
+
+  public abstract setUserPropertyMap(value: SDTMapContainer): void;
+
+  public abstract setXmlContent(value: string): void;
+
+  public abstract setXmlMetadata(value: string): void;
+}
+
+/**
+ * This class is not exposed for construction by API users. Users should obtain an instances from one of the following:
+ * solace.SolclientFactory.createTopicDestination
+ * solace.SolclientFactory.createDurableQueueDestination
+ * solace.MessageConsumer#getDestination
+ * solace.SDTField#getValue when solace.SDTField#getType returns solace.SDTFieldType.DESTINATION.
+ * Represents a message destination.
+ *
+ * Publishers can send messages to topics or queues,
+ * to which subscribers can subscribe or bind. A Destination specifies the target of such an operation.
+ */
+export abstract class Destination {
+  /**
+   * The destination name specified at creation time.
+   */
+  public abstract getName(): string;
+
+  public abstract getType(): DestinationType;
+}
+
+/**
+ * Enumerates destination types for destination objects.
+ */
+export enum DestinationType {
+
+  /**
+   * A queue destination.
+   */
+  QUEUE = 'queue',
+  /**
+   * A temporary queue destination.
+   */
+  TEMPORARY_QUEUE = 'temporary_queue',
+  /**
+   * A Topic destination.
+   */
+  TOPIC = 'topic'
+}
+
+/**
+ * This class is not exposed for construction by API users.
+ * Represents a SDT (Structured Data Type) field. To create an instance of an SDTField, call solace.SDTField.create.
+ * SDTField objects are used in Solace Containers (solace.SDTMapContainer and solace.SDTStreamContainer).
+ * The deprecated usage of solace.SDTMapContainer#addField and solace.SDTStreamContainer#addField take a SDTField object as an argument.
+ * The preferred usage is to pass a solace.SDTFieldType and value as arguments.
+ * SDTField objectts must be used as an argument to solace.Message#setSdtContainer.
+ * The only valid SDTField objects for solace.Message#setSdtContainer are:
+ *
+ * solace.SDTFieldType.STREAM
+ * solace.SDTFieldType.MAP
+ * solace.SDTFieldType.STRING
+ */
+export abstract class SDTField {
+  public abstract getType(): any;
+
+  public abstract getValue(): any;
+}
+
+/**
+ * Represents an enumeration of message payload types (see solace.Message#getBinaryAttachment)
+ * A message may contain unstructured byte data, or a structured container.
+ */
+export enum MessageType {
+  /**
+   * Binary message (unstructured bytes stored in the binary attachment message part).
+   */
+  BINARY = 0,
+  /**
+   * Structured map message.
+   */
+  MAP = 1,
+  /**
+   * Structured stream message.
+   */
+  STREAM = 2,
+  /**
+   * Structured text message.
+   */
+  TEXT = 3
+}
+
+/**
+ * Represents an enumeration of user Class of Service (COS) levels. The COS is set on a Message with solace.Message#setUserCos
+ * The Class of Service has different semantics for direct and guaranteed messages.
+ * For messages published with solace.MessageDeliveryModeType.DIRECT, the class of service selects the
+ * weighted round-robin delivery queue when the message is forwarded to a consumer. solace.MessageUserCosType.COS1
+ * are the lowest priority messages and will use the Solace Message Router D-1 delivery queues.
+ * For messages published as guaranteed messages (solace.MessageDeliveryModeType.PERSISTENT or solace.MessageDeliveryModeType.NON_PERSISTENT),
+ * messages published with solace.MessageUserCosType.COS1 can be rejected by the Solace Message Router if that message would
+ * cause any queue or topic-endpoint to exceed its configured low-priority-max-msg-count.
+ */
+export enum MessageUserCosType {
+  /**
+   * Direct Messages: Lowest priority, use Solace Message Router client D-1 queues for delivery.
+   * Guaranteed Messages: Messages can be rejected if the message would cause any queue or
+   * topic-endpoint to exceed it's configured low-prioriity-max-msg-count.
+   */
+  COS1 = 0,
+  /**
+   * Direct Messages: Medium priority, use Solace Message Router client D-2 queues for delivery.
+   * Guaranteed Messages: N/A (same as COS3)
+   */
+  COS2 = 1,
+  /**
+   * Direct Messages: Highest priority, use Solace Message Router client D-3 queues for delivery.
+   * Guaranteed Messages: Messages are not rejected for exceeding low-priority-max-msg-count.
+   * Messages may still be rejected for other reasons such as Queue 'Spool Over Quota'.
+   */
+  COS3 = 2
+}
+
+/**
+ * Defines a Structured Data Type (SDT) map container.
+ */
+export abstract class SDTMapContainer {
+  public abstract addField(key: string, value: SDTField): void;
+
+  public abstract deleteField(key: string): void;
+
+  public abstract getField(key: string): SDTField;
+
+  public abstract getKeys(): string[];
+}
+
+/**
+ * Represents an enumeration of message dump formats. It controls the output of solace.Message#dump.
+ */
+export enum MessageDumpFlag {
+  /**
+   * Display only the length of the binary attachment, XML content and user property maps.
+   */
+  MSGDUMP_BRIEF = 0,
+  /**
+   * Display the entire message contents.
+   */
+  MSGDUMP_FULL = 1
+}

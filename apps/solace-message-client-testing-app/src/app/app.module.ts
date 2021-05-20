@@ -24,12 +24,19 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatCardModule } from '@angular/material/card';
 import { CommonModule } from '@angular/common';
 import { SessionPropertiesComponent } from './session-properties/session-properties.component';
+import { MatTabsModule } from '@angular/material/tabs';
+import { BrowseQueueComponent } from './browse-queue/browse-queue.component';
+import { SubscriberTopicComponent } from './subscriber-topic/subscriber-topic.component';
+import { SubscriberQueueComponent } from './subscriber-queue/subscriber-queue.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     PublisherComponent,
     SubscriberComponent,
+    BrowseQueueComponent,
+    SubscriberTopicComponent,
+    SubscriberQueueComponent,
     ConnectComponent,
     TryMeComponent,
     SessionPropertiesComponent,
@@ -52,6 +59,7 @@ import { SessionPropertiesComponent } from './session-properties/session-propert
     MatSelectModule,
     MatSnackBarModule,
     MatCardModule,
+    MatTabsModule,
     SciViewportModule,
     SciSashboxModule,
   ],

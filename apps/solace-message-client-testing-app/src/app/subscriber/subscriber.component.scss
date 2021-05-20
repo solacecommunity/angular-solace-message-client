@@ -5,82 +5,9 @@
   display: grid;
   margin: .25em;
 
-  > mat-card {
-    display: flex;
-    flex-direction: column;
-
-    > mat-card-content {
-      flex: auto;
-      display: flex;
-      flex-direction: column;
-
-      > header {
-        flex: none;
-        font-size: theming.mat-font-size(app-theme.$typography, title);
-        margin-bottom: .25em;
-      }
-
-      > span.sub-title {
-        flex: none;
-        font-size: theming.mat-font-size(app-theme.$typography, subheading-1);
-        color: theming.mat-color(app-theme.$foreground, secondary-text);
-      }
-
-      > form {
-        flex: none;
-        display: grid;
-        grid-template-rows: max-content max-content 1fr;
-        row-gap: 1em;
-        margin-top: 3em;
-      }
-
-      > sci-viewport.messages {
-        --grid-auto-rows: max-content;
-        --gap: 1em 0;
-        flex: auto;
-        margin-top: 1em;
-        min-height: 20em;
-
-        section.message {
-          font-family: monospace;
-          display: grid;
-          grid-template-columns: 7em auto;
-          gap: .5em 1em;
-          border-bottom: 1px solid theming.mat-color(app-theme.$foreground, divider);
-          padding-bottom: 1em;
-          margin-bottom: 1em;
-          position: relative; // positioning context for delete button
-
-          > span.payload {
-            font-weight: bold;
-            margin-bottom: .75em;
-          }
-
-          > button.delete {
-            position: absolute;
-            right: 0;
-            align-self: center;
-          }
-
-          &:not(:hover) > button.delete {
-            display: none;
-          }
-        }
-      }
-    }
-
-    > mat-card-actions {
-      flex: none;
-      display: grid;
-    }
-
-    > mat-card-footer section.error {
-      flex: none;
-      margin: .75em;
-      border: 1px solid theming.mat-color(app-theme.$warn);
-      background-color: theming.mat-color(app-theme.$warn, 100);
-      border-radius: 3px;
-      padding: 1em;
-    }
+  > header {
+    flex: none;
+    font-size: theming.mat-font-size(app-theme.$typography, title);
+    margin-bottom: .25em;
   }
 }

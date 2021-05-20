@@ -1,0 +1,34 @@
+<mat-card>
+  <mat-card-content>
+
+    <span class="sub-title">Browse through the messages of te queue without deleting those.</span>
+
+    <form [formGroup]="form">
+      <!-- Queue -->
+      <mat-form-field>
+        <mat-label>Queue</mat-label>
+        <input matInput [formControlName]="QUEUE">
+        <!-- Subscribe/Unsubscribe -->
+      </mat-form-field>
+      <button mat-stroked-button color="primary" (click)="onBrowseQueue()" *ngIf="!isSubscribed" [disabled]="form.invalid" class="subscribe">Browse</button>
+      <button mat-stroked-button color="primary" (click)="onUnsubscribe()" *ngIf="isSubscribed" [disabled]="form.invalid" class="unsubscribe">Unsubscribe</button>
+    </form>
+
+    <!-- Messages -->
+    <sci-viewport class="messages">
+      <section *ngFor="let message of messages" class="message">
+        <label>Payload:</label><span class="payload">{{message.text || message.binary}}</span>
+        <label>Type:</label><span>{{message.type}}</span>
+        <label>Timestamp:</label><span>{{message.timestamp | date:'HH:mm:ss'}}</span>
+        <label>Details:</label><span>{{message.details}}</span>
+        <label>Named segments:</label><span>{{message.namedWildcardSegments}}</span>
+      </section>
+    </sci-viewport>
+  </mat-card-content>
+
+  <mat-card-footer *ngIf="subscribeError">
+    <section class="error">
+      {{subscribeError}}
+    </section>
+  </mat-card-footer>
+</mat-card>

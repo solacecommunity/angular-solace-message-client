@@ -8,7 +8,7 @@ import { TopicMatcher } from './topic-matcher';
 import { observeInside } from '@scion/toolkit/operators';
 import { SolaceSessionProvider } from './solace-session-provider';
 import { SolaceMessageClientConfig } from './solace-message-client.config';
-import { SessionProperties } from './solace.model';
+import { MessageConsumerProperties, QueueProperties,  QueueDescriptor, QueueBrowserProperties, QueueType, SessionProperties, Message } from './solace.model';
 import { TopicSubscriptionCounter } from './topic-subscription-counter';
 import { SerialExecutor } from './serial-executor.service';
 
@@ -136,7 +136,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
     }));
   }
 
-  public observe$(topic: string, options?: ObserveOptions): Observable<MessageEnvelope> {
+  public observeTopic$(topic: string, options?: ObserveOptions): Observable<MessageEnvelope> {
     return new Observable((observer: Observer<MessageEnvelope>): TeardownLogic => {
       const unsubscribe$ = new Subject<void>();
 
@@ -277,7 +277,91 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
       });
   }
 
-  public async publish<T>(topic: string, payload: T | solace.Message | undefined, options?: PublishOptions): Promise<void> {
+  public observeQueue$(queue: string, consumerProperties?: MessageConsumerProperties): Observable<Message> {
+    return this.subscribeToQueue({
+      name: queue,
+      type: QueueType.QUEUE,
+      durable: true
+    }, consumerProperties);
+  }
+
+  public observeTempQueue$(queue: string, queueProperties: QueueProperties, consumerProperties?: MessageConsumerProperties): Observable<Message> {
+    consumerProperties = {
+      queueProperties: queueProperties,
+      ...consumerProperties,
+    };
+
+    return this.subscribeToQueue({
+      name: queue,
+      type: QueueType.QUEUE,
+      durable: false
+    }, consumerProperties);
+  }
+
+  private subscribeToQueue(queueDesc: QueueDescriptor, consumerProperties: MessageConsumerProperties): Observable<Message> {
+    return new Observable((observer: Observer<Message>): TeardownLogic => {
+      const unsubscribe$ = new Subject<void>();
+
+      this._sessionDispose$
+        .pipe(takeUntil(merge(unsubscribe$, this._destroy$)))
+        .subscribe(() => observer.complete());
+
+      this.session
+        .then((session) => {
+          consumerProperties = {
+            queueDescriptor: queueDesc,
+            acknowledgeMode: solace.MessageConsumerAcknowledgeMode.AUTO,
+            windowSize: 255,
+            ...consumerProperties,
+          };
+
+          const messages$ = new Subject<solace.Message>();
+          const subscriptionError$ = new Subject<void>();
+          let messageConsumer;
+          try {
+            messageConsumer = session.createMessageConsumer(consumerProperties);
+
+            messageConsumer.on(solace.MessageConsumerEventName.CONNECT_FAILED_ERROR, () => {
+              subscriptionError$.error(`[SolaceMessageClient] Failed to subscribe to queue ${queueDesc.name}. Could not bind to queue. Ensure this queue exists on the message router vpn.`);
+            });
+            messageConsumer.on(solace.MessageConsumerEventName.DOWN, () => {
+              subscriptionError$.error(`[SolaceMessageClient] Failed to subscribe to queue ${queueDesc.name}. Consumer is down.`);
+            });
+            messageConsumer.on(solace.MessageConsumerEventName.UP, () => {
+              messageConsumer.getDestination();
+            });
+            messageConsumer.on(solace.MessageConsumerEventName.MESSAGE, (message) => {
+              messages$.next(message);
+            });
+
+            // Filter messages sent to the given topic.
+            merge(messages$, subscriptionError$)
+              .pipe(
+                assertNotInAngularZone(),
+                observeInside(continueFn => this._zone.run(continueFn)),
+                takeUntil(merge(this._destroy$, unsubscribe$)),
+              )
+              .subscribe(observer);
+
+            messageConsumer.connect();
+          } catch (e) {
+            observer.error(`[SolaceMessageClient] Failed to subscribe to queue ${queueDesc.name}. ` + e);
+          }
+
+          return (): void => {
+            if (messageConsumer) {
+              messageConsumer.dispose();
+            }
+
+            messages$.complete();
+            subscriptionError$.complete();
+            unsubscribe$.next();
+          };
+        });
+    });
+  }
+
+  public async publish<T>(topic: string, payload: T | Message | undefined, options?: PublishOptions): Promise<void> {
     const isSolaceMessage = typeof payload === 'object' && payload.constructor === solace.Message;
     const message = isSolaceMessage ? payload : solace.SolclientFactory.createMessage();
     message.setDestination(message.getDestination() || solace.SolclientFactory.createTopicDestination(topic));
@@ -320,6 +404,64 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
       }
     }
     session.send(message);
+  }
+
+  public browseQueue$(queueDesc: QueueDescriptor, options?: QueueBrowserProperties): Observable<Message> {
+    return new Observable((observer: Observer<Message>): TeardownLogic => {
+      const unsubscribe$ = new Subject<void>();
+
+      this._sessionDispose$
+        .pipe(takeUntil(merge(unsubscribe$, this._destroy$)))
+        .subscribe(() => observer.complete());
+
+      this.session
+        .then((session) => {
+          options = {
+            queueDescriptor: queueDesc,
+            ...options,
+          };
+
+          const messages$ = new Subject<solace.Message>();
+          const subscriptionError$ = new Subject<void>();
+          let queueBrowser;
+          try {
+            queueBrowser = session.createQueueBrowser(options);
+
+            queueBrowser.on(solace.QueueBrowserEventName.CONNECT_FAILED_ERROR, () => {
+              subscriptionError$.error(`[SolaceMessageClient] Failed to browse the queue ${options.queueDescriptor.name}. Could not bind to queue. Ensure this queue exists on the message router vpn.`);
+            });
+            queueBrowser.on(solace.QueueBrowserEventName.DOWN, () => {
+              subscriptionError$.error(`[SolaceMessageClient] Failed to browse the queue ${options.queueDescriptor.name}. Consumer is down.`);
+            });
+            queueBrowser.on(solace.QueueBrowserEventName.MESSAGE, (message) => {
+              messages$.next(message);
+            });
+
+            // Filter messages sent to the given topic.
+            merge(messages$, subscriptionError$)
+              .pipe(
+                assertNotInAngularZone(),
+                observeInside(continueFn => this._zone.run(continueFn)),
+                takeUntil(merge(this._destroy$, unsubscribe$)),
+              )
+              .subscribe(observer);
+
+            queueBrowser.connect();
+          } catch (e) {
+            observer.error(`[SolaceMessageClient] Failed to browse the queue ${options.queueDescriptor.name}. ` + e);
+          }
+
+          return (): void => {
+            if (queueBrowser) {
+              queueBrowser.dispose();
+            }
+
+            messages$.complete();
+            subscriptionError$.complete();
+            unsubscribe$.next();
+          };
+        });
+    });
   }
 
   public get session(): Promise<solace.Session> {

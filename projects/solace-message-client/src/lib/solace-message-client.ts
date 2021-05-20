@@ -2,7 +2,7 @@
 import * as solace from 'solclientjs/lib-browser/solclient-full';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, EMPTY, noop, Observable, OperatorFunction } from 'rxjs';
-import { MessageDeliveryModeType } from './solace.model';
+import { MessageDeliveryModeType, MessageConsumerProperties, QueueProperties,  QueueDescriptor, QueueBrowserProperties, Message, MessageType } from './solace.model';
 import { map } from 'rxjs/operators';
 import { SolaceMessageClientConfig } from './solace-message-client.config';
 
@@ -86,7 +86,63 @@ export abstract class SolaceMessageClient {
    * @param options - Controls how to observe the topic.
    * @return Observable that emits when receiving a message published to the given topic. If not connected to the broker yet, or if the connect attempt failed, the Observable errors.
    */
-  public abstract observe$(topic: string, options?: ObserveOptions): Observable<MessageEnvelope>;
+  public abstract observeTopic$(topic: string, options?: ObserveOptions): Observable<MessageEnvelope>;
+
+  /**
+   * Receives messages persistent to a queue.
+   *
+   * The Observable never completes, unless invoking {@link disconnect}. If not connected to the broker yet, or if the connect attempt failed, the Observable errors.
+   *
+   * The Observables emits the messages as received by the Solace broker. You can use one of the following custom RxJS operators to map the message to its payload.
+   * - {@link mapToObject}
+   * - {@link mapToBinary}
+   * - {@link mapToText}
+   *
+   * @param queue - Specifies the queue which to observe.
+   *        Queues are case-sensitive and consist of one or more segments, each separated by a forward slash.
+   *        The queue have to exists. No auto creation.
+   * @param options - Controls how to observe the queue.
+   * @return Observable that emits when receiving a message queue. If not connected to the broker yet, or if the connect attempt failed, the Observable errors.
+   */
+  public abstract observeQueue$(queue: string, options?: MessageConsumerProperties): Observable<Message>;
+
+  /**
+   * Creates a temp queue and receives messages persistent to the temp queue.
+   * The queue will be deleted after session is closed.
+   *
+   * The Observable never completes, unless invoking {@link disconnect}. If not connected to the broker yet, or if the connect attempt failed, the Observable errors.
+   *
+   * The Observables emits the messages as received by the Solace broker. You can use one of the following custom RxJS operators to map the message to its payload.
+   * - {@link mapToObject}
+   * - {@link mapToBinary}
+   * - {@link mapToText}
+   *
+   * @param queue - Specifies the queue which to observe.
+   *        Queues are case-sensitive and consist of one or more segments, each separated by a forward slash.
+   *        The queue have not to exists. It will be create creation.
+   * @param queueProperties - Options for the queue to be created.
+   * @param options - Controls how to observe the queue.
+   * @return Observable that emits when receiving a message queue. If not connected to the broker yet, or if the connect attempt failed, the Observable errors.
+   */
+  public abstract observeTempQueue$(queue: string, queueProperties: QueueProperties, options?: MessageConsumerProperties): Observable<Message>;
+
+  /**
+   * Browse messages in a queue, without removing/consuming the messages.
+   *
+   * The Observable never completes, unless invoking {@link disconnect}. If not connected to the broker yet, or if the connect attempt failed, the Observable errors.
+   *
+   * The Observables emits the messages as received by the Solace broker. You can use one of the following custom RxJS operators to map the message to its payload.
+   * - {@link mapToObject}
+   * - {@link mapToBinary}
+   * - {@link mapToText}
+   *
+   * @param queue - Specifies the queue which to observe.
+   *        Queues are case-sensitive and consist of one or more segments, each separated by a forward slash.
+   *        The queue have to exists.
+   * @param options - Controls how to connect and observe the queue.
+   * @return Observable that emits when receiving a message queue. If not connected to the broker yet, or if the connect attempt failed, the Observable errors.
+   */
+  public abstract browseQueue$(queue: QueueDescriptor, options?: QueueBrowserProperties): Observable<Message>;
 
   /**
    * Publishes a message to the given topic. The message is transported to all consumers subscribed to the topic.
@@ -109,12 +165,12 @@ export abstract class SolaceMessageClient {
    *         The topic is required and must be exact, thus not contain wildcards. If passing a message with a
    *         destination set, this argument is ignored.
    * @param  message - Specifies optional transfer data to be carried along with this message.
-   *         To have full control over how the message is published, construct the {@link solace.Message} yourself
+   *         To have full control over how the message is published, construct the {@link Message} yourself
    *         and pass it as the message argument. The publishing options are then ignored.
    * @param  options - Controls how to publish the message and allows setting message headers.
    * @return A Promise that resolves when dispatched the message, or that rejects if the message could not be dispatched.
    */
-  public abstract publish<T = any>(topic: string, message: T | solace.Message | undefined, options?: PublishOptions): Promise<void>;
+  public abstract publish<T = any>(topic: string, message: T | Message | undefined, options?: PublishOptions): Promise<void>;
 }
 
 /**
@@ -125,11 +181,19 @@ export class NullSolaceMessageClient implements SolaceMessageClient {
 
   public readonly connected$ = new BehaviorSubject<boolean>(true);
 
-  public observe$(topic: string, options?: ObserveOptions): Observable<MessageEnvelope> {
+  public observeTopic$(topic: string, options?: ObserveOptions): Observable<MessageEnvelope> {
     return EMPTY;
   }
 
-  public publish<T = any>(topic: string, message: T | solace.Message | undefined, options?: PublishOptions): Promise<void> {
+  public observeQueue$(queue: string, options?: MessageConsumerProperties): Observable<Message> {
+    return EMPTY;
+  }
+
+  public observeTempQueue$(queue: string, queueProperties: QueueProperties, options?: MessageConsumerProperties): Observable<Message> {
+    return EMPTY;
+  }
+
+  public publish<T = any>(topic: string, message: T | Message | undefined, options?: PublishOptions): Promise<void> {
     return Promise.resolve();
   }
 
@@ -143,6 +207,10 @@ export class NullSolaceMessageClient implements SolaceMessageClient {
 
   public disconnect(): Promise<void> {
     return Promise.resolve();
+  }
+
+  public browseQueue$(queue: QueueDescriptor, options?: QueueBrowserProperties): Observable<Message> {
+    return EMPTY;
   }
 }
 
@@ -173,7 +241,7 @@ export interface PublishOptions {
    * For the purposes of prioritized message delivery, values larger than 9
    * are treated the same as 9.
    *
-   * Note: Property is ignored if providing a {@link solace.Message} payload object.
+   * Note: Property is ignored if providing a {@link Message} payload object.
    */
   priority?: number;
   /**
@@ -181,7 +249,7 @@ export interface PublishOptions {
    *
    * The time to live is the number of milliseconds the message may be stored on the
    * Solace Message Router before the message is discarded or moved to a Dead Message
-   * Queue. See {@link solace.Message.setDMQEligible}.
+   * Queue. See {@link Message.setDMQEligible}.
    *
    * Setting the Time To Live to zero disables TTL for the message.
    *
@@ -192,7 +260,7 @@ export interface PublishOptions {
    * The maxium allowed time to live is 3.1536E11 (315360000000) which is
    * approximately 10 years.
    *
-   * Note: Property is ignored if providing a {@link solace.Message} payload object.
+   * Note: Property is ignored if providing a {@link Message} payload object.
    */
   timeToLive?: number;
 
@@ -202,14 +270,14 @@ export interface PublishOptions {
    * the message is saved on a appliance dead message queue. Otherwise the expired message is
    * discarded. See {@link PublishOptions.setTimeToLive}.
    *
-   * Note: Property is ignored if providing a {@link solace.Message} payload object.
+   * Note: Property is ignored if providing a {@link Message} payload object.
    */
   dmqEligible?: boolean;
 
   /**
    * Sets the delivery mode of the message.
    *
-   * Note: Property is ignored if providing a {@link solace.Message} payload object.
+   * Note: Property is ignored if providing a {@link Message} payload object.
    *
    * @default MessageDeliveryModeType.DIRECT
    */
@@ -220,7 +288,7 @@ export interface PublishOptions {
    * Message Router. This field may be used for peer-to-peer message synchronization and is commonly used for
    * correlating a request to a reply. See solace.session#sendRequest.
    *
-   * Note: Property is ignored if providing a {@link solace.Message} payload object.
+   * Note: Property is ignored if providing a {@link Message} payload object.
    */
   correlationId?: string;
 
@@ -228,11 +296,11 @@ export interface PublishOptions {
    * Specifies the type of the message payload. If not set, the payload is serialized to JSON.
    *
    * For full control, provide a function to return a structured container (Structured Data Type),
-   * allowing to use the structured data API {@link solace.Message.setSdtContainer} to add containers
+   * allowing to use the structured data API {@link Message.setSdtContainer} to add containers
    * (maps or streams) and their fields to the binary payload or to the User Property map contained
    * within the binary metadata.
    *
-   * Note: Property is ignored if providing a {@link solace.Message} payload object.
+   * Note: Property is ignored if providing a {@link Message} payload object.
    */
   format?: MessageBodyFormat | ((payload: any) => solace.SdtContainer);
 }
@@ -260,9 +328,9 @@ export enum MessageBodyFormat {
  * RxJS operator for mapping a message into its textual representation.
  *
  * Each message is mapped to a tuple of three elements:
- * [<text>, Params, solace.Message].
+ * [<text>, Params, Message].
  *
- * Note: Messages must be published as {@link solace.MessageType.TEXT} messages, otherwise an error is thrown.
+ * Note: Messages must be published as {@link MessageType.TEXT} messages, otherwise an error is thrown.
  */
 export function mapToText(): OperatorFunction<solace.Message, [string, Params, solace.Message]> {
   return map((envelope: MessageEnvelope) => {
@@ -270,7 +338,7 @@ export function mapToText(): OperatorFunction<solace.Message, [string, Params, s
     if (message.getType() !== solace.MessageType.TEXT) {
       throw Error(`[IllegalMessageTypeError] Expected message type to be ${formatMessageType(solace.MessageType.TEXT)}, but was ${formatMessageType(message.getType())}. Be sure to use a compatible map operator.`);
     }
-    return [message.getSdtContainer().getValue(), envelope.params, message];
+    return [message.getSdtContainer().getValue() as string, envelope.params, message];
   });
 }
 
@@ -278,11 +346,11 @@ export function mapToText(): OperatorFunction<solace.Message, [string, Params, s
  * RxJS operator for parsing a JSON message payload into its object.
  *
  * Each message is mapped to a tuple of three elements:
- * [<parsed JSON object>, Params, solace.Message].
+ * [<parsed JSON object>, Params, Message].
  *
- * Note: Messages must be published as {@link solace.MessageType.BINARY} messages, otherwise an error is thrown.
+ * Note: Messages must be published as {@link MessageType.BINARY} messages, otherwise an error is thrown.
  */
-export function mapToObject<T>(): OperatorFunction<solace.Message, [T, Params, solace.Message]> {
+export function mapToObject<T>(): OperatorFunction<MessageEnvelope, [T, Params, solace.Message]> {
   return map((envelope: MessageEnvelope) => {
     const message: solace.Message = envelope.message;
     if (message.getType() !== solace.MessageType.BINARY) {
@@ -296,11 +364,11 @@ export function mapToObject<T>(): OperatorFunction<solace.Message, [T, Params, s
  * RxJS operator for mapping a message into its binary representation.
  *
  * Each message is mapped to a tuple of three elements:
- * [<binary>, Params, solace.Message].
+ * [<binary>, Params, Message].
  *
- * Note: Messages must be published as {@link solace.MessageType.BINARY} messages, otherwise an error is thrown.
+ * Note: Messages must be published as {@link MessageType.BINARY} messages, otherwise an error is thrown.
  */
-export function mapToBinary(): OperatorFunction<MessageEnvelope, [string | Uint8Array, Params, solace.Message]> {
+export function mapToBinary(): OperatorFunction<MessageEnvelope, [string | Uint8Array, Params, Message]> {
   return map((envelope: MessageEnvelope) => {
     const message: solace.Message = envelope.message;
     if (message.getType() !== solace.MessageType.BINARY) {
@@ -315,15 +383,15 @@ export function mapToBinary(): OperatorFunction<MessageEnvelope, [string | Uint8
  */
 export type Params = Map<string, string>;
 
-function formatMessageType(messageType: solace.MessageType): string {
+function formatMessageType(messageType: MessageType): string {
   switch (messageType) {
-    case solace.MessageType.TEXT:
+    case MessageType.TEXT:
       return `TEXT (${messageType})`;
-    case solace.MessageType.BINARY:
+    case MessageType.BINARY:
       return `BINARY (${messageType})`;
-    case solace.MessageType.MAP:
+    case MessageType.MAP:
       return `MAP (${messageType})`;
-    case solace.MessageType.STREAM:
+    case MessageType.STREAM:
       return `STREAM (${messageType})`;
     default:
       return `UNKNOWN (${messageType})`;
@@ -337,7 +405,7 @@ export interface MessageEnvelope {
   /**
    * Unmodified message as received by the Solace message broker.
    */
-  message: solace.Message;
+  message: Message;
   /**
    * Contains the resolved values of named single-level wildcard segments as specified in the topic.
    * For example: If subscribed to the topic `person/:id` and a message is published to the topic `person/5`,
