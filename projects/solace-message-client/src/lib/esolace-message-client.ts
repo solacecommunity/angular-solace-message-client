@@ -8,12 +8,12 @@ import { TopicMatcher } from './topic-matcher';
 import { observeInside } from '@scion/toolkit/operators';
 import { SolaceSessionProvider } from './solace-session-provider';
 import { SolaceMessageClientConfig } from './solace-message-client.config';
-import { MessageConsumerProperties, QueueProperties,  QueueDescriptor, QueueBrowserProperties, QueueType, SessionProperties, Message } from './solace.model';
+import { Destination, DestinationType, Message, MessageConsumerProperties, QueueBrowserProperties, QueueDescriptor, QueueProperties, QueueType, SessionProperties } from './solace.model';
 import { TopicSubscriptionCounter } from './topic-subscription-counter';
 import { SerialExecutor } from './serial-executor.service';
 
 @Injectable()
-export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { // tslint:disable-line:class-name
+export class eSolaceMessageClient implements SolaceMessageClient, OnDestroy { // tslint:disable-line:class-name
 
   private _destroy$ = new Subject<void>();
   private _message$ = new Subject<solace.Message>();
@@ -107,6 +107,10 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
 
           // When a subscribe or unsubscribe operation is rejected by the broker.
           session.on(solace.SessionEventCode.SUBSCRIPTION_ERROR, (event: solace.SessionEvent) => this._event$.next(event));
+
+          session.on(solace.SessionEventCode.ACKNOWLEDGED_MESSAGE , (event: solace.SessionEvent) => this._event$.next(event));
+
+          session.on(solace.SessionEventCode.REJECTED_MESSAGE_ERROR, (event: solace.SessionEvent) => this._event$.next(event));
 
           session.connect();
         }
@@ -277,6 +281,42 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
       });
   }
 
+  /**
+   * Promise that resolves to `true` when the Solace broker reports that the transmitted message was accepted by the broker, or that
+   * resolves to `false` otherwise. The Promise is never rejected.
+   *
+   * In order not to miss the Solace confirmation, this method must be called before the actual session.send().
+   */
+  private whenMessageConfirmed(correlationKey: string, logContext: { destinationName: string, operation: 'send' }): Promise<void> {
+    return this._event$
+      .pipe(
+        assertNotInAngularZone(),
+        filter(event => event.correlationKey === correlationKey),
+        mergeMap(event => {
+          if (event.sessionEventCode === solace.SessionEventCode.ACKNOWLEDGED_MESSAGE) {
+            return of(true);
+          }
+          if (event.sessionEventCode === solace.SessionEventCode.REJECTED_MESSAGE_ERROR) {
+            console.warn('[SolaceMessageClient] Message was rejected by the Solace broker:', logContext, event); // tslint:disable-line:no-console
+            return of(false);
+          }
+          return EMPTY;
+        }),
+        take(1),
+        takeUntil(this._destroy$),
+      )
+      .toPromise()
+      .then((success: boolean | undefined) => {
+        if (success === undefined) {
+          return new Promise(noop); // do not resolve the Promise on shutdown
+        }
+        if (success) {
+          return Promise.resolve();
+        }
+        return Promise.reject();
+      });
+  }
+
   public observeQueue$(queue: string, consumerProperties?: MessageConsumerProperties): Observable<Message> {
     return this.subscribeToQueue({
       name: queue,
@@ -361,15 +401,34 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
     });
   }
 
-  public async publish<T>(topic: string, payload: T | Message | undefined, options?: PublishOptions): Promise<void> {
+  public async sendTo<T>(destination: string, destinationType: DestinationType, payload: T | Message | undefined, options?: PublishOptions): Promise<void> {
+      switch (destinationType) {
+        case DestinationType.TOPIC:
+          return this.sendToDestination(solace.SolclientFactory.createTopicDestination(destination), payload, options);
+
+        case DestinationType.QUEUE:
+          return this.sendToDestination(solace.SolclientFactory.createDurableQueueDestination(destination), payload, options);
+
+        case DestinationType.TEMPORARY_QUEUE:
+          throw new Error('You have to use (Destination)');
+      }
+  }
+
+  public async sendToDestination<T>(destination: Destination, payload: T | Message | undefined, options?: PublishOptions): Promise<void> {
     const isSolaceMessage = typeof payload === 'object' && payload.constructor === solace.Message;
     const message = isSolaceMessage ? payload : solace.SolclientFactory.createMessage();
-    message.setDestination(message.getDestination() || solace.SolclientFactory.createTopicDestination(topic));
+
+    message.setDestination(message.getDestination() || destination);
+
+    const messageCorrelationKey = message.getCorrelationKey() || UUID.randomUUID();
+    const destinationName = message.getDestination().getName() as string;
+    const whenSubscribed = this.whenMessageConfirmed(messageCorrelationKey, { destinationName, operation: 'send'});
+    message.setCorrelationKey(messageCorrelationKey);
 
     const session = await this.session;
     if (isSolaceMessage) {
       session.send(message);
-      return;
+      return whenSubscribed;
     }
 
     if (options) {
@@ -404,6 +463,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
       }
     }
     session.send(message);
+    return whenSubscribed;
   }
 
   public browseQueue$(queueDesc: QueueDescriptor, options?: QueueBrowserProperties): Observable<Message> {

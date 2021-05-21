@@ -19,11 +19,26 @@
     > form {
       display: grid;
       grid-auto-rows: max-content;
+      grid-template-columns: auto 7em;
       row-gap: 1em;
+      column-gap: 1em;
       margin-top: 3em;
 
       textarea.message {
         height: 10em;
+      }
+
+      > mat-form-field,
+      > button {
+        grid-column: 1 / 3;
+      }
+
+      > mat-form-field#form-field-destination {
+        grid-column: 1
+      }
+
+      > mat-form-field#form-field-type {
+        grid-column: 2;
       }
     }
   }

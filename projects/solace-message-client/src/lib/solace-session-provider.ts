@@ -23,7 +23,7 @@ export abstract class SolaceSessionProvider {
  * @docs-private
  */
 @Injectable()
-export class ɵSolaceSessionProvider implements SolaceSessionProvider { // tslint:disable-line:class-name
+export class eSolaceSessionProvider implements SolaceSessionProvider { // tslint:disable-line:class-name
   public provide(sessionProperties: SessionProperties): solace.Session {
     return solace.SolclientFactory.createSession(sessionProperties);
   }

@@ -2,7 +2,7 @@
 import * as solace from 'solclientjs/lib-browser/solclient-full';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, EMPTY, noop, Observable, OperatorFunction } from 'rxjs';
-import { MessageDeliveryModeType, MessageConsumerProperties, QueueProperties,  QueueDescriptor, QueueBrowserProperties, Message, MessageType } from './solace.model';
+import { MessageDeliveryModeType, MessageConsumerProperties, QueueProperties, QueueDescriptor, QueueBrowserProperties, Message, MessageType, Destination, DestinationType } from './solace.model';
 import { map } from 'rxjs/operators';
 import { SolaceMessageClientConfig } from './solace-message-client.config';
 
@@ -160,9 +160,38 @@ export abstract class SolaceMessageClient {
    * You can change the message delivery mode via the {@link PublishOptions.deliveryMode} property.
    * For more information, see https://docs.solace.com/PubSub-Basics/Basic-Guaranteed-Messsaging-Operation.htm.
    *
-   * @param  topic - Specifies the topic to which the message should be sent.
-   *         Topics are case-sensitive and consist of one or more segments, each separated by a forward slash.
-   *         The topic is required and must be exact, thus not contain wildcards. If passing a message with a
+   * @param  destination - Specifies the destination to which the message should be sent.
+   *         Topics/Queues are case-sensitive and consist of one or more segments, each separated by a forward slash.
+   *         The topic/queue is required and must be exact, thus not contain wildcards. If passing a message with a
+   *         destination set, this argument is ignored.
+   * @param  destinationType - Specify if it is a topic, queue or temp queue.
+   * @param  message - Specifies optional transfer data to be carried along with this message.
+   *         To have full control over how the message is published, construct the {@link Message} yourself
+   *         and pass it as the message argument. The publishing options are then ignored.
+   * @param  options - Controls how to publish the message and allows setting message headers.
+   * @return A Promise that resolves when dispatched the message, or that rejects if the message could not be dispatched.
+   */
+  public abstract sendTo<T = any>(destination: string, destinationType: DestinationType, message: T | Message | undefined, options?: PublishOptions): Promise<void>;
+
+  /**
+   * Publishes a message to the given destination.
+   *
+   * By default, messages are published as direct messages, thus, message delivery is not guaranteed.
+   * This mode provides at-most-once message delivery with the following characteristics:
+   *   * Messages are not retained for clients that are not connected to a Solace message broker.
+   *   * Messages can be discarded when congestion or system failures are encountered.
+   *   * Messages can be reordered in the event of network topology changes.
+   *
+   * Direct messages are most appropriate for messaging applications that require very high-rate or very low-latency
+   * message transmission. Direct Messaging enables applications to efficiently publish messages to a large number of
+   * clients with matching subscriptions.
+   *
+   * You can change the message delivery mode via the {@link PublishOptions.deliveryMode} property.
+   * For more information, see https://docs.solace.com/PubSub-Basics/Basic-Guaranteed-Messsaging-Operation.htm.
+   *
+   * @param  destination - Specifies the destination to which the message should be sent.
+   *         Topics/Queues are case-sensitive and consist of one or more segments, each separated by a forward slash.
+   *         The topic/queue is required and must be exact, thus not contain wildcards. If passing a message with a
    *         destination set, this argument is ignored.
    * @param  message - Specifies optional transfer data to be carried along with this message.
    *         To have full control over how the message is published, construct the {@link Message} yourself
@@ -170,7 +199,7 @@ export abstract class SolaceMessageClient {
    * @param  options - Controls how to publish the message and allows setting message headers.
    * @return A Promise that resolves when dispatched the message, or that rejects if the message could not be dispatched.
    */
-  public abstract publish<T = any>(topic: string, message: T | Message | undefined, options?: PublishOptions): Promise<void>;
+  public abstract sendToDestination<T = any>(destination: Destination, message: T | Message | undefined, options?: PublishOptions): Promise<void>;
 }
 
 /**
@@ -193,7 +222,11 @@ export class NullSolaceMessageClient implements SolaceMessageClient {
     return EMPTY;
   }
 
-  public publish<T = any>(topic: string, message: T | Message | undefined, options?: PublishOptions): Promise<void> {
+  public sendTo<T = any>(destination: string, destinationType: DestinationType, message: T | Message | undefined, options?: PublishOptions): Promise<void> {
+    return Promise.resolve();
+  }
+
+  public sendToDestination<T = any>(destination: Destination, message: T | Message | undefined, options?: PublishOptions): Promise<void> {
     return Promise.resolve();
   }
 
