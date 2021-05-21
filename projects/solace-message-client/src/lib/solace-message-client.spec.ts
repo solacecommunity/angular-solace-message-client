@@ -5,7 +5,7 @@ import { SolaceSessionProvider } from './solace-session-provider';
 import { ObserveCaptor } from '@scion/toolkit/testing';
 import { fakeAsync, flushMicrotasks, TestBed } from '@angular/core/testing';
 import { NgZone } from '@angular/core';
-import { QueueDescriptor } from './solace.model';
+import { DestinationType, QueueDescriptor } from './solace.model';
 import createSpyObj = jasmine.createSpyObj;
 import SpyObj = jasmine.SpyObj;
 
@@ -721,7 +721,10 @@ describe('SolaceMessageClient', () => {
       const sessionSendCaptor = installSessionSendCaptor();
 
       // publish the message
-      await expectAsync(solaceMessageClient.publish('topic', 'payload')).toBeResolved();
+      const sendToResult = solaceMessageClient.sendTo('topic', DestinationType.TOPIC, 'payload');
+      flushMicrotasks();
+      simulateLifecycleEvent(solace.SessionEventCode.ACKNOWLEDGED_MESSAGE, sessionSendCaptor.correlationKey);
+      await expectAsync(sendToResult).toBeResolved();
 
       expect(session.send).toHaveBeenCalledTimes(1);
       expect(sessionSendCaptor.topic).toEqual('topic');
@@ -735,7 +738,10 @@ describe('SolaceMessageClient', () => {
       simulateLifecycleEvent(solace.SessionEventCode.UP_NOTICE);
 
       // publish the message
-      await expectAsync(solaceMessageClient.publish('topic', 'payload', {format: MessageBodyFormat.TEXT})).toBeResolved();
+      const sendToResult = solaceMessageClient.sendTo('topic', DestinationType.TOPIC, 'payload', {format: MessageBodyFormat.TEXT});
+      flushMicrotasks();
+      simulateLifecycleEvent(solace.SessionEventCode.ACKNOWLEDGED_MESSAGE, sessionSendCaptor.correlationKey);
+      await expectAsync(sendToResult).toBeResolved();
 
       expect(session.send).toHaveBeenCalledTimes(1);
       expect(sessionSendCaptor.topic).toEqual('topic');
@@ -749,7 +755,10 @@ describe('SolaceMessageClient', () => {
       simulateLifecycleEvent(solace.SessionEventCode.UP_NOTICE);
 
       // publish the message
-      await expectAsync(solaceMessageClient.publish('topic', 'payload', {format: MessageBodyFormat.BINARY})).toBeResolved();
+      const sendToResult = solaceMessageClient.sendTo('topic', DestinationType.TOPIC, 'payload', {format: MessageBodyFormat.BINARY});
+      flushMicrotasks();
+      simulateLifecycleEvent(solace.SessionEventCode.ACKNOWLEDGED_MESSAGE, sessionSendCaptor.correlationKey);
+      await expectAsync(sendToResult).toBeResolved();
 
       expect(session.send).toHaveBeenCalledTimes(1);
       expect(sessionSendCaptor.topic).toEqual('topic');
@@ -765,7 +774,10 @@ describe('SolaceMessageClient', () => {
       // publish the message
       const mapContainer = new solace.SDTMapContainer();
       mapContainer.addField('name', solace.SDTFieldType.STRING, 'jack');
-      await expectAsync(solaceMessageClient.publish('topic', 'payload', {format: (msg: solace.Message) => solace.SDTField.create(solace.SDTFieldType.MAP, mapContainer)})).toBeResolved();
+      const sendToResult = solaceMessageClient.sendTo('topic', DestinationType.TOPIC, 'payload', {format: (msg: solace.Message) => solace.SDTField.create(solace.SDTFieldType.MAP, mapContainer)});
+      flushMicrotasks();
+      simulateLifecycleEvent(solace.SessionEventCode.ACKNOWLEDGED_MESSAGE, sessionSendCaptor.correlationKey);
+      await expectAsync(sendToResult).toBeResolved();
 
       expect(session.send).toHaveBeenCalledTimes(1);
       expect(sessionSendCaptor.topic).toEqual('topic');
@@ -780,7 +792,10 @@ describe('SolaceMessageClient', () => {
 
       // publish the message
       const message = solace.SolclientFactory.createMessage();
-      await expectAsync(solaceMessageClient.publish('topic', message)).toBeResolved();
+      const sendToResult = solaceMessageClient.sendTo('topic', DestinationType.TOPIC, message);
+      flushMicrotasks();
+      simulateLifecycleEvent(solace.SessionEventCode.ACKNOWLEDGED_MESSAGE, sessionSendCaptor.correlationKey);
+      await expectAsync(sendToResult).toBeResolved();
 
       expect(session.send).toHaveBeenCalledTimes(1);
       expect(sessionSendCaptor.topic).toEqual('topic');
@@ -796,7 +811,10 @@ describe('SolaceMessageClient', () => {
       // publish the message
       const message = solace.SolclientFactory.createMessage();
       message.setDestination(solace.SolclientFactory.createTopicDestination('target'));
-      await expectAsync(solaceMessageClient.publish('topic', message)).toBeResolved();
+      const sendToResult = solaceMessageClient.sendTo('topic', DestinationType.TOPIC, message);
+      flushMicrotasks();
+      simulateLifecycleEvent(solace.SessionEventCode.ACKNOWLEDGED_MESSAGE, sessionSendCaptor.correlationKey);
+      await expectAsync(sendToResult).toBeResolved();
 
       expect(session.send).toHaveBeenCalledTimes(1);
       expect(sessionSendCaptor.topic).toEqual('target');
@@ -811,7 +829,10 @@ describe('SolaceMessageClient', () => {
 
       // publish the message
       const message = solace.SolclientFactory.createMessage();
-      await expectAsync(solaceMessageClient.publish('topic', message, {format: MessageBodyFormat.TEXT})).toBeResolved();
+      const sendToResult = solaceMessageClient.sendTo('topic', DestinationType.TOPIC, message, {format: MessageBodyFormat.TEXT});
+      flushMicrotasks();
+      simulateLifecycleEvent(solace.SessionEventCode.ACKNOWLEDGED_MESSAGE, sessionSendCaptor.correlationKey);
+      await expectAsync(sendToResult).toBeResolved();
 
       expect(session.send).toHaveBeenCalledTimes(1);
       expect(sessionSendCaptor.topic).toEqual('topic');
@@ -1173,9 +1194,9 @@ describe('SolaceMessageClient', () => {
       const messageConsumerSpy = new MessageConsumerSpy();
       const messageConsumerCaptor = installMessageConsumerCaptor(messageConsumerSpy);
 
-      const subscription1_queue1 = solaceMessageClient.observeQueue$('queue-1').subscribe(observeCaptor1_queue1);
+      solaceMessageClient.observeQueue$('queue-1').subscribe(observeCaptor1_queue1);
       flushMicrotasks();
-      simulateLifecycleEvent(solace.SessionEventCode.SUBSCRIPTION_OK, null);
+      expect(messageConsumerSpy.getSpy().connect).toHaveBeenCalledTimes(1);
 
       // Simulate receiving a message from the Solace broker
       const message1 = createTopicMessage('queue-1');
@@ -1338,13 +1359,17 @@ describe('SolaceMessageClient', () => {
     constructor() {
       this.messageConsumer = createSpyObj('messageConsumer', ['on', 'connect', 'dispose']);
 
-      this.messageConsumer.on.and.callFake((eventCode: solace.MessageConsumerEventName, callback: (event: any) => void) => {
+      this.messageConsumer.on.and.callFake((eventCode: solace.MessageConsumerEventName, callback: () => void) => {
         this.messageConsumerEventCallbacks.set(eventCode, callback);
       });
     }
 
     public getEventCallbacks(eventName: solace.MessageConsumerEventName): (event: any | solace.Message) => void {
       return this.messageConsumerEventCallbacks.get(eventName);
+    }
+
+    public getSpy(): SpyObj<solace.MessageConsumer> {
+      return this.messageConsumer;
     }
   }
 
@@ -1357,6 +1382,7 @@ describe('SolaceMessageClient', () => {
       captor.message = message;
       captor.topic = message.getDestination().getName();
       captor.type = message.getType();
+      captor.correlationKey = message.getCorrelationKey();
     });
     return captor;
   }
@@ -1387,11 +1413,13 @@ class SessionSendCaptor {
   public message: solace.Message;
   public topic: string;
   public type: solace.MessageType;
+  public correlationKey: any;
 
   public resetValues(): void {
     this.message = undefined;
     this.topic = undefined;
     this.type = undefined;
+    this.correlationKey = undefined;
   }
 }
 
