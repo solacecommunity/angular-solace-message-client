@@ -37,7 +37,7 @@ import { SolaceMessageClientModule } from '@solace-community/angular-solace-mess
       vpnName:  '<your vpn>',
       userName: '<your username>',
       password: '<your password>',
-    });
+    })
   ],
   ...
 })
@@ -64,7 +64,7 @@ public class YourComponent {
 
   constructor(solaceMessageClient: SolaceMessageClient) {
     // publishes the message '20°C' to the topic 'myhome/kitchen/temperature'
-    solaceMessageClient.publish('myhome/kitchen/temperature', '20°C');
+    solaceMessageClient.publish('myhome/livingroom/temperature', '20°C');
   }
 }
 ```
