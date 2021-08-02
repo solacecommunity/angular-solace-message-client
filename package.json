@@ -41,7 +41,7 @@
     "@angular/router": "11.0.2",
     "@scion/toolkit": "11.0.0-beta.2",
     "rxjs": "6.5.5",
-    "solclientjs": "10.5.1",
+    "solclientjs": "10.7.0",
     "tslib": "2.0.0",
     "zone.js": "0.10.3"
   },
