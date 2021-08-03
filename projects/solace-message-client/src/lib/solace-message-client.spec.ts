@@ -793,6 +793,24 @@ describe('SolaceMessageClient', () => {
       expect(sessionSendCaptor.message).toBe(message);
     }));
 
+    it('should allow intercepting the message before sent over the network', fakeAsync(async () => {
+      const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+      const sessionSendCaptor = installSessionSendCaptor();
+      simulateLifecycleEvent(solace.SessionEventCode.UP_NOTICE);
+
+      // publish the message
+      await expectAsync(solaceMessageClient.publish('topic', 'payload', {
+        intercept: msg => {
+          msg.setPriority(123);
+        },
+      })).toBeResolved();
+
+      expect(session.send).toHaveBeenCalledTimes(1);
+      expect(sessionSendCaptor.topic).toEqual('topic');
+      expect(sessionSendCaptor.type).toEqual(MessageType.BINARY);
+      expect(sessionSendCaptor.message.getPriority()).toEqual(123);
+    }));
+
     it('should publish a message as direct message (by default)', fakeAsync(async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
       const sessionSendCaptor = installSessionSendCaptor();

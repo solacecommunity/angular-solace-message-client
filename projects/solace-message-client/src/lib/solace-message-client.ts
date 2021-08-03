@@ -183,6 +183,14 @@ export interface ObserveOptions {
 export interface PublishOptions {
 
   /**
+   * Allows intercepting the raw message before it is sent over the network.
+   *
+   * Only basic properties can be set via {@link PublishOptions}. To set other properties or properties not yet supported by the API,
+   * the message can be intercepted and the properties set accordingly.
+   */
+  intercept?: (message: Message) => void;
+
+  /**
    * Specifies the message priority (JMS Priority) for the message.
    * Numerical values between 0 and 255 are accepted, use undefined to unset.
    *
