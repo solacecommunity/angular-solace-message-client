@@ -302,6 +302,9 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
       message.setDMQEligible(options.dmqEligible ?? message.isDMQEligible());
     }
 
+    // Allow intercepting the message before sending it to the broker.
+    options?.intercept?.(message);
+
     // Publish the message.
     const session = await this.session;
     session.send(message);
