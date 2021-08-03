@@ -1,10 +1,10 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MessageBodyFormat, SolaceMessageClient } from 'solace-message-client';
+import { MessageType, SDTFieldType, SolaceMessageClient, SolaceObjectFactory } from 'solace-message-client';
 
 export const TOPIC = 'topic';
 export const MESSAGE = 'message';
-export const FORMAT = 'format';
+export const MESSAGE_TYPE = 'messageType';
 
 @Component({
   selector: 'app-publisher',
@@ -15,27 +15,31 @@ export class PublisherComponent {
 
   public readonly TOPIC = TOPIC;
   public readonly MESSAGE = MESSAGE;
-  public readonly FORMAT = FORMAT;
+  public readonly MESSAGE_TYPE = MESSAGE_TYPE;
 
   public form: FormGroup;
   public publishError: string;
-  public MessageBodyFormat = MessageBodyFormat;
+  public MessageType = MessageType;
 
   constructor(formBuilder: FormBuilder,
               public solaceMessageClient: SolaceMessageClient) {
     this.form = new FormGroup({
       [TOPIC]: formBuilder.control('', Validators.required),
       [MESSAGE]: formBuilder.control('', Validators.required),
-      [FORMAT]: formBuilder.control(MessageBodyFormat.TEXT, Validators.required),
+      [MESSAGE_TYPE]: formBuilder.control(MessageType.BINARY, Validators.required),
     });
   }
 
   public async onPublish(): Promise<void> {
     this.publishError = null;
     try {
-      await this.solaceMessageClient.publish(this.form.get(TOPIC).value, this.form.get(MESSAGE).value, {
-        format: this.form.get(FORMAT).value,
-      });
+      if (this.form.get(MESSAGE_TYPE).value === MessageType.TEXT) {
+        const structuredTextMessage = SolaceObjectFactory.createSDTField(SDTFieldType.STRING, this.form.get(MESSAGE).value);
+        await this.solaceMessageClient.publish(this.form.get(TOPIC).value, structuredTextMessage);
+      }
+      else {
+        await this.solaceMessageClient.publish(this.form.get(TOPIC).value, new TextEncoder().encode(this.form.get(MESSAGE).value));
+      }
     }
     catch (error) {
       this.publishError = error.toString();

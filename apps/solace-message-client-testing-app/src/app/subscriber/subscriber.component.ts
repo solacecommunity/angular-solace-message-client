@@ -1,8 +1,7 @@
 import { ChangeDetectorRef, Component, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MessageEnvelope, SolaceMessageClient } from 'solace-message-client';
+import { Message, MessageDumpFlag, MessageEnvelope, MessageType, SolaceMessageClient } from 'solace-message-client';
 import { Subscription } from 'rxjs';
-import * as solace from 'solclientjs/lib-browser/solclient-full';
 import { finalize } from 'rxjs/operators';
 import { SciViewportComponent } from '@scion/toolkit/viewport';
 
@@ -19,7 +18,7 @@ export class SubscriberComponent {
 
   public form: FormGroup;
   public subscribeError: string;
-  public messages: Message[] = [];
+  public messageListItems: MessageListItem[] = [];
 
   private _subscription: Subscription;
 
@@ -43,15 +42,15 @@ export class SubscriberComponent {
         .pipe(finalize(() => this.form.enable()))
         .subscribe(
           (envelope: MessageEnvelope) => {
-            const message: solace.Message = envelope.message;
-            this.messages = [...this.messages, {
+            const message: Message = envelope.message;
+            this.messageListItems = this.messageListItems.concat({
               type: formatMessageType(message.getType()),
-              details: message.dump(solace.MessageDumpFlag.MSGDUMP_BRIEF),
-              binary: message.getType() === solace.MessageType.BINARY && message.getBinaryAttachment(),
-              text: message.getType() === solace.MessageType.TEXT && message.getSdtContainer().getValue(),
+              details: message.dump(MessageDumpFlag.MSGDUMP_BRIEF),
+              binary: message.getType() === MessageType.BINARY && message.getBinaryAttachment() as string,
+              text: message.getType() === MessageType.TEXT && message.getSdtContainer().getValue(),
               timestamp: Date.now(),
               namedWildcardSegments: Array.from(envelope.params.entries()).reduce((params, [key, value]) => params.concat(`${key}->${value}`), []).join(', '),
-            }];
+            });
 
             // follow tail
             this._cd.detectChanges();
@@ -72,11 +71,11 @@ export class SubscriberComponent {
   }
 
   public onClear(): void {
-    this.messages = [];
+    this.messageListItems = [];
   }
 
-  public onMessageDelete(message: solace.Message): void {
-    this.messages = this.messages.filter(it => it !== message);
+  public onMessageDelete(messageListItem: MessageListItem): void {
+    this.messageListItems = this.messageListItems.filter(it => it !== messageListItem);
   }
 
   public get isSubscribed(): boolean {
@@ -84,8 +83,8 @@ export class SubscriberComponent {
   }
 }
 
-export interface Message {
-  type: solace.MessageType;
+export interface MessageListItem {
+  type: string;
   text: string;
   binary: string;
   details: string;
@@ -93,15 +92,15 @@ export interface Message {
   namedWildcardSegments: string;
 }
 
-function formatMessageType(messageType: solace.MessageType): string {
+function formatMessageType(messageType: MessageType): string {
   switch (messageType) {
-    case solace.MessageType.TEXT:
+    case MessageType.TEXT:
       return `TEXT (${messageType})`;
-    case solace.MessageType.BINARY:
+    case MessageType.BINARY:
       return `BINARY (${messageType})`;
-    case solace.MessageType.MAP:
+    case MessageType.MAP:
       return `MAP (${messageType})`;
-    case solace.MessageType.STREAM:
+    case MessageType.STREAM:
       return `STREAM (${messageType})`;
     default:
       return `UNKNOWN (${messageType})`;
