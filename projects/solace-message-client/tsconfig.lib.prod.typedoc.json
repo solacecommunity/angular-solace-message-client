@@ -17,10 +17,10 @@
       "SolaceMessageClientModule",
       "SolaceMessageClientConfig",
       "SolaceSessionProvider",
+      "SolaceObjectFactory",
       "SessionProperties",
       "MessageEnvelope",
       "mapToText",
-      "mapToObject",
       "mapToBinary"
     ],
     "categorizeByGroup": true

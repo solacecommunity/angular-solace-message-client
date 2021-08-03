@@ -2,7 +2,7 @@
 import * as solace from 'solclientjs/lib-browser/solclient-full';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, EMPTY, noop, Observable, OperatorFunction } from 'rxjs';
-import { MessageDeliveryModeType } from './solace.model';
+import { Message, MessageDeliveryModeType, MessageType, SDTField } from './solace.model';
 import { map } from 'rxjs/operators';
 import { SolaceMessageClientConfig } from './solace-message-client.config';
 
@@ -68,13 +68,12 @@ export abstract class SolaceMessageClient {
    * If a segment begins with a colon (`:`), it is called a named wildcard segment that acts as a placeholder for any value. The characters after the leading colon give the segment its name.
    * Internally, named wildcard segments are translated to single-level wildcard segments. But, named segments allow retrieving substituted segment values when receiving a message in an easy manner.
    * E.g., the topic 'myhome/:room/temperature' is translated to 'myhome/* /temperature', matching messages sent to topics like 'myhome/kitchen/temperature' or 'myhome/livingroom/temperature'.
-   * Substituted segment values are then available in {@link MessageEnvelope.params}, or as the second element of the tuple when using {@link mapToObject}, {@link mapToBinary} or {@link mapToText}
+   * Substituted segment values are then available in {@link MessageEnvelope.params}, or as the second element of the tuple when using {@link mapToBinary} or {@link mapToText}
    * RxJS operators.
    *
    * See https://docs.solace.com/PubSub-Basics/Wildcard-Charaters-Topic-Subs.htm for more information and examples.
    *
    * The Observables emits the messages as received by the Solace broker. You can use one of the following custom RxJS operators to map the message to its payload.
-   * - {@link mapToObject}
    * - {@link mapToBinary}
    * - {@link mapToText}
    *
@@ -91,6 +90,27 @@ export abstract class SolaceMessageClient {
   /**
    * Publishes a message to the given topic. The message is transported to all consumers subscribed to the topic.
    *
+   * A message may contain unstructured byte data, or a structured container.
+   *
+   * ## Binary Data Message
+   * By default, data is transported as unstructured bytes in the binary attachment message part.
+   *
+   * Supported data types are:
+   *   - `ArrayBufferLike` objects, e.g. `ArrayBuffer`, `Uint8Array`, `Uint32Array`, or similar
+   *   - `DataView` objects
+   *   - For backwards compatibility, `solclient` supports passing a latin1-encoded `string` literal.
+   *     Instead, strings should be encoded into their binary representation upfront, e.g., by using
+   *     `TextEncoder.encode(...)`.
+   *
+   * ## Structured Data Message
+   * Alternatively, you can exchange data using the structured data API by passing it as Structured Data Type (SDT) in the form of a {@link SDTField}
+   * of the type {@link SDTFieldType#STRING}, {@link SDTFieldType#MAP} or {@link SDTFieldType#STREAM}. Transporting data as structured message is useful
+   * in a heterogeneous network that has clients that use different hardware architectures and programming languages, allowing exchanging binary data in
+   * a structured, language- and architecture-independent way.
+   *
+   * Example: `SolaceObjectFactory.createSDTField(SDTFieldType.STRING, 'payload')`
+   *
+   * ## Message Delivery
    * By default, messages are published as direct messages, thus, message delivery is not guaranteed.
    * This mode provides at-most-once message delivery with the following characteristics:
    *   * Messages are not retained for clients that are not connected to a Solace message broker.
@@ -106,15 +126,15 @@ export abstract class SolaceMessageClient {
    *
    * @param  topic - Specifies the topic to which the message should be sent.
    *         Topics are case-sensitive and consist of one or more segments, each separated by a forward slash.
-   *         The topic is required and must be exact, thus not contain wildcards. If passing a message with a
-   *         destination set, this argument is ignored.
-   * @param  message - Specifies optional transfer data to be carried along with this message.
-   *         To have full control over how the message is published, construct the {@link solace.Message} yourself
-   *         and pass it as the message argument. The publishing options are then ignored.
-   * @param  options - Controls how to publish the message and allows setting message headers.
+   *         The topic is required and must be exact, thus not contain wildcards.
+   * @param  data - Specifies optional transfer data to be carried along with this message. A message may contain unstructured byte data,
+   *         or structured data in the form of a {@link SDTField}. Use {@link SolaceObjectFactory#createSDTField} to construct structured data.
+   *         To have full control over the message to be published, you can also pass the {@link Message} object, which you can create using
+   *         {@link SolaceObjectFactory#createMessage}.
+   * @param  options - Controls how to publish the message.
    * @return A Promise that resolves when dispatched the message, or that rejects if the message could not be dispatched.
    */
-  public abstract publish<T = any>(topic: string, message: T | solace.Message | undefined, options?: PublishOptions): Promise<void>;
+  public abstract publish(topic: string, data?: ArrayBufferLike | DataView | string | SDTField | Message, options?: PublishOptions): Promise<void>;
 }
 
 /**
@@ -129,7 +149,7 @@ export class NullSolaceMessageClient implements SolaceMessageClient {
     return EMPTY;
   }
 
-  public publish<T = any>(topic: string, message: T | solace.Message | undefined, options?: PublishOptions): Promise<void> {
+  public publish(topic: string, data?: ArrayBufferLike | DataView | string | SDTField | Message, options?: PublishOptions): Promise<void> {
     return Promise.resolve();
   }
 
@@ -172,8 +192,6 @@ export interface PublishOptions {
    * of delivery to consumers of those queues or topic endpoints.
    * For the purposes of prioritized message delivery, values larger than 9
    * are treated the same as 9.
-   *
-   * Note: Property is ignored if providing a {@link solace.Message} payload object.
    */
   priority?: number;
   /**
@@ -181,7 +199,7 @@ export interface PublishOptions {
    *
    * The time to live is the number of milliseconds the message may be stored on the
    * Solace Message Router before the message is discarded or moved to a Dead Message
-   * Queue. See {@link solace.Message.setDMQEligible}.
+   * Queue. See {@link Message.setDMQEligible}.
    *
    * Setting the Time To Live to zero disables TTL for the message.
    *
@@ -191,8 +209,6 @@ export interface PublishOptions {
    *
    * The maxium allowed time to live is 3.1536E11 (315360000000) which is
    * approximately 10 years.
-   *
-   * Note: Property is ignored if providing a {@link solace.Message} payload object.
    */
   timeToLive?: number;
 
@@ -201,94 +217,40 @@ export interface PublishOptions {
    * When this property is set, when the message expires in the network,
    * the message is saved on a appliance dead message queue. Otherwise the expired message is
    * discarded. See {@link PublishOptions.setTimeToLive}.
-   *
-   * Note: Property is ignored if providing a {@link solace.Message} payload object.
    */
   dmqEligible?: boolean;
 
   /**
    * Sets the delivery mode of the message.
    *
-   * Note: Property is ignored if providing a {@link solace.Message} payload object.
-   *
    * @default MessageDeliveryModeType.DIRECT
    */
   deliveryMode?: MessageDeliveryModeType;
+
   /**
    * Sets the correlation ID.
    * The message Correlation Id is carried in the Solace message headers unmodified by the API and the Solace
    * Message Router. This field may be used for peer-to-peer message synchronization and is commonly used for
-   * correlating a request to a reply. See solace.session#sendRequest.
-   *
-   * Note: Property is ignored if providing a {@link solace.Message} payload object.
+   * correlating a request to a reply.
    */
   correlationId?: string;
-
-  /**
-   * Specifies the type of the message payload. If not set, the payload is serialized to JSON.
-   *
-   * For full control, provide a function to return a structured container (Structured Data Type),
-   * allowing to use the structured data API {@link solace.Message.setSdtContainer} to add containers
-   * (maps or streams) and their fields to the binary payload or to the User Property map contained
-   * within the binary metadata.
-   *
-   * Note: Property is ignored if providing a {@link solace.Message} payload object.
-   */
-  format?: MessageBodyFormat | ((payload: any) => solace.SdtContainer);
 }
 
 /**
- * Represents in which format to publish the message payload.
- */
-export enum MessageBodyFormat {
-  /**
-   * Structured text message.
-   */
-  TEXT,
-  /**
-   * Structured text message serialized in the JSON (JavaScript Object Notation) format.
-   * If choosing this format, the payload is serialized to JSON using {@link JSON.stringify}.
-   */
-  JSON,
-  /**
-   * Binary message (unstructured bytes stored in the binary attachment message part).
-   */
-  BINARY,
-}
-
-/**
- * RxJS operator for mapping a message into its textual representation.
+ * RxJS operator for mapping a structured text message into its textual representation.
  *
  * Each message is mapped to a tuple of three elements:
- * [<text>, Params, solace.Message].
+ * [<text>, Params, Message].
  *
- * Note: Messages must be published as {@link solace.MessageType.TEXT} messages, otherwise an error is thrown.
+ * Note: Messages must be published as {@link MessageType.TEXT} messages, otherwise an error is thrown.
  */
-export function mapToText(): OperatorFunction<solace.Message, [string, Params, solace.Message]> {
+export function mapToText(): OperatorFunction<MessageEnvelope, [string, Params, Message]> {
   return map((envelope: MessageEnvelope) => {
-    const message: solace.Message = envelope.message;
-    if (message.getType() !== solace.MessageType.TEXT) {
-      throw Error(`[IllegalMessageTypeError] Expected message type to be ${formatMessageType(solace.MessageType.TEXT)}, but was ${formatMessageType(message.getType())}. Be sure to use a compatible map operator.`);
+    const message: Message = envelope.message;
+    if (message.getType() !== MessageType.TEXT) {
+      throw Error(`[IllegalMessageTypeError] Expected message type to be ${formatMessageType(MessageType.TEXT)}, but was ${formatMessageType(message.getType())}. Be sure to use a compatible map operator.`);
     }
     return [message.getSdtContainer().getValue(), envelope.params, message];
-  });
-}
-
-/**
- * RxJS operator for parsing a JSON message payload into its object.
- *
- * Each message is mapped to a tuple of three elements:
- * [<parsed JSON object>, Params, solace.Message].
- *
- * Note: Messages must be published as {@link solace.MessageType.BINARY} messages, otherwise an error is thrown.
- */
-export function mapToObject<T>(): OperatorFunction<solace.Message, [T, Params, solace.Message]> {
-  return map((envelope: MessageEnvelope) => {
-    const message: solace.Message = envelope.message;
-    if (message.getType() !== solace.MessageType.BINARY) {
-      throw Error(`[IllegalMessageTypeError] Expected message type to be ${formatMessageType(solace.MessageType.BINARY)}, but was ${formatMessageType(message.getType())}. Be sure to use a compatible map operator.`);
-    }
-    return [JSON.parse(message.getBinaryAttachment() ?? null), envelope.params, message];
   });
 }
 
@@ -296,15 +258,18 @@ export function mapToObject<T>(): OperatorFunction<solace.Message, [T, Params, s
  * RxJS operator for mapping a message into its binary representation.
  *
  * Each message is mapped to a tuple of three elements:
- * [<binary>, Params, solace.Message].
+ * [<binary>, Params, Message].
  *
- * Note: Messages must be published as {@link solace.MessageType.BINARY} messages, otherwise an error is thrown.
+ * Backward compatibility note: Using the version10 factory profile or older, the binary attachment is returned as a 'latin1' String:
+ * Each character has a code in the range * 0-255 representing the value of a single received byte at that position.
+ *
+ * Note: Messages must be published as {@link MessageType.BINARY} messages, otherwise an error is thrown.
  */
-export function mapToBinary(): OperatorFunction<MessageEnvelope, [string | Uint8Array, Params, solace.Message]> {
+export function mapToBinary(): OperatorFunction<MessageEnvelope, [Uint8Array | string, Params, Message]> {
   return map((envelope: MessageEnvelope) => {
-    const message: solace.Message = envelope.message;
-    if (message.getType() !== solace.MessageType.BINARY) {
-      throw Error(`[IllegalMessageTypeError] Expected message type to be ${formatMessageType(solace.MessageType.BINARY)}, but was ${formatMessageType(message.getType())}. Be sure to use a compatible map operator.`);
+    const message: Message = envelope.message;
+    if (message.getType() !== MessageType.BINARY) {
+      throw Error(`[IllegalMessageTypeError] Expected message type to be ${formatMessageType(MessageType.BINARY)}, but was ${formatMessageType(message.getType())}. Be sure to use a compatible map operator.`);
     }
     return [message.getBinaryAttachment(), envelope.params, message];
   });
@@ -315,15 +280,15 @@ export function mapToBinary(): OperatorFunction<MessageEnvelope, [string | Uint8
  */
 export type Params = Map<string, string>;
 
-function formatMessageType(messageType: solace.MessageType): string {
+function formatMessageType(messageType: MessageType): string {
   switch (messageType) {
-    case solace.MessageType.TEXT:
+    case MessageType.TEXT:
       return `TEXT (${messageType})`;
-    case solace.MessageType.BINARY:
+    case MessageType.BINARY:
       return `BINARY (${messageType})`;
-    case solace.MessageType.MAP:
+    case MessageType.MAP:
       return `MAP (${messageType})`;
-    case solace.MessageType.STREAM:
+    case MessageType.STREAM:
       return `STREAM (${messageType})`;
     default:
       return `UNKNOWN (${messageType})`;
@@ -331,13 +296,13 @@ function formatMessageType(messageType: solace.MessageType): string {
 }
 
 /**
- * Envelope containing the {@link solace.Message} and resolved values for named topic segments, if any.
+ * Envelope containing the {@link Message} and resolved values for named topic segments, if any.
  */
 export interface MessageEnvelope {
   /**
    * Unmodified message as received by the Solace message broker.
    */
-  message: solace.Message;
+  message: Message;
   /**
    * Contains the resolved values of named single-level wildcard segments as specified in the topic.
    * For example: If subscribed to the topic `person/:id` and a message is published to the topic `person/5`,

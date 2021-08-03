@@ -3,20 +3,21 @@ import { Injectable, NgZone, OnDestroy, Optional } from '@angular/core';
 import { ConnectableObservable, EMPTY, merge, MonoTypeOperatorFunction, noop, Observable, Observer, of, OperatorFunction, Subject, TeardownLogic } from 'rxjs';
 import { distinctUntilChanged, filter, finalize, map, mergeMap, publishReplay, take, takeUntil, tap } from 'rxjs/operators';
 import { UUID } from '@scion/toolkit/uuid';
-import { MessageBodyFormat, MessageEnvelope, ObserveOptions, PublishOptions, SolaceMessageClient } from './solace-message-client';
+import { MessageEnvelope, ObserveOptions, PublishOptions, SolaceMessageClient } from './solace-message-client';
 import { TopicMatcher } from './topic-matcher';
 import { observeInside } from '@scion/toolkit/operators';
 import { SolaceSessionProvider } from './solace-session-provider';
 import { SolaceMessageClientConfig } from './solace-message-client.config';
-import { SessionProperties } from './solace.model';
+import { Message, MessageDeliveryModeType, SDTField, SessionProperties } from './solace.model';
 import { TopicSubscriptionCounter } from './topic-subscription-counter';
 import { SerialExecutor } from './serial-executor.service';
+import { SolaceObjectFactory } from './solace-object-factory';
 
 @Injectable()
 export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { // tslint:disable-line:class-name
 
   private _destroy$ = new Subject<void>();
-  private _message$ = new Subject<solace.Message>();
+  private _message$ = new Subject<Message>();
   private _event$ = new Subject<solace.SessionEvent>();
 
   private _session: Promise<solace.Session>;
@@ -100,7 +101,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
           session.on(solace.SessionEventCode.RECONNECTING_NOTICE, (event: solace.SessionEvent) => this._event$.next(event));
 
           // When a direct message was received on the session.
-          session.on(solace.SessionEventCode.MESSAGE, (message: solace.Message): void => this._message$.next(message));
+          session.on(solace.SessionEventCode.MESSAGE, (message: Message): void => this._message$.next(message));
 
           // When a subscribe or unsubscribe operation succeeded.
           session.on(solace.SessionEventCode.SUBSCRIPTION_OK, (event: solace.SessionEvent) => this._event$.next(event));
@@ -154,7 +155,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
           const subscriptionError$ = new Subject<void>();
 
           // Filter messages sent to the given topic.
-          merge(this._message$, subscriptionError$)
+          merge<Message>(this._message$, subscriptionError$)
             .pipe(
               assertNotInAngularZone(),
               filter(message => this._topicMatcher.matchesSubscriptionTopic(message.getDestination().getName(), solaceTopic)),
@@ -208,7 +209,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
       const whenSubscribed = this.whenSubscriptionConfirmed(subscribeCorrelationKey, {topic, operation: 'subscribe'});
 
       session.subscribe(
-        solace.SolclientFactory.createTopicDestination(topic),
+        SolaceObjectFactory.createTopicDestination(topic),
         true,
         subscribeCorrelationKey,
         subscribeOptions && subscribeOptions.requestTimeout,
@@ -235,7 +236,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
       const whenUnsubscribed = this.whenSubscriptionConfirmed(unsubscribeCorrelationKey, {topic, operation: 'unsubscribe'});
 
       session.unsubscribe(
-        solace.SolclientFactory.createTopicDestination(topic),
+        SolaceObjectFactory.createTopicDestination(topic),
         true,
         unsubscribeCorrelationKey,
         undefined,
@@ -277,48 +278,32 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
       });
   }
 
-  public async publish<T>(topic: string, payload: T | solace.Message | undefined, options?: PublishOptions): Promise<void> {
-    const isSolaceMessage = typeof payload === 'object' && payload.constructor === solace.Message;
-    const message = isSolaceMessage ? payload : solace.SolclientFactory.createMessage();
-    message.setDestination(message.getDestination() || solace.SolclientFactory.createTopicDestination(topic));
+  public async publish(topic: string, data?: ArrayBufferLike | DataView | string | SDTField | Message, options?: PublishOptions): Promise<void> {
+    const message: Message = data instanceof solace.Message ? (data as Message) : SolaceObjectFactory.createMessage();
+    message.setDestination(SolaceObjectFactory.createTopicDestination(topic));
+    message.setDeliveryMode(message.getDeliveryMode() ?? MessageDeliveryModeType.DIRECT);
 
-    const session = await this.session;
-    if (isSolaceMessage) {
-      session.send(message);
-      return;
+    // Set data, either as unstructured byte data, or as structured container if passed a structured data type (SDT).
+    if (data !== undefined && data !== null && !(data instanceof solace.Message)) {
+      if (data instanceof solace.SDTField) {
+        message.setSdtContainer(data as SDTField);
+      }
+      else {
+        message.setBinaryAttachment(data as ArrayBufferLike | DataView | string);
+      }
     }
 
+    // Apply publish options.
     if (options) {
-      message.setDeliveryMode(options.deliveryMode ?? solace.MessageDeliveryModeType.DIRECT);
+      message.setDeliveryMode(options.deliveryMode ?? message.getDeliveryMode());
       message.setCorrelationId(options.correlationId);
       message.setPriority(options.priority ?? message.getPriority());
       message.setTimeToLive(options.timeToLive ?? message.getTimeToLive());
       message.setDMQEligible(options.dmqEligible ?? message.isDMQEligible());
     }
 
-    if (payload) {
-      const format = options?.format ?? MessageBodyFormat.JSON;
-      if (typeof format === 'function') {
-        message.setSdtContainer(format(payload));
-      }
-      else {
-        switch (format) {
-          case MessageBodyFormat.TEXT: {
-            message.setSdtContainer(solace.SDTField.create(solace.SDTFieldType.STRING, payload));
-            break;
-          }
-          case MessageBodyFormat.BINARY: {
-            message.setBinaryAttachment(payload);
-            break;
-          }
-          case MessageBodyFormat.JSON:
-          default: {
-            message.setBinaryAttachment(JSON.stringify(payload));
-            break;
-          }
-        }
-      }
-    }
+    // Publish the message.
+    const session = await this.session;
     session.send(message);
   }
 
@@ -363,11 +348,11 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
 }
 
 /**
- * Maps each {@link solace.Message} to a {@link MessageEnvelope}, and resolves substituted named wildcard segments.
+ * Maps each {@link Message} to a {@link MessageEnvelope}, and resolves substituted named wildcard segments.
  */
-function mapToMessageEnvelope(subscriptionTopic: string): OperatorFunction<solace.Message, MessageEnvelope> {
+function mapToMessageEnvelope(subscriptionTopic: string): OperatorFunction<Message, MessageEnvelope> {
   const subscriptionSegments = subscriptionTopic.split('/');
-  return map((message: solace.Message): MessageEnvelope => {
+  return map((message: Message): MessageEnvelope => {
     const destinationSegments = message.getDestination().getName().split('/');
     return {
       message,

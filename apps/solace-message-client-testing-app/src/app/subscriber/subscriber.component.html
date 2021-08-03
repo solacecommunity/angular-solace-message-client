@@ -16,13 +16,13 @@
 
     <!-- Messages -->
     <sci-viewport class="messages">
-      <section *ngFor="let message of messages" class="message">
-        <label>Payload:</label><span class="payload">{{message.text || message.binary}}</span>
-        <label>Type:</label><span>{{message.type}}</span>
-        <label>Timestamp:</label><span>{{message.timestamp | date:'HH:mm:ss'}}</span>
-        <label>Details:</label><span>{{message.details}}</span>
-        <label>Named segments:</label><span>{{message.namedWildcardSegments}}</span>
-        <button mat-mini-fab class="delete" color="primary" (click)="onMessageDelete(message)">
+      <section *ngFor="let messageListItem of messageListItems" class="message">
+        <label>Payload:</label><span class="payload">{{messageListItem.text || messageListItem.binary}}</span>
+        <label>Type:</label><span>{{messageListItem.type}}</span>
+        <label>Timestamp:</label><span>{{messageListItem.timestamp | date:'HH:mm:ss'}}</span>
+        <label>Details:</label><span>{{messageListItem.details}}</span>
+        <label>Named segments:</label><span>{{messageListItem.namedWildcardSegments}}</span>
+        <button mat-mini-fab class="delete" color="primary" (click)="onMessageDelete(messageListItem)">
           <mat-icon>delete</mat-icon>
         </button>
       </section>
@@ -30,7 +30,7 @@
   </mat-card-content>
 
   <mat-card-actions>
-    <button mat-stroked-button (click)="onClear()" *ngIf="messages.length">Clear messages</button>
+    <button mat-stroked-button (click)="onClear()" *ngIf="messageListItems.length">Clear messages</button>
   </mat-card-actions>
 
   <mat-card-footer *ngIf="subscribeError">

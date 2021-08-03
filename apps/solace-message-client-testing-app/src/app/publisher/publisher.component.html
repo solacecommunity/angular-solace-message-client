@@ -16,13 +16,12 @@
         <textarea matInput [formControlName]="MESSAGE" class="message"></textarea>
       </mat-form-field>
 
-      <!-- Format -->
+      <!-- Message Type -->
       <mat-form-field>
-        <mat-label>Format</mat-label>
-        <mat-select [formControlName]="FORMAT">
-          <mat-option [value]="MessageBodyFormat.BINARY">Binary</mat-option>
-          <mat-option [value]="MessageBodyFormat.TEXT">Text</mat-option>
-          <mat-option [value]="MessageBodyFormat.JSON">Text (JSON)</mat-option>
+        <mat-label>Message Type</mat-label>
+        <mat-select [formControlName]="MESSAGE_TYPE">
+          <mat-option [value]="MessageType.BINARY">BINARY</mat-option>
+          <mat-option [value]="MessageType.TEXT">TEXT</mat-option>
         </mat-select>
       </mat-form-field>
 
