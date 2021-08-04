@@ -1,4 +1,4 @@
-@use 'apps/solace-message-client-testing-app/src/styles/solace-client-theme' as app-theme;
+@use 'solace-client-theme' as app-theme;
 @use '~@angular/material/theming';
 
 :host {
@@ -41,30 +41,8 @@
         margin-top: 1em;
         min-height: 20em;
 
-        section.message {
-          font-family: monospace;
-          display: grid;
-          grid-template-columns: 7em auto;
-          gap: .5em 1em;
+        app-message-list-item {
           border-bottom: 1px solid theming.mat-color(app-theme.$foreground, divider);
-          padding-bottom: 1em;
-          margin-bottom: 1em;
-          position: relative; // positioning context for delete button
-
-          > button.delete {
-            position: absolute;
-            right: 0;
-            align-self: center;
-          }
-
-          &:not(:hover) > button.delete {
-            display: none;
-          }
-
-          > sci-viewport.content {
-            max-height: 20em;
-            margin-right: 1em;
-          }
         }
       }
     }

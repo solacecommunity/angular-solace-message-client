@@ -25,6 +25,7 @@ import { MatCardModule } from '@angular/material/card';
 import { CommonModule } from '@angular/common';
 import { SessionPropertiesComponent } from './session-properties/session-properties.component';
 import { StringifyMapPipe } from './stringify-map.pipe';
+import { MessageListItemComponent } from './message-list-item/message-list-item.component';
 
 @NgModule({
   declarations: [
@@ -32,6 +33,7 @@ import { StringifyMapPipe } from './stringify-map.pipe';
     PublisherComponent,
     SubscriberComponent,
     ConnectComponent,
+    MessageListItemComponent,
     TryMeComponent,
     SessionPropertiesComponent,
     StringifyMapPipe,

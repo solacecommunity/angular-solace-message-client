@@ -1,0 +1,44 @@
+@use 'solace-client-theme' as app-theme;
+@use '~@angular/material/theming';
+
+:host {
+  font-family: monospace;
+  font-size: .9em;
+  display: grid;
+  grid-template-columns: 7em auto;
+  gap: .5em 1em;
+  padding: 1em;
+  position: relative; // positioning context for delete button and timestamp
+
+  > span.timestamp {
+    position: absolute;
+    top: 0;
+    right: 1em;
+    font-size: smaller;
+  }
+
+  > button.delete {
+    position: absolute;
+    right: 1em;
+    align-self: center;
+  }
+
+  &:not(:hover) > button.delete {
+    display: none;
+  }
+
+  > sci-viewport.content {
+    max-height: 20em;
+    margin-right: 1em;
+
+    section.zipped {
+      background-color: lightyellow;
+
+      &::before {
+        display: block;
+        content: '=== UNZIPPED CONTENT ===';
+        font-style: italic;
+      }
+    }
+  }
+}
