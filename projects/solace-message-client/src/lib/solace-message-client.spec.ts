@@ -691,8 +691,8 @@ describe('SolaceMessageClient', () => {
       message.setSdtContainer(solace.SDTField.create(solace.SDTFieldType.STRING, '20°C'));
 
       simulateTopicMessage(message);
-      expect(observeCaptor1.getValues()).toEqual([{message, params: new Map().set('room', 'livingroom')}]);
-      expect(observeCaptor2.getValues()).toEqual([{message, params: new Map().set('room', 'livingroom').set('measurement', 'temperature')}]);
+      expect(observeCaptor1.getValues()).toEqual([jasmine.objectContaining({message, params: new Map().set('room', 'livingroom')})]);
+      expect(observeCaptor2.getValues()).toEqual([jasmine.objectContaining({message, params: new Map().set('room', 'livingroom').set('measurement', 'temperature')})]);
       expect(observeCaptor3.getValues()).toEqual([['20°C', new Map().set('room', 'livingroom'), message]]);
     }));
 
@@ -1146,6 +1146,98 @@ describe('SolaceMessageClient', () => {
       session.subscribe.calls.reset();
       session.unsubscribe.calls.reset();
     }));
+
+    describe('headers', () => {
+
+      it('should publish message headers (user properties)', fakeAsync(async () => {
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+        const sessionSendCaptor = installSessionSendCaptor();
+        simulateLifecycleEvent(solace.SessionEventCode.UP_NOTICE);
+
+        // publish the message
+        const headers = new Map()
+          .set('key1', 'value')
+          .set('key2', true)
+          .set('key3', false)
+          .set('key4', 123)
+          .set('key5', 0)
+          .set('key6', SolaceObjectFactory.createSDTField(SDTFieldType.INT16, 16))
+          .set('key7', SolaceObjectFactory.createSDTField(SDTFieldType.INT32, 32))
+          .set('key8', SolaceObjectFactory.createSDTField(SDTFieldType.INT64, 64))
+          .set('key9', SolaceObjectFactory.createSDTField(SDTFieldType.UNKNOWN, '!UNKNOWN!'))
+          .set('key10', undefined)
+          .set('key11', null);
+
+        await expectAsync(solaceMessageClient.publish('topic', 'payload', {headers})).toBeResolved();
+
+        const userPropertyMap = sessionSendCaptor.message.getUserPropertyMap();
+        expect(userPropertyMap.getKeys()).toEqual(['key1', 'key2', 'key3', 'key4', 'key5', 'key6', 'key7', 'key8', 'key9']);
+
+        expect(userPropertyMap.getField('key1').getType()).toEqual(SDTFieldType.STRING);
+        expect(userPropertyMap.getField('key1').getValue()).toEqual('value');
+
+        expect(userPropertyMap.getField('key2').getType()).toEqual(SDTFieldType.BOOL);
+        expect(userPropertyMap.getField('key2').getValue()).toEqual(true);
+
+        expect(userPropertyMap.getField('key3').getType()).toEqual(SDTFieldType.BOOL);
+        expect(userPropertyMap.getField('key3').getValue()).toEqual(false);
+
+        expect(userPropertyMap.getField('key4').getType()).toEqual(SDTFieldType.INT32);
+        expect(userPropertyMap.getField('key4').getValue()).toEqual(123);
+
+        expect(userPropertyMap.getField('key5').getType()).toEqual(SDTFieldType.INT32);
+        expect(userPropertyMap.getField('key5').getValue()).toEqual(0);
+
+        expect(userPropertyMap.getField('key6').getType()).toEqual(SDTFieldType.INT16);
+        expect(userPropertyMap.getField('key6').getValue()).toEqual(16);
+
+        expect(userPropertyMap.getField('key7').getType()).toEqual(SDTFieldType.INT32);
+        expect(userPropertyMap.getField('key7').getValue()).toEqual(32);
+
+        expect(userPropertyMap.getField('key8').getType()).toEqual(SDTFieldType.INT64);
+        expect(userPropertyMap.getField('key8').getValue()).toEqual(64);
+
+        expect(userPropertyMap.getField('key9').getType()).toEqual(SDTFieldType.UNKNOWN);
+        expect(userPropertyMap.getField('key9').getValue()).toEqual('!UNKNOWN!');
+      }));
+
+      it('should receive message headers (user properties)', fakeAsync(async () => {
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+        simulateLifecycleEvent(solace.SessionEventCode.UP_NOTICE);
+
+        // Subscribe to topic 'topic'
+        const sessionSubscribeCaptor = installSessionSubscribeCaptor();
+        const observeCaptor = new ObserveCaptor<MessageEnvelope>();
+        solaceMessageClient.observe$('topic').subscribe(observeCaptor);
+        flushMicrotasks();
+        simulateLifecycleEvent(solace.SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+
+        // Simulate receiving message published to 'topic'
+        const message = createTopicMessage('topic');
+        const userPropertyMap = SolaceObjectFactory.createSDTMapContainer();
+        userPropertyMap.addField('key1', SDTFieldType.STRING, 'value');
+        userPropertyMap.addField('key2', SDTFieldType.BOOL, true);
+        userPropertyMap.addField('key3', SDTFieldType.BOOL, false);
+        userPropertyMap.addField('key4', SDTFieldType.INT16, 16);
+        userPropertyMap.addField('key5', SDTFieldType.INT32, 32);
+        userPropertyMap.addField('key6', SDTFieldType.INT64, 64);
+        userPropertyMap.addField('key7', SDTFieldType.UNKNOWN, '!UNKNOWN!');
+        message.setUserPropertyMap(userPropertyMap);
+
+        simulateTopicMessage(message);
+
+        await observeCaptor.waitUntilEmitCount(1);
+        expect(observeCaptor.getLastValue().headers).toEqual(new Map()
+          .set('key1', 'value')
+          .set('key2', true)
+          .set('key3', false)
+          .set('key4', 16)
+          .set('key5', 32)
+          .set('key6', 64)
+          .set('key7', '!UNKNOWN!')
+        );
+      }));
+    });
   }
 
   /**

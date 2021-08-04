@@ -24,6 +24,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatCardModule } from '@angular/material/card';
 import { CommonModule } from '@angular/common';
 import { SessionPropertiesComponent } from './session-properties/session-properties.component';
+import { StringifyMapPipe } from './stringify-map.pipe';
 
 @NgModule({
   declarations: [
@@ -33,6 +34,7 @@ import { SessionPropertiesComponent } from './session-properties/session-propert
     ConnectComponent,
     TryMeComponent,
     SessionPropertiesComponent,
+    StringifyMapPipe,
   ],
   imports: [
     CommonModule,

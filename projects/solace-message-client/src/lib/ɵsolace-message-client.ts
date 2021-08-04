@@ -8,7 +8,7 @@ import { TopicMatcher } from './topic-matcher';
 import { observeInside } from '@scion/toolkit/operators';
 import { SolaceSessionProvider } from './solace-session-provider';
 import { SolaceMessageClientConfig } from './solace-message-client.config';
-import { Message, MessageDeliveryModeType, SDTField, SessionProperties } from './solace.model';
+import { Message, MessageDeliveryModeType, SDTField, SDTFieldType, SessionProperties } from './solace.model';
 import { TopicSubscriptionCounter } from './topic-subscription-counter';
 import { SerialExecutor } from './serial-executor.service';
 import { SolaceObjectFactory } from './solace-object-factory';
@@ -302,6 +302,32 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
       message.setDMQEligible(options.dmqEligible ?? message.isDMQEligible());
     }
 
+    // Add headers.
+    if (options?.headers?.size) {
+      message.setUserPropertyMap(message.getUserPropertyMap() || SolaceObjectFactory.createSDTMapContainer());
+      options.headers.forEach((value, key) => {
+        if (value === undefined || value === null) {
+          return;
+        }
+        if (value instanceof solace.SDTField) {
+          const sdtField = value as SDTField;
+          message.getUserPropertyMap().addField(key, sdtField.getType(), sdtField.getValue());
+        }
+        else if (typeof value === 'string') {
+          message.getUserPropertyMap().addField(key, SDTFieldType.STRING, value);
+        }
+        else if (typeof value === 'boolean') {
+          message.getUserPropertyMap().addField(key, SDTFieldType.BOOL, value);
+        }
+        else if (typeof value === 'number') {
+          message.getUserPropertyMap().addField(key, SDTFieldType.INT32, value);
+        }
+        else {
+          message.getUserPropertyMap().addField(key, SDTFieldType.UNKNOWN, value);
+        }
+      });
+    }
+
     // Allow intercepting the message before sending it to the broker.
     options?.intercept?.(message);
 
@@ -356,16 +382,22 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
 function mapToMessageEnvelope(subscriptionTopic: string): OperatorFunction<Message, MessageEnvelope> {
   const subscriptionSegments = subscriptionTopic.split('/');
   return map((message: Message): MessageEnvelope => {
+    // collect params
     const destinationSegments = message.getDestination().getName().split('/');
-    return {
-      message,
-      params: subscriptionSegments.reduce((params, subscriptionSegment, i) => {
-        if (isNamedWildcardSegment(subscriptionSegment)) {
-          return params.set(subscriptionSegment.substr(1), destinationSegments[i]);
-        }
-        return params;
-      }, new Map()),
-    };
+    const params = subscriptionSegments.reduce((acc, subscriptionSegment, i) => {
+      if (isNamedWildcardSegment(subscriptionSegment)) {
+        return acc.set(subscriptionSegment.substr(1), destinationSegments[i]);
+      }
+      return acc;
+    }, new Map<string, string>());
+
+    // collect headers
+    const userPropertyMap = message.getUserPropertyMap();
+    const headers = userPropertyMap?.getKeys().reduce((acc, key) => {
+      return acc.set(key, userPropertyMap.getField(key).getValue());
+    }, new Map()) || new Map();
+
+    return {message, params, headers};
   });
 }
 
