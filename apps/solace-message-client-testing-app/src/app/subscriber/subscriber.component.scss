@@ -26,7 +26,7 @@
         color: theming.mat-color(app-theme.$foreground, secondary-text);
       }
 
-      > form {
+      > section.subscription {
         flex: none;
         display: grid;
         grid-template-rows: max-content max-content 1fr;
