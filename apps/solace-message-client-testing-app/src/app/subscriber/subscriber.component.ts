@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, OnDestroy, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { Message, MessageDumpFlag, MessageEnvelope, MessageType, SolaceMessageClient } from 'solace-message-client';
+import { MessageEnvelope, SolaceMessageClient } from 'solace-message-client';
 import { Subject, Subscription } from 'rxjs';
 import { filter, finalize, takeUntil } from 'rxjs/operators';
 import { SciViewportComponent } from '@scion/toolkit/viewport';
@@ -22,7 +22,7 @@ export class SubscriberComponent implements OnDestroy {
 
   public form: FormGroup;
   public subscribeError: string;
-  public messageListItems: MessageListItem[] = [];
+  public envelopes: MessageEnvelope[] = [];
 
   private _subscription: Subscription;
   private _destroy$ = new Subject<void>();
@@ -50,15 +50,7 @@ export class SubscriberComponent implements OnDestroy {
         .pipe(finalize(() => this.form.get(SUBSCRIPTION).enable()))
         .subscribe(
           (envelope: MessageEnvelope) => {
-            const message: Message = envelope.message;
-            this.messageListItems = this.messageListItems.concat({
-              envelope: envelope,
-              type: formatMessageType(message.getType()),
-              details: message.dump(MessageDumpFlag.MSGDUMP_BRIEF),
-              binary: message.getType() === MessageType.BINARY && message.getBinaryAttachment() as string,
-              text: message.getType() === MessageType.TEXT && message.getSdtContainer().getValue(),
-              timestamp: Date.now(),
-            });
+            this.envelopes = this.envelopes.concat(envelope);
 
             if (this.form.get(FOLLOW_TAIL).value) {
               this._cd.detectChanges();
@@ -80,11 +72,11 @@ export class SubscriberComponent implements OnDestroy {
   }
 
   public onClear(): void {
-    this.messageListItems = [];
+    this.envelopes = [];
   }
 
-  public onMessageDelete(messageListItem: MessageListItem): void {
-    this.messageListItems = this.messageListItems.filter(it => it !== messageListItem);
+  public onDelete(envelope: MessageEnvelope): void {
+    this.envelopes = this.envelopes.filter(it => it !== envelope);
   }
 
   public get isSubscribed(): boolean {
@@ -108,29 +100,5 @@ export class SubscriberComponent implements OnDestroy {
 
   public ngOnDestroy(): void {
     this._destroy$.next();
-  }
-}
-
-export interface MessageListItem {
-  envelope: MessageEnvelope;
-  type: string;
-  text: string;
-  binary: string;
-  details: string;
-  timestamp: number;
-}
-
-function formatMessageType(messageType: MessageType): string {
-  switch (messageType) {
-    case MessageType.TEXT:
-      return `TEXT (${messageType})`;
-    case MessageType.BINARY:
-      return `BINARY (${messageType})`;
-    case MessageType.MAP:
-      return `MAP (${messageType})`;
-    case MessageType.STREAM:
-      return `STREAM (${messageType})`;
-    default:
-      return `UNKNOWN (${messageType})`;
   }
 }

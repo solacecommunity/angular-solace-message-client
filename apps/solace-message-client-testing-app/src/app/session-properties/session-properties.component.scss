@@ -1,4 +1,4 @@
-@use 'apps/solace-message-client-testing-app/src/styles/solace-client-theme' as app-theme;
+@use 'solace-client-theme' as app-theme;
 @use '~@angular/material/theming';
 
 :host {

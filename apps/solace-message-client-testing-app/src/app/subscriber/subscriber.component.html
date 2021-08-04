@@ -16,41 +16,15 @@
 
     <!-- Messages -->
     <sci-viewport class="messages">
-      <section *ngFor="let messageListItem of messageListItems" class="message">
-        <label>Destination:</label>
-        <span class="topic">{{messageListItem.envelope.message.getDestination().getName()}}</span>
-
-        <label>Timestamp:</label>
-        <span>{{messageListItem.timestamp | date:'HH:mm:ss'}}</span>
-
-        <label>Type:</label>
-        <span>{{messageListItem.type}}</span>
-
-        <ng-container *ngIf="messageListItem.envelope.params?.size">
-          <label>Named segments:</label>
-          <span>{{messageListItem.envelope.params | appStringifyMap}}</span>
-        </ng-container>
-
-        <ng-container *ngIf="messageListItem.envelope.headers?.size">
-          <label>Headers:</label>
-          <span>{{messageListItem.envelope.headers | appStringifyMap}}</span>
-        </ng-container>
-
-        <label>Details:</label>
-        <sci-viewport class="content">{{messageListItem.details}}</sci-viewport>
-
-        <label>Payload:</label>
-        <sci-viewport class="content">{{messageListItem.text || messageListItem.binary}}</sci-viewport>
-
-        <button mat-mini-fab class="delete" color="primary" (click)="onMessageDelete(messageListItem)">
-          <mat-icon>delete</mat-icon>
-        </button>
-      </section>
+      <app-message-list-item *ngFor="let envelope of envelopes"
+                             [envelope]="envelope"
+                             (delete)="onDelete(envelope)">
+      </app-message-list-item>
     </sci-viewport>
   </mat-card-content>
 
   <mat-card-actions>
-    <button mat-stroked-button (click)="onClear()" *ngIf="messageListItems.length">Clear messages</button>
+    <button mat-stroked-button (click)="onClear()" *ngIf="envelopes.length">Clear messages</button>
   </mat-card-actions>
 
   <mat-card-actions>

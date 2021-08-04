@@ -1,0 +1,31 @@
+<span class="timestamp">{{message.getReceiverTimestamp() | date:'HH:mm:ss'}}</span>
+
+<label>Destination:</label>
+<span class="topic">{{envelope.message.getDestination().getName()}}</span>
+
+<label>Type:</label>
+<span>{{type}}</span>
+
+<ng-container *ngIf="envelope.params?.size">
+  <label>Named segments:</label>
+  <span>{{envelope.params | appStringifyMap}}</span>
+</ng-container>
+
+<ng-container *ngIf="envelope.headers?.size">
+  <label>Headers:</label>
+  <span>{{envelope.headers | appStringifyMap}}</span>
+</ng-container>
+
+<label>Details:</label>
+<sci-viewport class="content">{{details}}</sci-viewport>
+
+<label>Content:</label>
+<sci-viewport class="content">
+  <section [class.zipped]="envelope.headers.get('Content-Encoding') === 'gzip'">
+    {{content}}
+  </section>
+</sci-viewport>
+
+<button mat-mini-fab class="delete" color="primary" (click)="onDelete()">
+  <mat-icon>delete</mat-icon>
+</button>
