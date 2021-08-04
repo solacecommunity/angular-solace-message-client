@@ -1,9 +1,9 @@
-<mat-card>
+<mat-card [formGroup]="form">
   <mat-card-content>
     <header>Subscriber</header>
     <span class="sub-title">Subscribe to a topic to receive messages published to that destination.</span>
 
-    <form [formGroup]="form">
+    <section class="subscription" [formGroupName]="SUBSCRIPTION">
       <!-- Topic -->
       <mat-form-field>
         <mat-label>Topic</mat-label>
@@ -12,7 +12,7 @@
       </mat-form-field>
       <button mat-stroked-button color="primary" (click)="onSubscribe()" *ngIf="!isSubscribed" [disabled]="form.invalid" class="subscribe">Subscribe</button>
       <button mat-stroked-button color="primary" (click)="onUnsubscribe()" *ngIf="isSubscribed" [disabled]="form.invalid" class="unsubscribe">Unsubscribe</button>
-    </form>
+    </section>
 
     <!-- Messages -->
     <sci-viewport class="messages">
@@ -46,6 +46,10 @@
 
   <mat-card-actions>
     <button mat-stroked-button (click)="onClear()" *ngIf="messageListItems.length">Clear messages</button>
+  </mat-card-actions>
+
+  <mat-card-actions>
+    <mat-checkbox [formControlName]="FOLLOW_TAIL">Follow tail</mat-checkbox>
   </mat-card-actions>
 
   <mat-card-footer *ngIf="subscribeError">
