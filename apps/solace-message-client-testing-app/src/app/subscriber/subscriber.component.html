@@ -26,9 +26,14 @@
         <label>Type:</label>
         <span>{{messageListItem.type}}</span>
 
-        <ng-container *ngIf="messageListItem.namedWildcardSegments">
+        <ng-container *ngIf="messageListItem.envelope.params?.size">
           <label>Named segments:</label>
-          <span>{{messageListItem.namedWildcardSegments}}</span>
+          <span>{{messageListItem.envelope.params | appStringifyMap}}</span>
+        </ng-container>
+
+        <ng-container *ngIf="messageListItem.envelope.headers?.size">
+          <label>Headers:</label>
+          <span>{{messageListItem.envelope.headers | appStringifyMap}}</span>
         </ng-container>
 
         <label>Details:</label>

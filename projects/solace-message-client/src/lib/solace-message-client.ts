@@ -191,6 +191,22 @@ export interface PublishOptions {
   intercept?: (message: Message) => void;
 
   /**
+   * Convenience API for setting headers to pass additional information along with the message.
+   *
+   * Headers are transported as structured data separate from the payload. To pass a header value
+   * different to `string`, `boolean` or `number`, pass it as Structured Data Type (SDT) in the
+   * form of a {@link SDTField}, as following: `SolaceObjectFactory.createSDTField(SDTFieldType.INT8, 2);`
+   *
+   * Header values are mapped as following to structured data types:
+   * `string` -> SDTFieldType.STRING
+   * `boolean` -> SDTFieldType.BOOL
+   * `number` -> SDTFieldType.INT32
+   *
+   * @see Message.setUserPropertyMap
+   */
+  headers?: Map<string, string | boolean | number | SDTField>;
+
+  /**
    * Specifies the message priority (JMS Priority) for the message.
    * Numerical values between 0 and 255 are accepted, use undefined to unset.
    *
@@ -317,4 +333,10 @@ export interface MessageEnvelope {
    * the resolved id with the value `5` is contained in the segments map.
    */
   params: Params;
+  /**
+   * Convenience API for accessing headers attached to the message.
+   *
+   * @see Message.getUserPropertyMap
+   */
+  headers: Map<string, any>;
 }

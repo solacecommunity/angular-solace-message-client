@@ -25,6 +25,12 @@
         </mat-select>
       </mat-form-field>
 
+      <!-- Headers -->
+      <mat-form-field>
+        <mat-label>Headers</mat-label>
+        <input matInput [formControlName]="HEADERS" placeholder="name->value;name->value">
+      </mat-form-field>
+
       <button mat-stroked-button color="primary" (click)="onPublish()" [disabled]="form.invalid">Publish</button>
     </form>
   </mat-card-content>

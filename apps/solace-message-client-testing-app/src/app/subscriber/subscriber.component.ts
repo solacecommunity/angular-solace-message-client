@@ -52,12 +52,12 @@ export class SubscriberComponent implements OnDestroy {
           (envelope: MessageEnvelope) => {
             const message: Message = envelope.message;
             this.messageListItems = this.messageListItems.concat({
+              envelope: envelope,
               type: formatMessageType(message.getType()),
               details: message.dump(MessageDumpFlag.MSGDUMP_BRIEF),
               binary: message.getType() === MessageType.BINARY && message.getBinaryAttachment() as string,
               text: message.getType() === MessageType.TEXT && message.getSdtContainer().getValue(),
               timestamp: Date.now(),
-              namedWildcardSegments: Array.from(envelope.params.entries()).reduce((params, [key, value]) => params.concat(`${key}->${value}`), []).join(', '),
             });
 
             if (this.form.get(FOLLOW_TAIL).value) {
@@ -112,12 +112,12 @@ export class SubscriberComponent implements OnDestroy {
 }
 
 export interface MessageListItem {
+  envelope: MessageEnvelope;
   type: string;
   text: string;
   binary: string;
   details: string;
   timestamp: number;
-  namedWildcardSegments: string;
 }
 
 function formatMessageType(messageType: MessageType): string {
