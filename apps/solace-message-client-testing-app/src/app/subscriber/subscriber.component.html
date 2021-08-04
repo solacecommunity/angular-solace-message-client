@@ -17,11 +17,26 @@
     <!-- Messages -->
     <sci-viewport class="messages">
       <section *ngFor="let messageListItem of messageListItems" class="message">
-        <label>Payload:</label><span class="payload">{{messageListItem.text || messageListItem.binary}}</span>
-        <label>Type:</label><span>{{messageListItem.type}}</span>
-        <label>Timestamp:</label><span>{{messageListItem.timestamp | date:'HH:mm:ss'}}</span>
-        <label>Details:</label><span>{{messageListItem.details}}</span>
-        <label>Named segments:</label><span>{{messageListItem.namedWildcardSegments}}</span>
+        <label>Destination:</label>
+        <span class="topic">{{messageListItem.envelope.message.getDestination().getName()}}</span>
+
+        <label>Timestamp:</label>
+        <span>{{messageListItem.timestamp | date:'HH:mm:ss'}}</span>
+
+        <label>Type:</label>
+        <span>{{messageListItem.type}}</span>
+
+        <ng-container *ngIf="messageListItem.namedWildcardSegments">
+          <label>Named segments:</label>
+          <span>{{messageListItem.namedWildcardSegments}}</span>
+        </ng-container>
+
+        <label>Details:</label>
+        <sci-viewport class="content">{{messageListItem.details}}</sci-viewport>
+
+        <label>Payload:</label>
+        <sci-viewport class="content">{{messageListItem.text || messageListItem.binary}}</sci-viewport>
+
         <button mat-mini-fab class="delete" color="primary" (click)="onMessageDelete(messageListItem)">
           <mat-icon>delete</mat-icon>
         </button>

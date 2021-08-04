@@ -35,9 +35,9 @@
       }
 
       > sci-viewport.messages {
-        --grid-auto-rows: max-content;
-        --gap: 1em 0;
-        flex: auto;
+        --sci-viewport-content-grid-auto-rows: max-content;
+        --sci-viewport-content-grid-gap: 1em 0;
+        flex: 1 1 0;
         margin-top: 1em;
         min-height: 20em;
 
@@ -51,11 +51,6 @@
           margin-bottom: 1em;
           position: relative; // positioning context for delete button
 
-          > span.payload {
-            font-weight: bold;
-            margin-bottom: .75em;
-          }
-
           > button.delete {
             position: absolute;
             right: 0;
@@ -64,6 +59,11 @@
 
           &:not(:hover) > button.delete {
             display: none;
+          }
+
+          > sci-viewport.content {
+            max-height: 20em;
+            margin-right: 1em;
           }
         }
       }
