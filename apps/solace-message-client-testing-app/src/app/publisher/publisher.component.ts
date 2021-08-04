@@ -25,20 +25,24 @@ export class PublisherComponent {
               public solaceMessageClient: SolaceMessageClient) {
     this.form = new FormGroup({
       [TOPIC]: formBuilder.control('', Validators.required),
-      [MESSAGE]: formBuilder.control('', Validators.required),
+      [MESSAGE]: formBuilder.control(''),
       [MESSAGE_TYPE]: formBuilder.control(MessageType.BINARY, Validators.required),
     });
   }
 
   public async onPublish(): Promise<void> {
+    const message = this.form.get(MESSAGE).value;
+    const topic = this.form.get(TOPIC).value;
+
     this.publishError = null;
     try {
       if (this.form.get(MESSAGE_TYPE).value === MessageType.TEXT) {
-        const structuredTextMessage = SolaceObjectFactory.createSDTField(SDTFieldType.STRING, this.form.get(MESSAGE).value);
-        await this.solaceMessageClient.publish(this.form.get(TOPIC).value, structuredTextMessage);
+        const structuredTextMessage = message ? SolaceObjectFactory.createSDTField(SDTFieldType.STRING, message) : undefined;
+        await this.solaceMessageClient.publish(topic, structuredTextMessage);
       }
       else {
-        await this.solaceMessageClient.publish(this.form.get(TOPIC).value, new TextEncoder().encode(this.form.get(MESSAGE).value));
+        const binaryMessage = message ? new TextEncoder().encode(message) : undefined;
+        await this.solaceMessageClient.publish(topic, binaryMessage);
       }
     }
     catch (error) {
