@@ -295,7 +295,7 @@ export interface PublishOptions {
    * For more information, refer to https://docs.solace.com/PubSub-Basics/Direct-Messages.htm.
    *
    * ### Persistent or Guaranteed Messaging
-   * Persistent messaging is also over TCP but has an additional set of acknowledgements beyond those used by TCP itself. Solace event broker guarantees the message
+   * Persistent messaging is also over TCP but has an additional set of acknowledgments beyond those used by TCP itself. Solace event broker guarantees the message
    * never to be lost and to be delivered at least once. Use persistent messaging when data must be received by the consuming application.
    *
    * Persistent messaging occurs between the publishing application and the broker, and between the broker and the consuming application. If the consuming application
@@ -303,17 +303,26 @@ export interface PublishOptions {
    *
    * For more information, refer to  https://docs.solace.com/PubSub-Basics/Guaranteed-Messages.htm or https://docs.solace.com/PubSub-Basics/Basic-Guaranteed-Messsaging-Operation.htm.
    *
+   * If you experience poor performance when sending guaranteed messages, consider adjusting the size of the publishing window via {@link Session#publisherProperties#windowSize},
+   * as described here: https://solace.com/blog/understanding-guaranteed-message-publish-window-sizes-and-acknowledgement
+   *
    * @default MessageDeliveryModeType.DIRECT
    */
   deliveryMode?: MessageDeliveryModeType;
 
   /**
-   * Sets the correlation ID.
-   * The message Correlation Id is carried in the Solace message headers unmodified by the API and the Solace
-   * Message Router. This field may be used for peer-to-peer message synchronization and is commonly used for
-   * correlating a request to a reply.
+   * Sets the correlation ID which is carried in the message headers unmodified.
+   *
+   * A correlation ID is a unique identifier value that is attached to a message that allows referencing to a particular transaction or event chain.
    */
   correlationId?: string;
+  /**
+   * Sets the correlation key to correlate events from the Solace event broker when sending the message to the broker.
+   *
+   * The correlation key is an object that is passed back to the client during the router acknowledgement or rejection.
+   * Note that the correlation key is not included in the transmitted message and is only used with the local API.
+   */
+  correlationKey?: string;
 }
 
 /**

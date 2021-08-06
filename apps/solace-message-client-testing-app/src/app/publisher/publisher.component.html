@@ -10,7 +10,7 @@
         <input matInput [formControlName]="DESTINATION">
       </mat-form-field>
 
-      <!-- Destination type -->
+      <!-- Destination Type -->
       <mat-form-field class="destination-type">
         <mat-label>Destination Type</mat-label>
         <mat-select [formControlName]="DESTINATION_TYPE">
@@ -26,11 +26,20 @@
       </mat-form-field>
 
       <!-- Message Type -->
-      <mat-form-field>
+      <mat-form-field class="message-type">
         <mat-label>Message Type</mat-label>
         <mat-select [formControlName]="MESSAGE_TYPE">
-          <mat-option [value]="MessageType.BINARY">BINARY</mat-option>
-          <mat-option [value]="MessageType.TEXT">TEXT</mat-option>
+          <mat-option [value]="MessageType.BINARY">Binary</mat-option>
+          <mat-option [value]="MessageType.TEXT">Text</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <!-- Message Delivery Mode -->
+      <mat-form-field class="message-delivery-mode">
+        <mat-label>Message Delivery Mode</mat-label>
+        <mat-select [formControlName]="DELIVERY_MODE">
+          <mat-option [value]="MessageDeliveryModeType.DIRECT">Direct (default)</mat-option>
+          <mat-option [value]="MessageDeliveryModeType.PERSISTENT">Persistent</mat-option>
         </mat-select>
       </mat-form-field>
 
@@ -40,9 +49,15 @@
         <input matInput [formControlName]="HEADERS" placeholder="name->value;name->value">
       </mat-form-field>
 
-      <button mat-stroked-button color="primary" (click)="onPublish()" [disabled]="form.invalid">Publish</button>
+      <button mat-stroked-button color="primary" (click)="onPublish()" [disabled]="form.disabled || form.invalid">Publish</button>
     </form>
   </mat-card-content>
+
+  <mat-card-footer *ngIf="form.disabled">
+    <section class="sending">
+      Waiting for the event broker to acknowledge the message.
+    </section>
+  </mat-card-footer>
 
   <mat-card-footer *ngIf="publishError">
     <section class="error">

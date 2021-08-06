@@ -106,8 +106,14 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
           // When a subscribe or unsubscribe operation succeeded.
           session.on(solace.SessionEventCode.SUBSCRIPTION_OK, (event: solace.SessionEvent) => this._event$.next(event));
 
-          // When a subscribe or unsubscribe operation is rejected by the broker.
+          // When a subscribe or unsubscribe operation was rejected by the broker.
           session.on(solace.SessionEventCode.SUBSCRIPTION_ERROR, (event: solace.SessionEvent) => this._event$.next(event));
+
+          // When a message published with a guaranteed message delivery strategy, that is {@link MessageDeliveryModeType.PERSISTENT} or {@link MessageDeliveryModeType.NON_PERSISTENT}, was acknowledged by the router.
+          session.on(solace.SessionEventCode.ACKNOWLEDGED_MESSAGE, (event: solace.SessionEvent) => this._event$.next(event));
+
+          // When a message published with a guaranteed message delivery strategy, that is {@link MessageDeliveryModeType.PERSISTENT} or {@link MessageDeliveryModeType.NON_PERSISTENT}, was rejected by the router.
+          session.on(solace.SessionEventCode.REJECTED_MESSAGE_ERROR, (event: solace.SessionEvent) => this._event$.next(event));
 
           session.connect();
         }
@@ -309,6 +315,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
       message.setPriority(options.priority ?? message.getPriority());
       message.setTimeToLive(options.timeToLive ?? message.getTimeToLive());
       message.setDMQEligible(options.dmqEligible ?? message.isDMQEligible());
+      message.setCorrelationKey(options.correlationKey ?? message.getCorrelationKey());
     }
 
     // Add headers.
@@ -343,7 +350,17 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
     const session = await this.session;
 
     // Publish the message.
+    if (message.getDeliveryMode() === MessageDeliveryModeType.DIRECT) {
+      session.send(message);
+      return;
+    }
+
+    // When publishing a message with a guaranteed message delivery strategy, resolve the Promise when acknowledged by the broker, or reject it otherwise.
+    const correlationKey = message.getCorrelationKey() || UUID.randomUUID();
+    const whenAcknowledged = this.whenEvent(solace.SessionEventCode.ACKNOWLEDGED_MESSAGE, {rejectOnEvent: solace.SessionEventCode.REJECTED_MESSAGE_ERROR, correlationKey: correlationKey});
+    message.setCorrelationKey(correlationKey);
     session.send(message);
+    await whenAcknowledged;
   }
 
   public get session(): Promise<solace.Session> {

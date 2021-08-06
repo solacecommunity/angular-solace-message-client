@@ -32,21 +32,32 @@
           grid-column: 1/-1;
         }
 
-        > mat-form-field.destination {
+        > mat-form-field.destination, > mat-form-field.message-type {
           grid-column: 1
         }
 
-        > mat-form-field.destination-type {
+        > mat-form-field.destination-type, > mat-form-field.message-delivery-mode {
           grid-column: 2;
         }
       }
     }
 
+    > mat-card-footer section.sending {
+      margin: .75em;
+      color: theming.mat-color(app-theme.$foreground, secondary-text);
+      background-color: theming.mat-color(app-theme.$foreground, secondary-text, .0125);
+      border: 1px solid theming.mat-color(app-theme.$foreground, secondary-text, .12);
+      border-radius: 3px;
+      padding: 1em;
+      font-style: italic;
+      text-align: center;
+    }
+
     > mat-card-footer section.error {
       margin: .75em;
       border: 1px solid theming.mat-color(app-theme.$warn);
-      background-color: theming.mat-color(app-theme.$warn, 100);
       border-radius: 3px;
+      background-color: theming.mat-color(app-theme.$warn, 100);
       padding: 1em;
     }
   }
