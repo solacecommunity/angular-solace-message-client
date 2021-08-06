@@ -1,11 +1,10 @@
-import * as solace from 'solclientjs/lib-browser/solclient-full';
-
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Data, DestinationType, MessageDeliveryModeType, MessageType, PublishOptions, SDTFieldType, SolaceMessageClient, SolaceObjectFactory } from 'solace-message-client';
 
 export const DESTINATION = 'destination';
 export const DESTINATION_TYPE = 'destinationType';
+export const DELIVERY_MODE = 'deliveryMode';
 export const MESSAGE = 'message';
 export const MESSAGE_TYPE = 'messageType';
 export const HEADERS = 'headers';
@@ -19,6 +18,7 @@ export class PublisherComponent {
 
   public readonly DESTINATION = DESTINATION;
   public readonly DESTINATION_TYPE = DESTINATION_TYPE;
+  public readonly DELIVERY_MODE = DELIVERY_MODE;
   public readonly MESSAGE = MESSAGE;
   public readonly MESSAGE_TYPE = MESSAGE_TYPE;
   public readonly HEADERS = HEADERS;
@@ -27,12 +27,14 @@ export class PublisherComponent {
   public publishError: string;
   public MessageType = MessageType;
   public DestinationType = DestinationType;
+  public MessageDeliveryModeType = MessageDeliveryModeType;
 
   constructor(formBuilder: FormBuilder,
               public solaceMessageClient: SolaceMessageClient) {
     this.form = new FormGroup({
       [DESTINATION]: formBuilder.control('', Validators.required),
-      [DESTINATION_TYPE]: formBuilder.control(solace.DestinationType.TOPIC, Validators.required),
+      [DESTINATION_TYPE]: formBuilder.control(DestinationType.TOPIC, Validators.required),
+      [DELIVERY_MODE]: formBuilder.control(undefined),
       [MESSAGE]: formBuilder.control(''),
       [MESSAGE_TYPE]: formBuilder.control(MessageType.BINARY, Validators.required),
       [HEADERS]: formBuilder.control(''),
@@ -42,6 +44,7 @@ export class PublisherComponent {
   public async onPublish(): Promise<void> {
     const destination = this.form.get(DESTINATION).value;
 
+    this.form.disable();
     this.publishError = null;
     try {
       switch (this.form.get(DESTINATION_TYPE).value) {
@@ -58,12 +61,15 @@ export class PublisherComponent {
     catch (error) {
       this.publishError = error.toString();
     }
+    finally {
+      this.form.enable();
+    }
   }
 
   private readPublishOptionsFromUI(): PublishOptions {
     return {
       headers: this.readHeadersFromUI(),
-      deliveryMode: MessageDeliveryModeType.DIRECT,
+      deliveryMode: this.form.get(DELIVERY_MODE).value,
     };
   }
 

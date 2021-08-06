@@ -8,6 +8,7 @@ import { NgZone } from '@angular/core';
 import { Destination, DestinationType, Message, MessageDeliveryModeType, MessageType, SDTFieldType } from './solace.model';
 import { SolaceObjectFactory } from './solace-object-factory';
 import { asyncScheduler } from 'rxjs';
+import { UUID } from '@scion/toolkit/uuid';
 import createSpyObj = jasmine.createSpyObj;
 import SpyObj = jasmine.SpyObj;
 
@@ -856,13 +857,12 @@ describe('SolaceMessageClient', () => {
       expect(sessionSendCaptor.message.getDeliveryMode()).toEqual(MessageDeliveryModeType.DIRECT);
     });
 
-    it('should allow controlling publishing of the message', async () => {
+    it('should allow controlling publishing of the message by passing options', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
       const sessionSendCaptor = installSessionSendCaptor();
       await simulateLifecycleEvent(solace.SessionEventCode.UP_NOTICE);
 
       const publishOptions: PublishOptions = {
-        deliveryMode: MessageDeliveryModeType.PERSISTENT,
         dmqEligible: true,
         correlationId: '123',
         priority: 123,
@@ -872,7 +872,7 @@ describe('SolaceMessageClient', () => {
       // publish binary message
       await expectAsync(solaceMessageClient.publish('topic', 'blubber', publishOptions)).toBeResolved();
       expect(session.send).toHaveBeenCalledTimes(1);
-      expect(sessionSendCaptor.message.getDeliveryMode()).toEqual(MessageDeliveryModeType.PERSISTENT);
+      expect(sessionSendCaptor.message.getDeliveryMode()).toEqual(MessageDeliveryModeType.DIRECT);
       expect(sessionSendCaptor.message.isDMQEligible()).toBeTrue();
       expect(sessionSendCaptor.message.getCorrelationId()).toEqual('123');
       expect(sessionSendCaptor.message.getPriority()).toEqual(123);
@@ -882,7 +882,7 @@ describe('SolaceMessageClient', () => {
       session.send.calls.reset();
       await expectAsync(solaceMessageClient.publish('topic', SolaceObjectFactory.createMessage(), publishOptions)).toBeResolved();
       expect(session.send).toHaveBeenCalledTimes(1);
-      expect(sessionSendCaptor.message.getDeliveryMode()).toEqual(MessageDeliveryModeType.PERSISTENT);
+      expect(sessionSendCaptor.message.getDeliveryMode()).toEqual(MessageDeliveryModeType.DIRECT);
       expect(sessionSendCaptor.message.isDMQEligible()).toBeTrue();
       expect(sessionSendCaptor.message.getCorrelationId()).toEqual('123');
       expect(sessionSendCaptor.message.getPriority()).toEqual(123);
@@ -1221,6 +1221,49 @@ describe('SolaceMessageClient', () => {
       expect(session.unsubscribe).toHaveBeenCalledWith(jasmine.objectContaining({name: 'topic'}), true /* requestConfirmation */, sessionUnsubscribeCaptor.correlationKey, undefined /* requestTimeout*/);
       session.subscribe.calls.reset();
       session.unsubscribe.calls.reset();
+    });
+
+    describe('Guraranteed messaging', () => {
+      it('should resolve the "Publish Promise" when the broker acknowledges the message', async () => {
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+        await simulateLifecycleEvent(solace.SessionEventCode.UP_NOTICE);
+
+        const correlationKey = UUID.randomUUID();
+        let resolved = false;
+        const whenPublished = solaceMessageClient.publish('topic', 'payload', {deliveryMode: MessageDeliveryModeType.PERSISTENT, correlationKey}).then(() => resolved = true);
+        await drainMicrotaskQueue();
+        expect(resolved).toBeFalse();
+
+        await simulateLifecycleEvent(solace.SessionEventCode.ACKNOWLEDGED_MESSAGE, correlationKey);
+        expect(resolved).toBeTrue();
+        await expectAsync(whenPublished).toBeResolved();
+      });
+
+      it('should reject the "Publish Promise" when the broker rejects the message', async () => {
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+        await simulateLifecycleEvent(solace.SessionEventCode.UP_NOTICE);
+
+        const correlationKey = UUID.randomUUID();
+        let resolved = false;
+        const whenPublished = solaceMessageClient.publish('topic', 'payload', {deliveryMode: MessageDeliveryModeType.PERSISTENT, correlationKey}).then(() => resolved = true);
+        await drainMicrotaskQueue();
+        expect(resolved).toBeFalse();
+
+        await simulateLifecycleEvent(solace.SessionEventCode.REJECTED_MESSAGE_ERROR, correlationKey);
+        expect(resolved).toBeFalse();
+        await expectAsync(whenPublished).toBeRejected();
+      });
+    });
+
+    describe('Direct messaging', () => {
+      it('should resolve the "Publish Promise" immediately', async () => {
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+        await simulateLifecycleEvent(solace.SessionEventCode.UP_NOTICE);
+
+        const whenPublished = solaceMessageClient.publish('topic', 'payload', {deliveryMode: MessageDeliveryModeType.DIRECT});
+        await drainMicrotaskQueue();
+        await expectAsync(whenPublished).toBeResolved();
+      });
     });
 
     describe('headers', () => {
