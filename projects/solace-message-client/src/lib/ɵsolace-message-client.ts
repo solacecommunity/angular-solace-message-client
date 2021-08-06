@@ -3,12 +3,12 @@ import { Injectable, NgZone, OnDestroy, Optional } from '@angular/core';
 import { ConnectableObservable, EMPTY, merge, MonoTypeOperatorFunction, noop, Observable, Observer, of, OperatorFunction, Subject, TeardownLogic } from 'rxjs';
 import { distinctUntilChanged, filter, finalize, map, mergeMap, publishReplay, take, takeUntil, tap } from 'rxjs/operators';
 import { UUID } from '@scion/toolkit/uuid';
-import { MessageEnvelope, ObserveOptions, PublishOptions, SolaceMessageClient } from './solace-message-client';
+import { Data, MessageEnvelope, ObserveOptions, PublishOptions, SolaceMessageClient } from './solace-message-client';
 import { TopicMatcher } from './topic-matcher';
 import { observeInside } from '@scion/toolkit/operators';
 import { SolaceSessionProvider } from './solace-session-provider';
 import { SolaceMessageClientConfig } from './solace-message-client.config';
-import { Message, MessageDeliveryModeType, SDTField, SDTFieldType, SessionProperties } from './solace.model';
+import { Destination, Message, MessageDeliveryModeType, SDTField, SDTFieldType, SessionProperties } from './solace.model';
 import { TopicSubscriptionCounter } from './topic-subscription-counter';
 import { SerialExecutor } from './serial-executor.service';
 import { SolaceObjectFactory } from './solace-object-factory';
@@ -278,9 +278,20 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
       });
   }
 
-  public async publish(topic: string, data?: ArrayBufferLike | DataView | string | SDTField | Message, options?: PublishOptions): Promise<void> {
+
+  public publish(topic: string, data?: Data | Message, options?: PublishOptions): Promise<void> {
+    const destination = SolaceObjectFactory.createTopicDestination(topic);
+    return this.sendToDestination(destination, data, options);
+  }
+
+  public enqueue(queue: string, data?: Data | Message, options?: PublishOptions): Promise<void> {
+    const destination = SolaceObjectFactory.createDurableQueueDestination(queue);
+    return this.sendToDestination(destination, data, options);
+  }
+
+  private async sendToDestination(destination: Destination, data?: ArrayBufferLike | DataView | string | SDTField | Message, options?: PublishOptions): Promise<void> {
     const message: Message = data instanceof solace.Message ? (data as Message) : SolaceObjectFactory.createMessage();
-    message.setDestination(SolaceObjectFactory.createTopicDestination(topic));
+    message.setDestination(destination);
     message.setDeliveryMode(message.getDeliveryMode() ?? MessageDeliveryModeType.DIRECT);
 
     // Set data, either as unstructured byte data, or as structured container if passed a structured data type (SDT).
@@ -331,8 +342,9 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
     // Allow intercepting the message before sending it to the broker.
     options?.intercept?.(message);
 
-    // Publish the message.
     const session = await this.session;
+
+    // Publish the message.
     session.send(message);
   }
 
