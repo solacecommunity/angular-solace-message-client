@@ -1,8 +1,11 @@
+import * as solace from 'solclientjs/lib-browser/solclient-full';
+
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MessageType, SDTFieldType, SolaceMessageClient, SolaceObjectFactory } from 'solace-message-client';
+import { Data, DestinationType, MessageDeliveryModeType, MessageType, PublishOptions, SDTFieldType, SolaceMessageClient, SolaceObjectFactory } from 'solace-message-client';
 
-export const TOPIC = 'topic';
+export const DESTINATION = 'destination';
+export const DESTINATION_TYPE = 'destinationType';
 export const MESSAGE = 'message';
 export const MESSAGE_TYPE = 'messageType';
 export const HEADERS = 'headers';
@@ -14,7 +17,8 @@ export const HEADERS = 'headers';
 })
 export class PublisherComponent {
 
-  public readonly TOPIC = TOPIC;
+  public readonly DESTINATION = DESTINATION;
+  public readonly DESTINATION_TYPE = DESTINATION_TYPE;
   public readonly MESSAGE = MESSAGE;
   public readonly MESSAGE_TYPE = MESSAGE_TYPE;
   public readonly HEADERS = HEADERS;
@@ -22,11 +26,13 @@ export class PublisherComponent {
   public form: FormGroup;
   public publishError: string;
   public MessageType = MessageType;
+  public DestinationType = DestinationType;
 
   constructor(formBuilder: FormBuilder,
               public solaceMessageClient: SolaceMessageClient) {
     this.form = new FormGroup({
-      [TOPIC]: formBuilder.control('', Validators.required),
+      [DESTINATION]: formBuilder.control('', Validators.required),
+      [DESTINATION_TYPE]: formBuilder.control(solace.DestinationType.TOPIC, Validators.required),
       [MESSAGE]: formBuilder.control(''),
       [MESSAGE_TYPE]: formBuilder.control(MessageType.BINARY, Validators.required),
       [HEADERS]: formBuilder.control(''),
@@ -34,19 +40,19 @@ export class PublisherComponent {
   }
 
   public async onPublish(): Promise<void> {
-    const message = this.form.get(MESSAGE).value;
-    const topic = this.form.get(TOPIC).value;
-    const headers = this.parseHeaders();
+    const destination = this.form.get(DESTINATION).value;
 
     this.publishError = null;
     try {
-      if (this.form.get(MESSAGE_TYPE).value === MessageType.TEXT) {
-        const structuredTextMessage = message ? SolaceObjectFactory.createSDTField(SDTFieldType.STRING, message) : undefined;
-        await this.solaceMessageClient.publish(topic, structuredTextMessage, {headers});
-      }
-      else {
-        const binaryMessage = message ? new TextEncoder().encode(message) : undefined;
-        await this.solaceMessageClient.publish(topic, binaryMessage, {headers});
+      switch (this.form.get(DESTINATION_TYPE).value) {
+        case DestinationType.TOPIC: {
+          await this.solaceMessageClient.publish(destination, this.readMessageFromUI(), this.readPublishOptionsFromUI());
+          return;
+        }
+        case DestinationType.QUEUE: {
+          await this.solaceMessageClient.enqueue(destination, this.readMessageFromUI(), this.readPublishOptionsFromUI());
+          return;
+        }
       }
     }
     catch (error) {
@@ -54,7 +60,28 @@ export class PublisherComponent {
     }
   }
 
-  private parseHeaders(): Map<string, any> | undefined {
+  private readPublishOptionsFromUI(): PublishOptions {
+    return {
+      headers: this.readHeadersFromUI(),
+      deliveryMode: MessageDeliveryModeType.DIRECT,
+    };
+  }
+
+  private readMessageFromUI(): Data | undefined {
+    const message = this.form.get(MESSAGE).value;
+    if (!message) {
+      return undefined;
+    }
+
+    if (this.form.get(MESSAGE_TYPE).value === MessageType.TEXT) {
+      return SolaceObjectFactory.createSDTField(SDTFieldType.STRING, message); // structuredTextMessage
+    }
+    else {
+      return new TextEncoder().encode(message); // binary message
+    }
+  }
+
+  private readHeadersFromUI(): Map<string, any> | undefined {
     const headers: string = this.form.get(HEADERS).value;
     if (!headers.length) {
       return undefined;

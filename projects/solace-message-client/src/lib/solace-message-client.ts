@@ -88,53 +88,82 @@ export abstract class SolaceMessageClient {
   public abstract observe$(topic: string, options?: ObserveOptions): Observable<MessageEnvelope>;
 
   /**
-   * Publishes a message to the given topic. The message is transported to all consumers subscribed to the topic.
+   * Publishes a message to the given topic destination. The message is transported to all consumers subscribed to the topic.
    *
-   * A message may contain unstructured byte data, or a structured container.
+   * It is important to understand that a topic is not the same thing as a topic endpoint. A topic is a message property the event broker uses to route a message to its destination.
+   * Topic endpoints, unlike topics, are objects that define the storage of messages for a consuming application and need administratively configured on the event broker. Topic endpoints
+   * are more closely related to queues than to topics. Messages cannot be published directly to topic endpoints, but only indirectly via topics.
+   * For more information, refer to https://solace.com/blog/queues-vs-topic-endpoints.
    *
-   * ## Binary Data Message
-   * By default, data is transported as unstructured bytes in the binary attachment message part.
+   * ## Topic destination name
+   * Topics are case-sensitive and consist of one or more segments, each separated by a forward slash. The topic name must be exact, thus not contain wildcards.
    *
-   * Supported data types are:
-   *   - `ArrayBufferLike` objects, e.g. `ArrayBuffer`, `Uint8Array`, `Uint32Array`, or similar
-   *   - `DataView` objects
-   *   - For backwards compatibility, `solclient` supports passing a latin1-encoded `string` literal.
-   *     Instead, strings should be encoded into their binary representation upfront, e.g., by using
-   *     `TextEncoder.encode(...)`.
+   * ## Payload
+   * A message may contain unstructured byte data, or a structured container. See {@link Data} for further information.
    *
-   * ## Structured Data Message
-   * Alternatively, you can exchange data using the structured data API by passing it as Structured Data Type (SDT) in the form of a {@link SDTField}
-   * of the type {@link SDTFieldType#STRING}, {@link SDTFieldType#MAP} or {@link SDTFieldType#STREAM}. Transporting data as structured message is useful
-   * in a heterogeneous network that has clients that use different hardware architectures and programming languages, allowing exchanging binary data in
-   * a structured, language- and architecture-independent way.
-   *
-   * Example: `SolaceObjectFactory.createSDTField(SDTFieldType.STRING, 'payload')`
-   *
-   * ## Message Delivery
-   * By default, messages are published as direct messages, thus, message delivery is not guaranteed.
-   * This mode provides at-most-once message delivery with the following characteristics:
-   *   * Messages are not retained for clients that are not connected to a Solace message broker.
-   *   * Messages can be discarded when congestion or system failures are encountered.
-   *   * Messages can be reordered in the event of network topology changes.
-   *
-   * Direct messages are most appropriate for messaging applications that require very high-rate or very low-latency
-   * message transmission. Direct Messaging enables applications to efficiently publish messages to a large number of
-   * clients with matching subscriptions.
+   * ## Delivery Mode
+   * Solace supports two delivery modes, also known as qualities of service (QoS):
+   *  - Direct Messaging (default if not specified)
+   *  - Guaranteed or Persistent Messaging
    *
    * You can change the message delivery mode via the {@link PublishOptions.deliveryMode} property.
-   * For more information, see https://docs.solace.com/PubSub-Basics/Basic-Guaranteed-Messsaging-Operation.htm.
+   * For more information, refer to the documentation of {@link PublishOptions.deliveryMode}.
    *
-   * @param  topic - Specifies the topic to which the message should be sent.
-   *         Topics are case-sensitive and consist of one or more segments, each separated by a forward slash.
-   *         The topic is required and must be exact, thus not contain wildcards.
-   * @param  data - Specifies optional transfer data to be carried along with this message. A message may contain unstructured byte data,
-   *         or structured data in the form of a {@link SDTField}. Use {@link SolaceObjectFactory#createSDTField} to construct structured data.
-   *         To have full control over the message to be published, you can also pass the {@link Message} object, which you can create using
-   *         {@link SolaceObjectFactory#createMessage}.
+   * @param  topic - Specifies the topic to which the message should be published.
+   * @param  data - Specifies optional {@link Data transfer data} to be carried along with this message. A message may contain unstructured byte data,
+   *         or structured data in the form of a {@link SDTField}. Alternatively, to have full control over the message to be published, pass the
+   *         {@link Message} object instead, which you can construct using {@link SolaceObjectFactory#createMessage}.
+   *         For more information, refer to the documentation of {@link Data}.
    * @param  options - Controls how to publish the message.
    * @return A Promise that resolves when dispatched the message, or that rejects if the message could not be dispatched.
    */
-  public abstract publish(topic: string, data?: ArrayBufferLike | DataView | string | SDTField | Message, options?: PublishOptions): Promise<void>;
+  public abstract publish(topic: string, data?: Data | Message, options?: PublishOptions): Promise<void>;
+
+  /**
+   * Sends a message to the given queue destination. A queue is typically used in a point-to-point (PTP) messaging environment.
+   *
+   * A queue differs from the topic distribution mechanism that the message is transported to exactly a single consumer, i.e., the message is load
+   * balanced to a single consumer in round‑robin fashion, or is always transported to the same subscription in case of an exclusive queue.
+   * When sending a message to a queue, the broker retains the message until it is consumed, or until it expires.
+   * Refer to the subsequent chapter 'Durability of Endpoints' for more information.
+   *
+   * ## Queue destination name
+   * Queues are case-sensitive and consist of one or more segments, each separated by a forward slash. The queue name must be exact, thus not contain wildcards.
+   *
+   * ## Payload
+   * A message may contain unstructured byte data, or a structured container. See {@link Data} for further information.
+   *
+   * ## Delivery Mode
+   * Solace supports two delivery modes, also known as qualities of service (QoS):
+   *  - Direct Messaging (default if not specified)
+   *  - Guaranteed or Persistent Messaging
+   *
+   * You can change the message delivery mode via the {@link PublishOptions.deliveryMode} property.
+   * For more information, refer to the documentation of {@link PublishOptions.deliveryMode}.
+   *
+   * ## Durability of Endpoints
+   * Solace distinguishes between durable und non-durable queues.
+   *
+   * When sending the message to a durable queue, the broker retains the message until it is consumed (and also acknowledged) by the consumer, or until
+   * it expires. In constract, a non-durable queue, also known as a temporary queue, has a shorter lifecycle than a durable queue. It has the lifespan
+   * of the client that created it, with an additional 60 seconds in case of unexpected disconnect. The 60 seconds provides the client with some time to
+   * reconnect to the endpoint before it and its contents are deleted from the Solace broker.
+   *
+   * Although the terms durable and persistent are related, keep in mind that the concept 'durability' applies to endpoints, whereas 'persistence' applies to event messages.
+   *
+   * For further information refer to:
+   * - https://docs.solace.com/PubSub-Basics/Endpoints.htm
+   * - https://solace.com/blog/solace-endpoints-durable-vs-non-durable
+   *
+   * @param  queue - Specifies the queue to which the message should be sent.
+   * @param  data - Specifies optional {@link Data transfer data} to be carried along with this message. A message may contain unstructured byte data,
+   *         or structured data in the form of a {@link SDTField}. Alternatively, to have full control over the message to be published, pass the
+   *         {@link Message} object instead, which you can construct using {@link SolaceObjectFactory#createMessage}.
+   *         For more information, refer to the documentation of {@link Data}.
+   * @param  options - Controls how to publish the message.
+   * @return A Promise that resolves when dispatched the message, or that rejects if the message could not be dispatched.
+   */
+  public abstract enqueue(queue: string, data?: Data | Message, options?: PublishOptions): Promise<void>;
 }
 
 /**
@@ -150,6 +179,10 @@ export class NullSolaceMessageClient implements SolaceMessageClient {
   }
 
   public publish(topic: string, data?: ArrayBufferLike | DataView | string | SDTField | Message, options?: PublishOptions): Promise<void> {
+    return Promise.resolve();
+  }
+
+  public enqueue(queue: string, data?: ArrayBufferLike | DataView | string | SDTField | Message, options?: PublishOptions): Promise<void> {
     return Promise.resolve();
   }
 
@@ -247,6 +280,29 @@ export interface PublishOptions {
   /**
    * Sets the delivery mode of the message.
    *
+   * Solace supports two delivery modes, also known as qualities of service (QoS):
+   * - Direct Messaging (default if not specified)
+   * - Guaranteed or Persistent Messaging
+   *
+   * For a detailed comparison, refer to https://solace.com/blog/delivery-modes-direct-messaging-vs-persistent-messaging.
+   *
+   * ### Direct Messaging (default)
+   * Direct messaging is over TCP and provides a reliable, but not guaranteed, delivery of messages from the Solace event broker to consuming clients,
+   * and is the default message delivery system. The broker delivers a message one time at most. It is most appropriate for messaging applications
+   * that require very high-rate or very low-latency message transmission, i.e., to efficiently publish messages to a large number of clients with matching
+   * subscriptions.
+   *
+   * For more information, refer to https://docs.solace.com/PubSub-Basics/Direct-Messages.htm.
+   *
+   * ### Persistent or Guaranteed Messaging
+   * Persistent messaging is also over TCP but has an additional set of acknowledgements beyond those used by TCP itself. Solace event broker guarantees the message
+   * never to be lost and to be delivered at least once. Use persistent messaging when data must be received by the consuming application.
+   *
+   * Persistent messaging occurs between the publishing application and the broker, and between the broker and the consuming application. If the consuming application
+   * is not connected or cannot keep up with the publishing application, the messages are stored in endpoints on the broker.
+   *
+   * For more information, refer to  https://docs.solace.com/PubSub-Basics/Guaranteed-Messages.htm or https://docs.solace.com/PubSub-Basics/Basic-Guaranteed-Messsaging-Operation.htm.
+   *
    * @default MessageDeliveryModeType.DIRECT
    */
   deliveryMode?: MessageDeliveryModeType;
@@ -340,3 +396,28 @@ export interface MessageEnvelope {
    */
   headers: Map<string, any>;
 }
+
+/**
+ * Represents the payload of a message.
+ *
+ * A message may contain unstructured byte data, or a structured container.
+ *
+ * ## Binary Data Message
+ * By default, data is transported as unstructured bytes in the binary attachment message part.
+ *
+ * Supported data types are:
+ * - ArrayBufferLike, e.g. `ArrayBuffer`, `Uint8Array`, `Uint32Array`, or similar
+ * - DataView
+ * - string (latin1-encoded; only supported for backwards compatibility; use `TextEncoder.encode(...)` instead)
+ *
+ * ## Structured Data Message
+ * Alternatively, you can exchange data using the structured data API by passing it as Structured Data Type (SDT) in the form of a {@link SDTField}
+ * of the type {@link SDTFieldType#STRING}, {@link SDTFieldType#MAP} or {@link SDTFieldType#STREAM}. Transporting data as structured message is useful
+ * in a heterogeneous network that has clients that use different hardware architectures and programming languages, allowing exchanging binary data in
+ * a structured, language- and architecture-independent way.
+ *
+ * Example: `SolaceObjectFactory.createSDTField(SDTFieldType.STRING, 'payload')`
+ *
+ * https://solace.com/blog/inside-solace-message-introduction/
+ */
+export type Data = ArrayBufferLike | DataView | string | SDTField;

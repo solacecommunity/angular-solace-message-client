@@ -4,10 +4,19 @@
     <span class="sub-title">Publish a message to a topic destination.</span>
 
     <form [formGroup]="form">
-      <!-- Topic -->
-      <mat-form-field>
-        <mat-label>Topic</mat-label>
-        <input matInput [formControlName]="TOPIC">
+      <!-- Destination -->
+      <mat-form-field class="destination">
+        <mat-label>Destination</mat-label>
+        <input matInput [formControlName]="DESTINATION">
+      </mat-form-field>
+
+      <!-- Destination type -->
+      <mat-form-field class="destination-type">
+        <mat-label>Destination Type</mat-label>
+        <mat-select [formControlName]="DESTINATION_TYPE">
+          <mat-option [value]="DestinationType.TOPIC">Topic</mat-option>
+          <mat-option [value]="DestinationType.QUEUE">Queue</mat-option>
+        </mat-select>
       </mat-form-field>
 
       <!-- Message -->
