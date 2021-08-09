@@ -1,14 +1,15 @@
 // tslint:disable:no-redundant-jsdoc
 // tslint:disable:member-ordering
+// tslint:disable:no-empty-interface
 
 /**
- * NOTE: THE SOLACE TYPE DEFINITIONS CONTAINED IN THIS FILE ARE NOT GENERATED BUT DERIVED MANUALLY BASED ON THE API OF SOLCLIENTJS:10.5.1
+ * NOTE: THE SOLACE TYPE DEFINITIONS CONTAINED IN THIS FILE ARE NOT GENERATED BUT CREATED MANUALLY BASED ON THE API OF SOLCLIENTJS:10.5.1
  */
 
 /**
  * Represents a session properties object.
  *
- * Passed in to solace.SolclientFactory.createSession when creating a solace.Session instance.
+ * Passed in to {@link SolaceObjectFactory.createSession} when creating a solace.Session instance.
  *
  * @see solace.SessionProperties
  * @see https://docs.solace.com/API-Developer-Online-Ref-Documentation/js/index.html
@@ -208,7 +209,7 @@ export interface SessionProperties {
 
   /**
    * A read-only string that indicates the default reply-to destination used for any request messages sent from this session.
-   * See {@link solace.Session.sendRequest}.
+   * See {@link Session.sendRequest}.
    *
    * This parameter is only valid when the session is connected.
    *
@@ -238,7 +239,7 @@ export interface SessionProperties {
   ignoreSubscriptionNotFoundError?: boolean;
 
   /**
-   * Set to 'true' to have the API remember subscriptions and reapply them upon calling {@link solace.Session.connect} on a disconnected session.
+   * Set to 'true' to have the API remember subscriptions and reapply them upon calling {@link Session.connect} on a disconnected session.
    *
    * @default  false
    */
@@ -260,7 +261,7 @@ export interface SessionProperties {
 
   /**
    * The timeout period (in milliseconds) for a reply to come back from the Solace Message Router. This timeout serves as the default
-   * request timeout for {@link solace.Session.subscribe},  {@link solace.Session.unsubscribe}, {@link solace.Session.updateProperty}.
+   * request timeout for {@link Session.subscribe},  {@link Session.unsubscribe}, {@link Session.updateProperty}.
    * The valid range is >= 0.
    *
    * @default 10000
@@ -298,40 +299,29 @@ export interface SessionProperties {
   maxWebPayload?: number;
 
   /**
-   * Allow additional properties, e.g., properties contained in new `solclientjs` versions.
+   * Allow additional properties, e.g., properties of new `solclientjs` versions.
    */
   [key: string]: any;
 }
 
 /**
- * Represents authentication schemes that can be used. The corresponding session
- * property is {@link solace.authenticationScheme}.
+ * Represents authentication schemes that can be used. The corresponding session property is {@link AuthenticationScheme}.
  *
  * @see solace.AuthenticationScheme
  */
 export enum AuthenticationScheme {
   /**
-   * @description Username/Password based authentication scheme.
-   * @type {String}
+   * Username/Password based authentication scheme.
    */
   BASIC = 'AuthenticationScheme_basic',
   /**
-   * @name solace.AuthenticationScheme.CLIENT_CERTIFICATE
-   * @default AuthenticationScheme_clientCertificate
-   * @description Client-side certificate based authentication scheme.
+   * Client-side certificate based authentication scheme.  The certificate and private key are provided by the browser.
+   *
    * @see {@link SessionProperties.sslPfx}
    * @see {@link SessionProperties.sslPfxPassword}
    * @see {@link solace.SessionProperties.sslPrivateKey}
    * @see {@link solace.SessionProperties.sslPrivateKeyPassword}
    * @see {@link solace.SessionProperties.sslCertificate}
-   * @type {String}
-   * @target node
-   */
-  /**
-   * @description Client-side certificate based authentication scheme.  The certificate and
-   *   private key are provided by the browser.
-   * @type {String}
-   * @target browser
    */
   CLIENT_CERTIFICATE = 'AuthenticationScheme_clientCertificate',
 }
@@ -510,7 +500,7 @@ export interface Message {
   setBinaryAttachment(value: ArrayBufferLike | DataView | string): void;
 
   /**
-   * Given a Message containing a cached message, return the cache Request Id that the application set in the call to {@link solace.CacheSession#sendCacheRequest}.
+   * Given a Message containing a cached message, return the cache Request Id that the application set in the call to {@link CacheSession#sendCacheRequest}.
    *
    * The request ID of the cache request associated with this message.
    */
@@ -521,7 +511,7 @@ export interface Message {
    *
    * The message Correlation Id is carried in the Solace message headers unmodified by the API and
    * the Solace Message Router. This field may be used for peer-to-peer message synchronization and
-   * is commonly used for correlating a request to a reply. See {@link solace.Session#sendRequest}.
+   * is commonly used for correlating a request to a reply. See {@link Session#sendRequest}.
    */
   getCorrelationId(): string;
 
@@ -530,7 +520,7 @@ export interface Message {
    *
    * The message Correlation Id is carried in the Solace message headers unmodified by the API and
    * the Solace Message Router. This field may be used for peer-to-peer message synchronization and
-   * is commonly used for correlating a request to a reply. See {@link solace.session#sendRequest}.
+   * is commonly used for correlating a request to a reply. See {@link Session#sendRequest}.
    */
   setCorrelationId(value: string): void;
 
@@ -556,8 +546,8 @@ export interface Message {
    * Messages that are sent in either {@link MessageDeliveryModeType.PERSISTENT} or
    * {@link MessageDeliveryModeType.NON_PERSISTENT} mode may set the correlation key. If this
    * method is used, the correlation information is returned when the
-   * {@link solace.SessionEventCode#event:ACKNOWLEDGED_MESSAGE} event is later received for an
-   * acknowledged message or when the {@link solace.SessionEventCode#event:REJECTED_MESSAGE_ERROR}
+   * {@link SessionEventCode.ACKNOWLEDGED_MESSAGE} event is later received for an
+   * acknowledged message or when the {@link SessionEventCode.REJECTED_MESSAGE_ERROR}
    * is received for a rejected message.
    *
    * The API only maintains a reference to the passed object. If the application requires the
@@ -690,8 +680,8 @@ export interface Message {
   /**
    * Acknowledges this message.
    *
-   * If the {@link solace.MessageConsumer} on which this message was received is configured to use
-   * {@link solace.MessageConsumerAckMode.CLIENT}, then when a message is received by an
+   * If the {@link MessageConsumer} on which this message was received is configured to use
+   * {@link MessageConsumerAcknowledgeMode.CLIENT}, then when a message is received by an
    * application, the application must call this method to explicitly acknowledge reception of the
    * message. This frees local and router resources associated with an unacknowledged message.
    *
@@ -699,13 +689,13 @@ export interface Message {
    * acknowledged messages internally and acknowledges messages, in bulk, when a
    * threshold or timer is reached.
    *
-   * @throws {@link solace.OperationError}
+   * @throws {@link OperationError}
    *  * if this message was not received via Guaranteed Message;
-   *    subcode: {@link solace.ErrorSubcode.MESSAGE_DELIVERY_MODE_MISMATCH}
-   *  * if the associated {@link solace.Session} is not connected;
-   *    subcode: {@link solace.ErrorSubcode.SESSION_NOT_CONNECTED}
-   *  * if the associated {@link solace.MessageConsumer} is not connectedl
-   *    subcode: {@link solace.ErrorSubcode.INVALID_OPERATION}
+   *    subcode: {@link ErrorSubcode.MESSAGE_DELIVERY_MODE_MISMATCH}
+   *  * if the associated {@link Session} is not connected;
+   *    subcode: {@link ErrorSubcode.SESSION_NOT_CONNECTED}
+   *  * if the associated {@link MessageConsumer} is not connectedl
+   *    subcode: {@link ErrorSubcode.INVALID_OPERATION}
    */
   acknowledge(): void;
 
@@ -752,7 +742,7 @@ export interface Message {
 
   /**
    * Returns whether the message's reply field is set, indicating
-   * that this message is a reply to a previous request. See {@link solace.Session#sendRequest}.
+   * that this message is a reply to a previous request. See {@link Session#sendRequest}.
    */
   isReplyMessage(): boolean;
 
@@ -804,7 +794,7 @@ export interface Message {
    *
    * An application that publishes the same {@link Message} multiple times and
    * also wants generted timestamps on each messages, should set the sender timestamp
-   * to undefined after each call to {@link solace.Session#send}.
+   * to undefined after each call to {@link Session#send}.
    */
   setSenderTimestamp(value: number): void;
 
@@ -812,7 +802,7 @@ export interface Message {
    * Gets the sequence number, if set.
    *
    * This is an application-defined field, see {@link setSequenceNumber}.
-   * @throws {@link solace.SDTUnsupportedValueError} in case the sequence number is out of range.
+   * @throws {@link SDTUnsupportedValueError} in case the sequence number is out of range.
    */
   getSequenceNumber(): number | undefined;
 
@@ -872,7 +862,7 @@ export interface Message {
    * that message would cause any queue or topic-endpoint to exceed its configured
    * low-priority-max-msg-count.
    *
-   * @default {solace.MessageUserCosType#COS1}
+   * @default {@link MessageUserCosType#COS1}
    */
   setUserCos(value: MessageUserCosType): void;
 
@@ -973,7 +963,7 @@ export interface Message {
   reset(): void;
 
   /**
-   * Allow additional properties, e.g., properties contained in new `solclientjs` versions.
+   * Allow additional properties, e.g., properties of new `solclientjs` versions.
    */
   [key: string]: any;
 }
@@ -1013,7 +1003,7 @@ export enum MessageType {
  * Users should obtain an instances from one of the following:
  * * {@link SolaceObjectFactory.createTopicDestination}
  * * {@link SolaceObjectFactory.createDurableQueueDestination}
- * * {@link solace.MessageConsumer#getDestination}
+ * * {@link MessageConsumer#getDestination}
  * * {@link SDTField#getValue} when {@link SDTField#getType} returns {@link SDTFieldType.DESTINATION}.
  *
  * @see solace.Destination
@@ -1073,7 +1063,7 @@ export enum DestinationType {
  * The MessageCacheStatus of such messages is: {@link MessageCacheStatus#LIVE}.
  *
  * Message are also delivered to an application
- * as a result of a cache request (see {@link solace.CacheSession#sendCacheRequest}) which
+ * as a result of a cache request (see {@link CacheSession#sendCacheRequest}) which
  * have a MessageCacheStatus that is {@link MessageCacheStatus#CACHED} or
  * {@link MessageCacheStatus#SUSPECT}.
  *
@@ -1155,7 +1145,7 @@ export interface SDTField {
 
   /**
    * Gets the field value.
-   * @throws {solace.SDTUnsupportedValueError} if value found in the field is not in range supported by the platform/runtime.
+   * @throws {SDTUnsupportedValueError} if value found in the field is not in range supported by the platform/runtime.
    */
   getValue(): any;
 
@@ -1295,8 +1285,8 @@ export interface SDTMapContainer {
   /**
    * Adds a field to this map. If a key:value mapping already exists for this key, it is replaced.
    *
-   * @throws {solace.OperationError} if value does not match type
-   * @throws {solace.SDTUnsupportedValueError} if value is not in range supported by the platform/runtime
+   * @throws {OperationError} if value does not match type
+   * @throws {SDTUnsupportedValueError} if value is not in range supported by the platform/runtime
    */
   addField(key: string, type: SDTFieldType, value: any): void;
 }
@@ -1324,15 +1314,15 @@ export interface SDTStreamContainer {
   /**
    * Rewinds the read pointer to the beginning of the stream. Normally when {@link hasNext}
    * returns `false`, a client application must call rewind() to reiterate over the stream's fields.
-   * @throws {solace.OperationError} if the stream cannot be rewound.
+   * @throws {OperationError} if the stream cannot be rewound.
    */
   rewind(): void;
 
   /**
    * Appends a SDTField to the stream.
    *
-   * @throws {solace.OperationError} if value does not match type
-   * @throws {solace.SDTUnsupportedValueError} if value is not in range supported by the platform/runtime
+   * @throws {OperationError} if value does not match type
+   * @throws {SDTUnsupportedValueError} if value is not in range supported by the platform/runtime
    */
   addField(type: SDTFieldType, value: any): void;
 }
@@ -1351,4 +1341,3073 @@ export enum MessageDumpFlag {
    * Display the entire message contents.
    */
   MSGDUMP_FULL = 1
+}
+
+/**
+ * Defines the properties for a {@link MessageConsumer}.
+ *
+ * @see solace.MessageConsumerProperties
+ */
+export interface MessageConsumerProperties {
+
+  /**
+   * Defines the queue from which to consume.
+   *
+   *  * For durable queues and durable topic endpoints, this must be a {@link QueueDescriptor}.
+   *  * For non-durable endpoints, the name is generated when the {@link MessageConsumer} is
+   *    connected. The generated descriptor can be queried from the consumer after it has successfully connected by
+   *    calling {@link MessageConsumer#getProperties#queueDescriptor}.
+   */
+  queueDescriptor: QueueDescriptor;
+
+  /**
+   * Gets the properties of the remote queue.
+   *
+   *  * For temporary queues and temporary topic endpoints, these properties define the queue that is created.
+   *  * For durable queues, these must be unset on consumer creation. The values will be populated after the
+   *    queue is connected and can be retrieved by calling {@link MessageConsumer#getProperties#queueProperties}.
+   */
+  queueProperties?: QueueProperties;
+
+  /**
+   * This must be undefined if {@link MessageConsumerProperties#queueDescriptor#type} is not {@link QueueType.TOPIC_ENDPOINT}.
+   *
+   * If {@link MessageConsumerProperties#queueDescriptor#durable} is `false`, this may be left undefined to generate the topic
+   * endpoint's destination. When generated, the destination can be obtained from the {@link MessageConsumer} after it is connected
+   * by calling {@link MessageConsumer#getDestination}.
+   *
+   * @default undefined
+   */
+  topicEndpointSubscription?: Destination;
+
+  /**
+   * The bind timeout in milliseconds when creating a connection to the Solace Message Router.
+   *
+   * The valid range is >= 50.
+   *
+   * @default 10000
+   */
+  connectTimeoutInMsecs?: number;
+
+  /**
+   * Gets and sets the maximum number of bind attempts when creating a connection to the Solace Message Router.
+   *
+   * The valid range is >= 1.
+   *
+   * @default 3
+   */
+  connectAttempts?: number;
+
+  /**
+   * The Application Acknowledgement mode for the Message Consumer.
+   *
+   * When the acknowledgement mode is {@link MessageConsumerAcknowledgeMode.CLIENT}, a message is "Application Acknowledged"
+   * when the application calls {@link Message#acknowledge} on that message.
+   *
+   * When the acknowledge mode is {@link MessageConsumerAcknowledgeMode.AUTO}, a message is "Application Acknowledged" by the
+   * API after all {@link MessageConsumerEventName#event:MESSAGE} listeners are called and none throw an exception. If a message
+   * handler throws, the message can still be acknowledged by calling {@link Message#acknowledge}, but this would not be a
+   * recommended practice.
+   *
+   * When received messages are "Application Acknowledged" they are removed from the Guaranteed Message storage on the Solace
+   * Message Router. Message Consumer "Application Acknowledged", only remove messages from the Solace Message Router.
+   *
+   * In particular, withholding Message Consumer Acknowledgemnts does not stop message delivery. For Message Consumer flow
+   * control (aka transport acknowledgemeent) see {@link MessageConsumer.stop}/{@link MessageConsumer.start}. Message Consumer
+   * flow control may also be imlpemented by removing the {@link MessageConsumerEventName#event:MESSAGE} listener.
+   *
+   * Flow control and transport acknowledgements characteristics are defined by
+   * {@link MessageConsumerProperties.transportAcknowledgeThresholdPercentage} and
+   * {@link MessageConsumerProperties.transportAcknowledgeTimeoutInMsecs}
+   *
+   * @default MessageConsumerAcknowledgeMode.AUTO
+   */
+  acknowledgeMode?: MessageConsumerAcknowledgeMode;
+
+  /**
+   * The transport acknowledgement timeout for guaranteed messaging.
+   *
+   * When the {@link MessageConsumerProperties.transportAcknowledgeTimeoutInMsecs} is not exceeded, acknowledgements will be returned
+   * to the router at intervals not less than this value.
+   *
+   * The valid range is 20 <= transportAcknowledgeTimeoutInMsecs <= 1500.
+   *
+   * @default 1000
+   */
+  transportAcknowledgeTimeoutInMsecs?: number;
+
+  /**
+   * The threshold for sending an acknowledgement, as a percentage.
+   *
+   * The API sends a transport acknowledgment every N messages where N is calculated as this percentage of the transport
+   * window size if the endpoint's "max-delivered-unacked-msgs-per-flow" setting at bind time is greater than or equal to
+   * the transport window size. Otherwise, N is calculated as this percentage of the endpoint's "max-delivered-unacked-msgs-per-flow"
+   * setting at bind time.
+   *
+   * The valid range is 1 <= transportAcknowledgeThresholdPercentage <= 75.
+   *
+   * @default 60
+   */
+  transportAcknowledgeThresholdPercentage?: number;
+
+  /**
+   * When enabled, a Guaranteed Messaging Consumer requests Active and Inactive events from the router and emits them to interested listeners.
+   *
+   * @default false
+   *
+   * @see {MessageConsumerEvent.ACTIVE}
+   * @see {MessageConsumerEvent.INACTIVE}
+   */
+  activeIndicationEnabled?: boolean;
+
+  /**
+   * When enabled, a Guaranteed Messaging Consumer does not receive messages published in the same Session, even if the endpoint contains a
+   * subscription that matches the published message.
+   *
+   * @default false
+   */
+  noLocalnoLocal?: boolean;
+
+  /**
+   * The window size for Guaranteed Message delivery.
+   *
+   * This is the maximum number of messages that will be prefetched from the Solace Messaging Router and queued internally by the API while
+   * waiting for the application to accept delivery of the messages.
+   *
+   * The valid range is 1 <= windowSize <= 255.
+   *
+   * @default 255
+   */
+  windowSize?: number;
+
+  /**
+   * When a Flow is created, the application may request replay of messages from the replay log, even messages that have been previously delivered
+   * and removed from the topic endpoint or queue.
+   *
+   * The default is undefined, and indicates that no replay is requested.
+   *
+   * When defined the replay start location must be a {@link ReplayStartLocation} object as returned by
+   * {@link SolaceObjectFactory.createReplayStartLocationBeginning} or {@link SolaceObjectFactory.createReplayStartLocationDate}.
+   *
+   * The {@link ReplayStartLocation} returned by {@link SolaceObjectFactory.createReplayStartLocationBeginning} indicates that all messages available
+   * should be replayed.
+   *
+   * The replay start location returned by {@link SolaceObjectFactory.createReplayStartLocationDate} indicates that all messages logged since a given
+   * date must be retrieved.
+   *
+   * @default undefined.
+   */
+  replayStartLocation?: ReplayStartLocation;
+
+  /**
+   * When a connected flow receives an unsolicited unbind event with subcode "REPLAY_STARTED" or "GM_UNAVAILABLE| , the SDK can reconnect
+   * the flow automatically.
+   *
+   * This property controls the flow auto reconnect feature:
+   *    0: Disable flow auto reconnect for this consumer flow.
+   *   -1: Enable flow auto reconnect for this consumer flow, infiinite retries (default)
+   *   <n, positive number>: Enable flow auto reconnect for this consumer flow, n retries.
+   *
+   * When the flow auto rebind is enabled, "DOWN_ERROR"s with "REPLAY_STARTED" and "GM_UNAVAILABLE" are handled internally, and not (immediately)
+   * emitted to the application. A "RECONNECTING" event (with the same subcode) is emitted instead, ideally followed by a "RECONNECTED" event when
+   * the reconnect succeedes.
+   *
+   * In case of "REPLAY_STARTED", the window of message IDs and acknowledgements are reset to allow replay packets to be passed to the application
+   * without marking them as duplicates. In case of "GM_UNAVAILABLE", flow state is preserved.
+   *
+   * If reconnecting fails after exhausting the number of retries, a "DOWN_ERROR" is emitted with the details of the last retry.
+   *
+   * @default -1
+   */
+  reconnectAttempts?: number;
+
+  /**
+   * Time to wait between flow auto reconnect attempts, in milliseconds.
+   *
+   * See {@link MessageConsumerProperties.reconnectAttempts}
+   * Defaults to 3 seconds (3000)
+   *
+   * The valid range is >= 50.
+   *
+   * @default 3000
+   */
+  reconnectIntervalInMsecs?: number;
+
+  /**
+   * Allow additional properties, e.g., properties of new `solclientjs` versions.
+   */
+  [key: string]: any;
+}
+
+/**
+ * Identifies a queue or topic endpoint on the message router.
+ *
+ * Operations that make use of queue descriptors include
+ *  * {@link Session#createMessageConsumer}
+ *  * {@link Session#dteUnsubscribe}
+ *
+ * For durable endpoints the name of that endpoint needs to be specified.
+ * For non-durable endpoints, the name is generated when the {@link MessageConsumer} is connected.
+ * The generated descriptor can be queried from the consumer after it has successfully connected
+ * by calling {@link MessageConsumer#getProperties#queueDescriptor}.
+ *
+ * @see solace.QueueDescriptor
+ * @see solace.AbstractQueueDescriptor
+ */
+export interface QueueDescriptor {
+
+  /**
+   * The remote name to which this descriptor refers.
+   *
+   * Required for durable queues and durable topic endpoints.
+   * For non-durable endpoints, the name is generated when the {@link MessageConsumer} is connected.
+   * The generated descriptor can be queried from the consumer after it has successfully connected
+   * by calling {@link MessageConsumer#getProperties#queueDescriptor}.
+   */
+  name?: string;
+
+  /**
+   * The queue type to which this descriptor refers.
+   */
+  type: QueueType;
+
+  /**
+   * Specifies whether this descriptor refers to a durable queue.
+   *
+   * @default true
+   */
+  durable?: boolean;
+
+  /**
+   * Allow additional properties, e.g., properties contained in new `solclientjs` versions.
+   */
+  [key: string]: any;
+}
+
+/**
+ * Represents a queue properties object.
+ *
+ * May be passed in to {@link Session#createMessageConsumer} when creating a {@link MessageConsumer} object.
+ * Upon creation of a queue, `undefined` queue properties are set to default values chosen by the router.
+ *
+ * @see solace.QueueProperties
+ */
+export interface QueueProperties {
+
+  /**
+   * Permissions for this queue.
+   *
+   * When creating a temporary queue, these are the permissions that apply to all other users;
+   * the user creating the temporary queue is always granted "DELETE" permissions.
+   *
+   * @default undefined
+   */
+  permissions?: QueuePermissions;
+
+  /**
+   * The access type for this queue.
+   *
+   * This parameter must NOT be set when creating a temporary queue via {@link Session#createMessageConsumer}.
+   * Such a queue has its access type determined by the remote message router.
+   *
+   * @default undefined
+   */
+  accessType?: QueueAccessType;
+
+  /**
+   * The quota, in megabytes, for this queue.
+   *  * The allowed values are (0 <= quotaMB) || undefined.
+   *  * A value of 0 configures the queue to act as a Last-Value-Queue (LVQ), where the router enforces a Queue depth of one,
+   *    and only the most current message is spooled by the queue. When a new message is received, the current queued message
+   *    is first automatically deleted from the queue, then the new message is spooled.
+   *
+   * @default undefined
+   */
+  quotaMB?: number;
+
+  /**
+   * The maximum message size, in bytes, for any single message spooled on this queue.
+   *
+   * @default undefined
+   */
+  maxMessageSize?: number;
+
+  /**
+   * Whether this queue respects Time To Live on messages.
+   *
+   * @default false
+   */
+  respectsTTL?: boolean;
+
+  /**
+   * The discard behavior for this queue.
+   *
+   * @default {QueueDiscardBehavior.NOTIFY_SENDER_OFF}
+   */
+  discardBehavior?: QueueDiscardBehavior;
+
+  /**
+   * The maximum number of times to attempt message redelivery for this queue.
+   *  * The valid range is 0 <= maxMessageRedelivery <= 255
+   *  * A value of 0 means retry forever.
+   *
+   * @default undefined
+   */
+  maxMessageRedelivery?: number;
+
+  /**
+   * Allow additional properties, e.g., properties contained in new `solclientjs` versions.
+   */
+  [key: string]: any;
+}
+
+/**
+ * An enumeration of consumer acknowledgement modes.
+ *
+ * The corresponding MessageConsumer property {@link MessageConsumerProperties#acknowledgeMode} configures how acknowledgments
+ * are generated for received Guaranteed messages.
+ *
+ * When received messages are acknowledged they are removed from the Guaranteed Message storage on the Solace Message Router.
+ * Message Consumer acknowledgements, only remove messages from the Solace Message Router.
+ *
+ * In particular, withholding Message Consumer Acknowledgemnts does not stop message delivery. For Message Consumer flow control
+ * see {@link MessageConsumer.stop}/{@link MessageConsumer.start}. Message Consumer flow control may also be imlpemented by removing
+ * the {@link MessageConsumerEventName#event:MESSAGE} listener.
+ *
+ * @see solace.MessageConsumerAcknowledgeMode
+ */
+export enum MessageConsumerAcknowledgeMode {
+  /**
+   * The API automatically acknowledges any message that was delivered to all {@link MessageConsumerEventName#event:MESSAGE} listeners
+   * with no exception thrown on any of them.
+   */
+  AUTO = 'AUTO',
+  /**
+   * The API acknowledges a message only when the application calls {@link Message#acknowledge}.
+   */
+  CLIENT = 'CLIENT',
+}
+
+/**
+ * Defines the ReplayStartLocation class.
+ *
+ * The {@link ReplayStartLocation} is set in the corresponding {@link MessageConsumer} property {@link MessageConsumerProperties#replayStartLocation}.
+ *
+ * @see solace.ReplayStartLocation
+ */
+export interface ReplayStartLocation {
+
+  /**
+   * A generic description of the Destination.
+   */
+  toString(): string;
+}
+
+/**
+ * Represents the permissions applicable to a queue.
+ *
+ * The corresponding endpoint property is {@link QueueProperties#permissions}.
+ *
+ * The access controls:
+ *  * the permissions for all other users of the queue, this only applies to non-durable queues {@link QueueProperties#permissions};
+ *  * for the current Message Consumer  on a queue or endpoint, {@link MessageConsumer.permissions}
+ *
+ * For example, creating a temporary topic endpoint with MODIFY_TOPIC will allow
+ * other users to modify the topic subscribed to that endpoint.
+ *
+ * @see solace.QueuePermissions
+ */
+export enum QueuePermissions {
+  /**
+   * No client other than the queue's owner may access the endpoint.
+   */
+  NONE = 'NONE',
+  /**
+   * Client may read messages but not consume them.
+   */
+  READ_ONLY = 'READ_ONLY',
+  /**
+   * Client may read and consume messages.
+   */
+  CONSUME = 'CONSUME',
+  /**
+   * Client may read and consume messages, and modify topic(s) associated with the queue.
+   */
+  MODIFY_TOPIC = 'MODIFY_TOPIC',
+  /**
+   * Client may read and consume messages, modify topic(s) associated with the queue, and delete the queue.
+   */
+  DELETE = 'DELETE',
+}
+
+/**
+ * Represents the possible endpoint access types. The corresponding endpoint property is {@link QueueProperties#accessType}.
+ *
+ * @see solace.QueueAccessType
+ */
+export enum QueueAccessType {
+  /**
+   * An exclusive endpoint. The first client to bind receives the stored messages on the Endpoint.
+   */
+  EXCLUSIVE = 'EXCLUSIVE',
+  /**
+   * A non-exclusive (shared) Queue. Each client to bind receives messages in a round robin fashion.
+   */
+  NONEXCLUSIVE = 'NONEXCLUSIVE',
+}
+
+/**
+ * Enumerates the behavior options when a message cannot be added to an endpoint
+ * (for example, the maximum quota {@link QueueProperties#quotaMB} was exceeded).
+ *
+ * @see solace.QueueDiscardBehavior
+ */
+export enum QueueDiscardBehavior {
+  /**
+   * Send the publisher a message reject notification.
+   */
+  NOTIFY_SENDER_ON = 'NOTIFY_SENDER_ON',
+  /**
+   * Discard the message and acknowledge it.
+   */
+  NOTIFY_SENDER_OFF = 'NOTIFY_SENDER_OFF',
+}
+
+/**
+ * Specifies the type of remote resource to which an {@link AbstractQueueDescriptor} refers.
+ *
+ * @see solace.QueueType
+ */
+export enum QueueType {
+  /**
+   * The queue descriptor refers to a queue endpoint.
+   */
+  QUEUE = 'QUEUE',
+  /**
+   * The queue descriptor refers to a topic endpoint.
+   */
+  TOPIC_ENDPOINT = 'TOPIC_ENDPOINT',
+}
+
+/**
+ * An attribute of {@link SessionEvent}. This enumeration represents the different events emitted by
+ * {@link Session} through the session event callback.
+ *
+ * When a session is no longer in a usable state, the API tears down the underlying connection and notifies
+ * the application with one of the following session events:
+ *  * {@link SessionEventCode.DOWN_ERROR}
+ *  * {@link SessionEventCode.CONNECT_FAILED_ERROR}
+ *
+ * @see SessionEventCode
+ */
+export enum SessionEventCode {
+  /**
+   * The Session is ready to send/receive messages and perform control operations.
+   *
+   * At this point the transport session is up, the Session has logged in, and the
+   * P2PInbox subscription is added.
+   *
+   * The session is established.
+   */
+  UP_NOTICE = 0,
+  /**
+   * The session was established and then went down.
+   *
+   * @param {OperationError} error The details related to the session failure.
+   */
+  DOWN_ERROR = 1,
+  /**
+   * The session attempted to connect but was unsuccessful.
+   *
+   * @param {OperationError} error The details related to the failed connection attempt.
+   */
+  CONNECT_FAILED_ERROR = 2,
+  /**
+   * The Solace Message Router rejected a published message.
+   *
+   * @param {RequestError} error The details related to the rejected message.
+   */
+  REJECTED_MESSAGE_ERROR = 4,
+  /**
+   * The Solace Message Router rejected a subscription (add or remove).
+   *
+   * @param {RequestError} error The details related to the failed subscription update.
+   */
+  SUBSCRIPTION_ERROR = 5,
+  /**
+   * The subscribe or unsubscribe operation succeeded.
+   *
+   * @param {SessionEvent} event The details related to the successful subscription update.
+   */
+  SUBSCRIPTION_OK = 6,
+  /**
+   * The Solace Message Router's Virtual Router Name changed during a reconnect operation.
+   *
+   * @param {SessionEvent} event Information related to the event.
+   */
+  VIRTUALROUTER_NAME_CHANGED = 7,
+  /**
+   * The event represents a successful update of a mutable session property.
+   *
+   * @param {SessionEvent} event Information related to the successful property update.
+   */
+  PROPERTY_UPDATE_OK = 10,
+  /**
+   * The event represents a failed update of a mutable session property.
+   *
+   * @param {RequestError} error The details related to the failed property update.
+   */
+  PROPERTY_UPDATE_ERROR = 11,
+  /**
+   * The session transport can accept data again.  This event will occur after an {@link OperationError}
+   * is thrown from an API call with a subcode of {@link ErrorSubcode.INSUFFICIENT_SPACE} to indicate the
+   * operation can be retried.
+   *
+   * This event is used both after session-level transport buffer exhaustion, and Guaranteed Messaging Window exhaustion.
+   */
+  CAN_ACCEPT_DATA = 13,
+  /**
+   * The session connect operation failed, or the session that was once up, is now disconnected.
+   */
+  DISCONNECTED = 14,
+  /**
+   * The session has gone down, and an automatic reconnection attempt is in progress.
+   *
+   * @param {SessionEvent} event The details related to the cause of the connection interruption.
+   */
+  RECONNECTING_NOTICE = 22,
+  /**
+   * The automatic reconnect of the Session was successful, and the session is established again.
+   *
+   * @param {SessionEvent} event The details related to the re-establishment of the connection.
+   */
+  RECONNECTED_NOTICE = 23,
+  /**
+   * The session has automatically recovered after the Guaranteed Message publisher
+   * failed to reconnect.
+   *
+   * Messages sent but not acknowledged are being renumbered and retransmitted. Some messages may be duplicated in the system.
+   *
+   * @param {SessionEvent} event The details related to the republishing of messages on the session.
+   *        {@link SessionEvent#infoStr} will indicate the number of messages being republished, which is an upper bound
+   *        on the number of messages that could be duplicated due to this action.
+   */
+  REPUBLISHING_UNACKED_MESSAGES = 24,
+  /**
+   * A message was acknowledged by the router.
+   *
+   * @param {SessionEvent} event Allows the acknowledgement to be correlated to the sent message.
+   */
+  ACKNOWLEDGED_MESSAGE = 25,
+  /**
+   * Unsubscribing the topic from the Durable Topic Endpoint succeeded.
+   */
+  UNSUBSCRIBE_TE_TOPIC_OK = 26,
+  /**
+   * Unsubscribing the topic from the Durable Topic Endpoint failed.
+   *
+   * @param {OperationError} error The details related to the failed attempt to remove the subscription from a topic endpoint.
+   */
+  UNSUBSCRIBE_TE_TOPIC_ERROR = 27,
+  /**
+   * A Direct message was received on the session. This event code is only used
+   * on the <b>EventEmitter</b> session interface.
+   *
+   * @param {Message} message The message received on the session.
+   */
+  MESSAGE = 28,
+  /**
+   * Guaranteed Messaging Publisher has been closed by the Solace
+   * message router. This usually indicates an operator has disabled the
+   * message spool.
+   *
+   * @param {OperationError} error Information related to the error.
+   */
+  GUARANTEED_MESSAGE_PUBLISHER_DOWN = 29,
+}
+
+/**
+ * Applications must use {@link SolaceObjectFactory.createSession} to create a session.
+ *
+ * Represents a client Session.
+ *
+ * Session provides these major functions:
+ *  * Subscriber control, such as updating subscriptions;
+ *  * Publishes both Direct and Guaranteed Messages to the router;
+ *  * Receives direct messages from the router.
+ *
+ * The Session object is an
+ * {@link https://nodejs.org/api/events.html#events_class_eventemitter|EventEmitter}, and will emit events with event
+ * names from {@link SessionEventCode} when Session events occur.
+ *
+ * Each session event can be subscribed using {@link Session#on} with the corresponding {@link SessionEventCode}.
+ *
+ * If any of the registered event listeners throw an exception, the exception will be emitted on the 'error' event.
+ *
+ * @fires SessionEventCode.ACKNOWLEDGED_MESSAGE
+ * @fires SessionEventCode.CAN_ACCEPT_DATA
+ * @fires SessionEventCode.CONNECT_FAILED_ERROR
+ * @fires SessionEventCode.DISCONNECTED
+ * @fires SessionEventCode.DOWN_ERROR
+ * @fires SessionEventCode.GUARANTEED_MESSAGE_PUBLISHER_DOWN
+ * @fires SessionEventCode.MESSAGE
+ * @fires SessionEventCode.PROPERTY_UPDATE_ERROR
+ * @fires SessionEventCode.PROPERTY_UPDATE_OK
+ * @fires SessionEventCode.RECONNECTED_NOTICE
+ * @fires SessionEventCode.RECONNECTING_NOTICE
+ * @fires SessionEventCode.REJECTED_MESSAGE_ERROR
+ * @fires SessionEventCode.REPUBLISHING_UNACKED_MESSAGES
+ * @fires SessionEventCode.SUBSCRIPTION_ERROR
+ * @fires SessionEventCode.SUBSCRIPTION_OK
+ * @fires SessionEventCode.UNSUBSCRIBE_TE_TOPIC_ERROR
+ * @fires SessionEventCode.UNSUBSCRIBE_TE_TOPIC_OK
+ * @fires SessionEventCode.UP_NOTICE
+ * @fires SessionEventCode.VIRTUALROUTER_NAME_CHANGED
+ *
+ * @see solace.Session
+ */
+export interface Session {
+
+  /**
+   * Connects the session to the Solace Message Router as configured in the {@link SessionProperties#url}.
+   *
+   * When the session is successfully connected to the Solace Message Router, the {@link SessionEventCode.UP_NOTICE}
+   * event is emitted if a listener has been registered.
+   *
+   * If {@link SessionProperties#reapplySubscriptions} is set to true, this operation re-registers previously registered
+   * subscriptions. The connected session event ({@link SessionEventCode.UP_NOTICE}) is emitted only when all the
+   * subscriptions are successfully added to the router.
+   *
+   * If the API is unable to connect within {@link SessionProperties#connectTimeoutInMsecs} or due to login failures,
+   * the session's state transitions back to 'disconnected' and an event is generated.
+   *
+   * **Note:** Before the session's state transitions to 'connected', a client application cannot use the session;
+   * any attempt to call functions will throw {@link OperationError}.
+   *
+   * @throws {OperationError}
+   * * if the session is disposed, already connected or connecting.
+   *   Subcode: {@link ErrorSubcode.INVALID_OPERATION}.
+   * * if the underlying transport cannot be established.
+   *   Subcode: {@link ErrorSubcode.CONNECTION_ERROR}.
+   */
+  connect(): void;
+
+  /**
+   * Disconnects the session.
+   *
+   * The session attempts to disconnect cleanly, concluding all operations in progress.
+   *
+   * The disconnected session event {@link SessionEventCode.DISCONNECTED} is emitted when these operations
+   * complete and the session has completely disconnected.
+   *
+   * @throws {OperationError} if the session is disposed, or has never been connected.
+   *         Subcode: {@link ErrorSubcode.INVALID_OPERATION}.
+   */
+  disconnect(): void;
+
+  /**
+   * Release all resources associated with the session.
+   *
+   * It is recommended to call {@link disconnect} first for proper handshake with the message-router.
+   */
+  dispose(): void;
+
+  /**
+   * Subscribe to a topic, optionally requesting a confirmation from the router.
+   *
+   * If requestConfirmation is set to `true`:
+   * {@link SessionEventCode.SUBSCRIPTION_OK} is generated when subscription is added successfully;
+   * otherwise, session event {@link SessionEventCode.SUBSCRIPTION_ERROR} is generated.
+   *
+   * If requestConfirmation is set to `false`, only session event {@link SessionEventCode.SUBSCRIPTION_ERROR}
+   * is generated upon failure.
+   *
+   * When the application receives session event
+   * {@link SessionEventCode.SUBSCRIPTION_ERROR}, it
+   * can obtain the failed topic subscription by calling
+   * {@link SessionEvent#reason}.
+   * The returned string is in the format of "Topic: <failed topic subscription>".
+   *
+   * @param topic The topic destination subscription to add.
+   * @param requestConfirmation true, to request a confirmation; false otherwise.
+   * @param correlationKey If specified, and if requestConfirmation is true, this value is
+   *                       echoed in the session event within {@link SessionEvent}.
+   * @param requestTimeout The request timeout period (in milliseconds). If specified, this
+   *                       value overwrites readTimeoutInMsecs property in {@link SessionProperties}.
+   *
+   * @throws {OperationError}
+   * * if the session is disposed or disconnected.
+   *   Subcode: {@link ErrorSubcode.INVALID_OPERATION}.
+   * * if the parameters have an invalid type.
+   *   Subcode: {@link ErrorSubcode.PARAMETER_INVALID_TYPE}.
+   * * if the parameters have an invalid value.
+   *   Subcode: {@link ErrorSubcode.PARAMETER_OUT_OF_RANGE}.
+   * * if the topic has invalid syntax.
+   *   Subcode: {@link ErrorSubcode.INVALID_TOPIC_SYNTAX}.
+   * * if there's no space in the transport to send the request.
+   *   Subcode: {@link ErrorSubcode.INSUFFICIENT_SPACE}.  See:
+   *   {@link SessionEventCode.CAN_ACCEPT_DATA}.
+   * * if the topic is a shared subscription and the peer router does not support Shared
+   *   Subscriptions.
+   *   Subcode: {@link ErrorSubcode.SHARED_SUBSCRIPTIONS_NOT_SUPPORTED}.
+   * * if the topic is a shared subscription and the client does not allowed Shared
+   *   Subscriptions.
+   *   Subcode: {@link ErrorSubcode.SHARED_SUBSCRIPTIONS_NOT_ALLOWED}.
+   */
+  subscribe(topic: Destination, requestConfirmation: boolean, correlationKey: any, requestTimeout: number): void;
+
+  /**
+   * Unsubscribe from a topic, and optionally request a confirmation from the router.
+   *
+   * If requestConfirmation is set to true, session event
+   * {@link SessionEventCode.SUBSCRIPTION_OK} is generated when subscription is removed
+   * successfully; otherwise, session event
+   * {@link SessionEventCode.SUBSCRIPTION_ERROR} is generated.
+   *
+   * If requestConfirmation is set to false, only session event
+   * {@link SessionEventCode.SUBSCRIPTION_ERROR} is generated upon failure.
+   *
+   * When the application receives session event
+   * {@link SessionEventCode.SUBSCRIPTION_ERROR}, it
+   * can obtain the failed topic subscription by calling
+   * {@link SessionEvent#reason}. The returned
+   * string is in the format "Topic: <failed topic subscription>".
+   *
+   * @param topic The topic destination subscription to remove.
+   * @param requestConfirmation true, to request a confirmation; false otherwise.
+   * @param correlationKey If `null` or undefined, a Correlation Key is not set
+   *                       in the confirmation session event.
+   * @param requestTimeout The request timeout period (in milliseconds). If specified, this
+   *                       value overwrites readTimeoutInMsecs property in
+   *                       {@link SessionProperties}.
+   *
+   * @throws {OperationError}
+   * * if the session is disposed or disconnected.
+   *   Subcode: {@link ErrorSubcode.INVALID_OPERATION}.
+   * * if the parameters have an invalid type.
+   *   Subcode: {@link ErrorSubcode.PARAMETER_INVALID_TYPE}.
+   * * if the parameters have an invalid value.
+   *   Subcode: {@link ErrorSubcode.PARAMETER_OUT_OF_RANGE}.
+   * * if the topic has invalid syntax.
+   *   Subcode: {@link ErrorSubcode.INVALID_TOPIC_SYNTAX}.
+   * * if there's no space in the transport to send the request.
+   *   Subcode: {@link ErrorSubcode.INSUFFICIENT_SPACE}.  See:
+   *   {@link SessionEventCode.CAN_ACCEPT_DATA}.
+   * * if the topic is a shared subscription and the peer router does not support Shared
+   *   Subscriptions.
+   *   Subcode: {@link ErrorSubcode.SHARED_SUBSCRIPTIONS_NOT_SUPPORTED}.
+   * * if the topic is a shared subscription and the client does not allowed Shared
+   *   Subscriptions.
+   *   Subcode: {@link ErrorSubcode.SHARED_SUBSCRIPTIONS_NOT_ALLOWED}.
+   */
+  unsubscribe(topic: Destination, requestConfirmation: boolean, correlationKey: any, requestTimeout: number): void;
+
+  /**
+   * Request that a Durable Topic Endpoint stop receiving data on a topic. Unsubscribe
+   * requests are only allowed by the router when no clients are bound to the DTE.
+   * If the unubscribe request is successful, the DTE will stop attracting messages,
+   * and all messages spooled to the DTE will be deleted.
+   *
+   * {@link SessionEventCode.UNSUBSCRIBE_TE_TOPIC_OK} is generated when the
+   * subscription is removed successfully; otherwise,
+   * {@link SessionEventCode.UNSUBSCRIBE_TE_TOPIC_ERROR} is generated.
+   *
+   * When the application receives session event
+   * {@link SessionEventCode.UNSUBSCRIBE_TE_TOPIC_ERROR}, it
+   * can obtain the failed topic subscription by calling
+   * {@link SessionEvent#reason}.
+   *
+   * @param queueDescriptor A description of the queue to which the topic is subscribed.
+   *
+   * @throws {OperationError}
+   * * if the session is disposed or disconnected.
+   *   Subcode: {@link ErrorSubcode.INVALID_OPERATION}.
+   * * if the parameters have an invalid type.
+   *   Subcode: {@link ErrorSubcode.PARAMETER_INVALID_TYPE}.
+   * * if the parameters have an invalid value.
+   *   Subcode: {@link ErrorSubcode.PARAMETER_OUT_OF_RANGE}.
+   * * if there's no space in the transport to send the request.
+   *   Subcode: {@link ErrorSubcode.INSUFFICIENT_SPACE}.  See:
+   *   {@link SessionEventCode.CAN_ACCEPT_DATA}.
+   */
+  unsubscribeDurableTopicEndpoint(queueDescriptor: QueueDescriptor): void;
+
+  /**
+   * Modify a session property after creation of the session.
+   *
+   * @param mutableSessionProperty The property key to modify.
+   * @param newValue The new property value.
+   * @param requestTimeout The request timeout period (in milliseconds). If specified, it
+   *        overwrites readTimeoutInMsecs
+   * @param correlationKey If specified, this value is echoed in the session event within
+   *        {@link SessionEvent} property in {@link SessionProperties}
+   *
+   * @throws {OperationError}
+   * * if the session is disposed or disconnected.
+   *   Subcode: {@link ErrorSubcode.INVALID_OPERATION}.
+   * * if the parameters have an invalid type.
+   *   Subcode: {@link ErrorSubcode.PARAMETER_INVALID_TYPE}.
+   * * if the parameters have an invalid value.
+   *   Subcode: {@link ErrorSubcode.PARAMETER_OUT_OF_RANGE}.
+   * * if there's no space in the transport to send the request.
+   *   Subcode: {@link ErrorSubcode.INSUFFICIENT_SPACE}.  See:
+   *   {@link SessionEventCode.CAN_ACCEPT_DATA}.
+   */
+  updateProperty(mutableSessionProperty: MutableSessionProperty, newValue: any, requestTimeout: number, correlationKey: any): void;
+
+  /**
+   * Publish (send) a message over the session. The message is sent to its set destination.
+   *
+   * This method is used for sending both direct and Guaranteed Messages.
+   *
+   * If the message's {@link MessageDeliveryModeType} is {@link MessageDeliveryModeType.DIRECT}, the
+   * message is a direct message; otherwise, it is a guaranteed message.
+   *
+   * @param message The message to send. It must have a destination set.
+   *
+   * @throws {OperationError}
+   * * if the session is disposed or disconnected.
+   *   Subcode: {@link ErrorSubcode.INVALID_OPERATION}.
+   * * if the parameters have an invalid type.
+   *   Subcode: {@link ErrorSubcode.PARAMETER_INVALID_TYPE}.
+   * * if the message does not have a topic.
+   *   Subcode: {@link ErrorSubcode.TOPIC_MISSING}.
+   * * if there's no space in the transport to send the request.
+   *   Subcode: {@link ErrorSubcode.INSUFFICIENT_SPACE}.  See:
+   *   {@link SessionEventCode.CAN_ACCEPT_DATA}.
+   * * if no Guaranteed Message Publisher is available and the message deliveryMode is
+   *   {@link MessageDeliveryModeType.PERSISTENT} or
+   *   {@link MessageDeliveryModeType.NON_PERSISTENT}.
+   *   Subcode: {@link ErrorSubcode.GM_UNAVAILABLE}.
+   */
+  send(message: Message): void;
+
+  /**
+   * Sends a request using user-specified callback functions.
+   *
+   * The API sets the `correlationId` and `replyTo` fields of the message being sent;
+   * this overwrites any existing correlationId and replyTo values on the message.
+   *
+   * @param message The request message to send.
+   * @param timeout The timeout value (in milliseconds). The minimum value is 100 msecs.
+   * @param replyReceivedCBFunction The callback to notify when a reply is received.
+   * @param requestFailedCBFunction The callback to notify when the request failed.
+   * @param userObject An optional correlation object to use in the response callback.
+   *
+   * @throws {OperationError}
+   * * if the session is disposed or disconnected.
+   *   Subcode: {@link ErrorSubcode.INVALID_OPERATION}.
+   * * if the parameters have an invalid type.
+   *   Subcode: {@link ErrorSubcode.PARAMETER_INVALID_TYPE}.
+   * * if the parameters have an invalid value.
+   *   Subcode: {@link ErrorSubcode.PARAMETER_OUT_OF_RANGE}.
+   * * if the message does not have a topic.
+   *   Subcode: {@link ErrorSubcode.TOPIC_MISSING}.
+   * * if there's no space in the transport to send the request.
+   *   Subcode: {@link ErrorSubcode.INSUFFICIENT_SPACE}.  See:
+   *   {@link SessionEventCode.CAN_ACCEPT_DATA}.
+   * * if no Guaranteed Message Publisher is available and the message deliveryMode is
+   *   {@link MessageDeliveryModeType.PERSISTENT} or
+   *   {@link MessageDeliveryModeType.NON_PERSISTENT}.
+   *   Subcode: {@link ErrorSubcode.GM_UNAVAILABLE}.
+   */
+  sendRequest(message: Message, timeout: number, replyReceivedCBFunction: replyReceivedCallback, requestFailedCBFunction: requestFailedCallback, userObject: any): void;
+
+  /**
+   * Sends a reply message to the destination specified in messageToReplyTo.
+   *
+   * If `messageToReplyTo` is non-null:
+   *  * {@link Message#getReplyTo} is copied from `messageToReplyTo` to
+   *    {@link Message#setDestination} on `replyMessage`, unless `replyTo` is null.
+   *  * {@link Message#setCorrelationId} is copied from `messageToReplyTo` to
+   *    {@link Message#setCorrelationId} on `replyMessage`, unless `correlationId` is null.
+   *
+   * If `messageToReplyTo` is null, the application is responsible for setting
+   * the `destination` and `correlationId` on the `replyMessage`.
+   *
+   * @param messageToReplyTo The message to which a reply will be sent.
+   * @param replyMessage The reply to send.
+   *
+   * @throws {OperationError}
+   * * if the session is disposed or disconnected.
+   *   Subcode: {@link ErrorSubcode.INVALID_OPERATION}.
+   * * if the parameters have an invalid type.
+   *   Subcode: {@link ErrorSubcode.PARAMETER_INVALID_TYPE}.
+   * * if the parameters have an invalid value.
+   *   Subcode: {@link ErrorSubcode.PARAMETER_OUT_OF_RANGE}.
+   * * if the message does not have a topic.
+   *   Subcode: {@link ErrorSubcode.TOPIC_MISSING}.
+   * * if there's no space in the transport to send the request.
+   *   Subcode: {@link ErrorSubcode.INSUFFICIENT_SPACE}.  See:
+   *   {@link SessionEventCode.CAN_ACCEPT_DATA}.
+   * * if no Guaranteed Message Publisher is available and the message deliveryMode is
+   *   {@link MessageDeliveryModeType.PERSISTENT} or
+   *   {@link MessageDeliveryModeType.NON_PERSISTENT}.
+   *   Subcode: {@link ErrorSubcode.GM_UNAVAILABLE}.
+   */
+  sendReply(messageToReplyTo: Message, replyMessage: Message): void;
+
+  /**
+   * Returns the value of a given {@link StatType}.
+   *
+   * @param statType The statistic to query.
+   *
+   * @throws {OperationError}
+   * * if the session is disposed.
+   *   Subcode: {@link ErrorSubcode.INVALID_OPERATION}.
+   * * if the StatType is invalid.
+   *   Subcode: {@link ErrorSubcode.PARAMETER_OUT_OF_RANGE}.
+   */
+  getStat(statType: StatType): number;
+
+  /**
+   * Reset session statistics to initial values.
+   *
+   * @throws {OperationError} if the session is disposed. Subcode: {@link ErrorSubcode.INVALID_OPERATION}.
+   */
+  resetStats(): void;
+
+  /**
+   * Returns a clone of the properties for this session.
+   *
+   * @throws {OperationError} if the session is disposed. Subcode: {@link ErrorSubcode.INVALID_OPERATION}.
+   */
+  getSessionProperties(): SessionProperties;
+
+  /**
+   * Check the value of a boolean router capability.
+   *
+   * This function is a shortcut for {@link Session#getCapability}. It performs the same
+   * operation, but instead of returning a {@link SDTField} wrapping a capability value, it
+   * just returns the boolean value.
+   *
+   *  Attempting to query a non-boolean capability will return `null`.
+   *
+   * @param capabilityType The capability to check.
+   *
+   * @throws {OperationError}
+   * * if the session is disposed.
+   *   Subcode: {@link ErrorSubcode.INVALID_OPERATION}.
+   * * if the parameters have an invalid type or value.
+   *   Subcode: {@link ErrorSubcode.PARAMETER_INVALID_TYPE}.
+   */
+  isCapable(capabilityType: CapabilityType): boolean;
+
+  /**
+   * Get the value of an router capability, or null if unknown. This function must
+   * be called after connecting the session.
+   *
+   * SDT Type conversions:
+   *  * {string} values are returned as {@link SDTFieldType.STRING}.
+   *  * {boolean} values are returned as {@link SDTFieldType.BOOL}.
+   *  * All numeric values are returned as {@link SDTFieldType.INT64}.
+   *
+   * @param capabilityType The router capability to query.
+   *
+   * @throws {OperationError}
+   * * if the session is disposed
+   *    Subcode: {@link ErrorSubcode.INVALID_OPERATION}.
+   * * if the parameters have an invalid type or value.
+   *    Subcode: {@link ErrorSubcode.PARAMETER_INVALID_TYPE}.
+   */
+  getCapability(capabilityType: CapabilityType): SDTField;
+
+  /**
+   * Creates a {@link CacheSession} object that uses this Session to service its cache requests.
+   *
+   * It should be disposed when the application no longer requires a CacheSession, by calling
+   * {@link CacheSession#dispose}.
+   *
+   * @returns {CacheSession} The newly created cache session.
+   *
+   * @throws {OperationError} if a CacheSession is already associated with this Session.
+   *   Subcode: {@link ErrorSubcode.INVALID_OPERATION}
+   */
+  createCacheSession(properties: CacheSessionProperties): CacheSession;
+
+  /**
+   * Creates a {@link MessageConsumer} to receive Guaranteed Messages in this Session.
+   *
+   * Consumer characteristics and behavior are defined by properties. The consumer properties are
+   * supplied as an object; the pertinent fields are exposed in {@link MessageConsumerProperties};
+   * other property names are ignored. If the Message Consumer creation specifies a non-durable endpoint,
+   * {@link QueueProperties} can be used to change the default properties on the non-durable endpoint.
+   * Any values not supplied are set to default values.
+   *
+   * When the consumer is created, a consumer object is returned to the caller. This is the object
+   * from which events are emitted, and upon which operations (for example, starting and stopping
+   * the consumer) are performed.
+   *
+   * If this session does not support Guaranteed Messaging, this method will throw. The following
+   * must be true in order to create a MessageConsumer:
+   *  * The transport protocol list does not contain any HTTP transport protocols. See
+   *    {@link SessionProperties#transportProtocol} and {@link FactoryProfile#cometEnabled}
+   *  * The Solace Messaging Router must support Guaranteed Messaging
+   *
+   * @param consumerProperties The properties for the consumer.
+   * @throws {OperationError} when Guaranteed Message Consume is not supported on this session.
+   */
+  createMessageConsumer(consumerProperties: MessageConsumerProperties): MessageConsumer;
+
+  /**
+   * Creates a {@link QueueBrowser} to browse Guaranteed Messages on a specified queue in this Session.
+   *
+   * Browser characteristics and behavior are defined by properties. The browser properties are
+   * supplied as an object; the pertinent fields are exposed in {@link QueueBrowserProperties};
+   * other property names are ignored. Any values not supplied are set to default values.
+   *
+   * Delivery restrictions imposed by the queue’s Access type (exclusive or non-exclusive),
+   * do not apply when browsing messages with a Browser.
+   *
+   * When the queue browser is created, a queue browser object is returned to the caller. This is
+   * the object from which events are emitted, and upon which operations (for example, starting and
+   * stopping the browser) are performed.
+   *
+   * If this session does not support Guaranteed Messaging, this method will throw. The following
+   * must be true in order to create a QueueBrowser:
+   *  * The transport protocol list does not contain any HTTP transport protocols. See
+   *    {@link SessionProperties#transportProtocol} and
+   *    {@link FactoryProfile#cometEnabled}
+   *  * The Solace Messaging Router must support Guaranteed Messaging
+   *
+   * @param browserProperties The properties for the browser.
+   * @throws {OperationError} when Guaranteed Messaging is not supported on this session.
+   */
+  createQueueBrowser(browserProperties: QueueBrowserProperties): QueueBrowser;
+
+  /**
+   * Gets a transport session information string.
+   *
+   * This string is informative only, and applications should not attempt to parse it.
+   */
+  getTransportInfo(): string;
+
+  /**
+   * Registers a callback which is called when given event occurs.
+   */
+  on(eventName: SessionEventCode, listener: (event: SessionEvent | Message | SolaceError | void) => void): void;
+
+  /**
+   * Registers a callback which is called when given event occurs. The callback is unregistered after received the first event.
+   */
+  once(eventName: SessionEventCode, listener: (event: SessionEvent | Message | SolaceError | void) => void): void;
+
+  /**
+   * Allow additional properties, e.g., properties of new `solclientjs` versions.
+   */
+  [key: string]: any;
+}
+
+/**
+ * Represents a session event; events are passed to the application-provided event handling callback provided when creating the session.
+ *
+ * @see solace.SessionEvent
+ */
+export interface SessionEvent {
+  /**
+   * Further qualifies the session event.
+   */
+  sessionEventCode: SessionEventCode;
+
+  /**
+   * if applicable, an information string returned by the Solace Message Router.
+   */
+  infoStr: string | undefined;
+
+  /**
+   * if applicable, a response code returned by the Solace Message Router.
+   */
+  responseCode: number | undefined;
+
+  /**
+   * if applicable, an error subcode. Defined in {@link ErrorSubcode}.
+   */
+  errorSubcode: ErrorSubcode | undefined;
+
+  /**
+   * A user-specified object made available in the response or confirmation event by including it as a
+   * parameter in the orignal API call.
+   * If the user did not specify a correlationKey, it will be `null`.
+   */
+  correlationKey: any | null;
+
+  /**
+   * Additional information if it is applicable.
+   *
+   * In case of subscribe or publish errors, it constains the topic.
+   */
+  reason: string | undefined;
+}
+
+/**
+ * Defines an error subcode enumeration which is returned as a property of the errors/exceptions thrown by the API.
+ * The subcode provides more detailed error information.
+ *
+ * The following subcodes can apply to error responses resulting from
+ * any API method.
+ * * {@link ErrorSubcode.PARAMETER_OUT_OF_RANGE}
+ * * {@link ErrorSubcode.PARAMETER_CONFLICT}
+ * * {@link ErrorSubcode.INTERNAL_ERROR}
+ *
+ * @see ErrorSubcode
+ */
+export enum ErrorSubcode {
+  /**
+   * Errors that do not have a proper subcode.
+   */
+  UNKNOWN_ERROR = 0xFFFFFFFF,
+  /**
+   * No error is associated with this event.
+   */
+  NO_ERROR = 0,
+  /**
+   * The session is already connected.
+   */
+  SESSION_ALREADY_CONNECTED = 1,
+  /**
+   * The session is not connected.
+   */
+  SESSION_NOT_CONNECTED = 2,
+  /**
+   * The performed session operation is invalid given the state
+   * or configuration of the session.
+   */
+  INVALID_OPERATION = 3,
+  /**
+   * An API call failed due to a timeout.
+   */
+  TIMEOUT = 4,
+  /////////////////
+  // MESSAGE VPN //
+  /////////////////
+  /**
+   * The Message VPN name configured for the session does not exist.
+   *
+   * Causes:
+   *  * 403 Message VPN Not Allowed
+   */
+  MESSAGE_VPN_NOT_ALLOWED = 5,
+  /**
+   * The Message VPN name set for the session (or the default VPN if none
+   * was set) is currently shutdown on the router.
+   *
+   * Causes:
+   *  * 503 Message VPN Unavailable
+   */
+  MESSAGE_VPN_UNAVAILABLE = 6,
+  ////////////
+  // CLIENT //
+  ////////////
+  /**
+   * The username for the client is administratively shutdown
+   * on the router.
+   *
+   * Causes:
+   *  * 403 Client Username Is Shutdown
+   */
+  CLIENT_USERNAME_IS_SHUTDOWN = 7,
+  /**
+   * The username for the session has not been set and dynamic
+   * clients are not allowed.
+   *
+   * Causes:
+   *  * 403 Dynamic Clients Not Allowed
+   */
+  DYNAMIC_CLIENTS_NOT_ALLOWED = 8,
+  /**
+   * The session is attempting to use a client name that is
+   * in use by another client, and the router is configured to reject the
+   * new session.
+   * A client name cannot be used by multiple clients in the same Message
+   * VPN.
+   *
+   * Causes:
+   *  * 403 Client Name Already In Use
+   */
+  CLIENT_NAME_ALREADY_IN_USE = 9,
+  /**
+   * The client name chosen has been rejected as invalid by the router.
+   *
+   * Causes:
+   *  * 400 Client Name Parse Error
+   */
+  CLIENT_NAME_INVALID = 10,
+  /**
+   * The client login is not currently possible because a previous
+   * instance of same client was being deleted.
+   *
+   * Causes:
+   *  * 503 Subscriber Delete In Progress
+   */
+  CLIENT_DELETE_IN_PROGRESS = 11,
+  /**
+   * The client login is not currently possible because the maximum
+   * number of active clients on router has already been reached.
+   *
+   * Causes:
+   *  * 503 Too Many Clients
+   *  * 503 Too Many Connections for VPN
+   */
+  TOO_MANY_CLIENTS = 12,
+  /**
+   * The client could not log into the router.
+   *
+   * Causes:
+   *  * 401 error codes
+   *  * 404 error codes
+   *  * Failed to send a session setup message in the transport.
+   */
+  LOGIN_FAILURE = 13,
+  //////////
+  // VRID //
+  //////////
+  /**
+   * An attempt was made to connect to the wrong IP address on
+   * the router (must use CVRID if configured), or the router CVRID has
+   * changed and this was detected on reconnect.
+   *
+   * Causes:
+   *  * 403 Invalid Virtual Router Address
+   */
+  INVALID_VIRTUAL_ADDRESS = 14,
+  /////////
+  // ACL //
+  /////////
+  /**
+   * The client login to the router was denied because the
+   * IP address/netmask combination used for the client is designated in the
+   * ACL (Access Control List) profile associated with that client.
+   *
+   * Causes:
+   *  * 403 Forbidden
+   */
+  CLIENT_ACL_DENIED = 15,
+  /**
+   * Adding a subscription was denied because it matched a
+   * subscription that was defined as denied on the ACL (Access Control List)
+   * profile associated with the client.
+   *
+   * Causes:
+   *  * 403 Subscription ACL Denied
+   */
+  SUBSCRIPTION_ACL_DENIED = 16,
+  /**
+   * A message could not be published because its topic matched
+   * a topic defined as denied on the ACL (Access Control List) profile
+   * associated with the client.
+   *
+   * Causes:
+   *  * 403 Publish ACL Denied
+   */
+  PUBLISH_ACL_DENIED = 17,
+  ////////////////
+  // VALIDATION //
+  ////////////////
+  /**
+   * An API call was made with an out-of-range parameter.
+   */
+  PARAMETER_OUT_OF_RANGE = 18,
+  /**
+   * An API call was made with a parameter combination
+   * that is not valid.
+   */
+  PARAMETER_CONFLICT = 19,
+  /**
+   * An API call was made with a parameter of incorrect type.
+   */
+  PARAMETER_INVALID_TYPE = 20,
+  //////////////////
+  // FATAL ERRORS //
+  //////////////////
+  /**
+   *  An API call had an internal error (not an application fault).
+   */
+  INTERNAL_ERROR = 21,
+  /**
+   * An API call failed due to insufficient space in the transport
+   * buffer to accept more data,
+   * or due to exhaustion of the Guaranteed Messaging Window on a publisher.
+   * After an insufficient space error of either kind, the
+   * listeners on the {@link SessionEventCode.CAN_ACCEPT_DATA}
+   * event are notified when it is possible to retry the failed operation.
+   */
+  INSUFFICIENT_SPACE = 22,
+  /**
+   * The message router has rejected the request. All available
+   * resources of the requested type are in use.
+   *
+   * Causes:
+   *  * 400 Not Enough Space
+   */
+  OUT_OF_RESOURCES = 23,
+  /**
+   * An API call failed due to a protocol error with the router
+   * (not an application fault).
+   */
+  PROTOCOL_ERROR = 24,
+  /**
+   * An API call failed due to a communication error. This typically indicates the
+   * transport connection to the message router has been unexpectedly closed.
+   */
+  COMMUNICATION_ERROR = 25,
+  ////////////////
+  // KEEP ALIVE //
+  ////////////////
+  /**
+   * The session keep-alive detected a failed session.
+   */
+  KEEP_ALIVE_FAILURE = 26,
+  /////////////////////
+  // MESSAGE RELATED //
+  /////////////////////
+  /**
+   * An attempt was made to use a topic which is longer
+   * than the maximum that is supported.
+   */
+  // TOPIC_TOO_LARGE: 27,
+  /**
+   * A send call was made that did not have a topic in a mode
+   * where one is required (for example, client mode).
+   */
+  TOPIC_MISSING = 28,
+  /**
+   *  An attempt was made to send a message with a total
+   * size greater than that supported by the protocol. (???)
+   */
+  //  MAX_TOTAL_MSGSIZE_EXCEEDED: 29,
+  /**
+   * An attempt was made to send a message with user data larger
+   * than the maximum that is supported.
+   */
+  // USER_DATA_TOO_LARGE: 30,
+  /**
+   * An attempt was made to use a topic which has a syntax that
+   * is not supported.
+   *
+   * Causes:
+   *  * 400 Topic Parse Error
+   */
+  INVALID_TOPIC_SYNTAX = 31,
+  /**
+   * The client attempted to send a message larger than that
+   * supported by the router.
+   *
+   * Causes:
+   *  * 400 Document Is Too Large
+   *  * 400 Message Too Long
+   */
+  MESSAGE_TOO_LARGE = 32,
+  /**
+   * The router could not parse an XML message.
+   *
+   * Causes:
+   *  * 400 XML Parse Error
+   */
+  XML_PARSE_ERROR = 33,
+  ///////////////////
+  // SUBSCRIPTIONS //
+  ///////////////////
+  /**
+   * The client attempted to add a subscription that already
+   * exists. This subcode is only returned if the session property
+   * 'IgnoreDuplicateSubscriptionError' is not enabled.
+   *
+   * Causes:
+   * 400 Subscription Already Exists)
+   */
+  SUBSCRIPTION_ALREADY_PRESENT = 34,
+  /**
+   * The client attempted to remove a subscription which did not exist.
+   * This subcode is only returned if the session property
+   * 'IgnoreDuplicateSubscriptionError' is not enabled.
+   *
+   * Causes:
+   * 400 Subscription Not Found)
+   */
+  SUBSCRIPTION_NOT_FOUND = 35,
+  /**
+   * The client attempted to add/remove a subscription that
+   * is not valid.
+   *
+   * Causes:
+   *  * 400 Subscription Parse Error
+   */
+  SUBSCRIPTION_INVALID = 36,
+  /**
+   * The router rejected a subscription add or remove request
+   * for a reason not separately enumerated.
+   */
+  SUBSCRIPTION_ERROR_OTHER = 37,
+  /**
+   * The client attempted to add a subscription that
+   * exceeded the maximum number allowed.
+   *
+   * Causes:
+   *  * 400 Max Num Subscriptions Exceeded
+   */
+  SUBSCRIPTION_TOO_MANY = 38,
+  /**
+   *  The client attempted to add a subscription which already
+   * exists but it has different properties.
+   *
+   * Causes:
+   *  * 400 Subscription Attributes Conflict With Existing Subscription
+   */
+  SUBSCRIPTION_ATTRIBUTES_CONFLICT = 39,
+  /**
+   * The client attempted to establish a session with No Local
+   * enabled and the capability is not supported by the router.
+   */
+  NO_LOCAL_NOT_SUPPORTED = 40,
+  ////////////////////
+  // UNKNOWN ERRORS //
+  ////////////////////
+  /**
+   * The router rejected a control message for another reason
+   * not separately enumerated.
+   */
+  // CONTROL_ERROR_OTHER: 41,
+  /**
+   * The router rejected a data message for a reason
+   * not separately enumerated.
+   */
+  DATA_ERROR_OTHER = 42,
+  //////////////////////
+  // TRANSPORT ERRORS //
+  //////////////////////
+  /**
+   * Failed to create the HTTP connection.
+   */
+  CREATE_XHR_FAILED = 43,
+  /**
+   * Failed to create the transport.
+   */
+  CONNECTION_ERROR = 44,
+  /**
+   * Failed to decode the data.
+   */
+  DATA_DECODE_ERROR = 45,
+  /**
+   * An attempt to perform an operation using a VPN that is configured to be
+   * STANDBY for replication.
+   *
+   * Causes:
+   * * 403 Replication Is Standby
+   */
+  REPLICATION_IS_STANDBY = 50,
+  ////////////////////
+  // Authentication //
+  ////////////////////
+  /**
+   * Basic authentication is administratively shut down on the
+   * router.
+   *
+   * Causes:
+   *  * 403 Basic Authentication is Shutdown
+   */
+  BASIC_AUTHENTICATION_IS_SHUTDOWN = 51,
+  /**
+   * Client certificate authentication is administratively
+   * shut down on the router.
+   *
+   * Causes:
+   *  * 403 Client Certificate Authentication Is Shutdown
+   */
+  CLIENT_CERTIFICATE_AUTHENTICATION_IS_SHUTDOWN = 52,
+  //////////////////////
+  // Guaranteed Messaging //
+  //////////////////////
+  /**
+   * Guaranteed Messaging services are not enabled on the router.
+   *
+   * Causes:
+   *  * 503 Service Unavailable
+   */
+  GM_UNAVAILABLE = 100,
+  /**
+   * Already bound to the Queue or not authorized to bind to the Queue.
+   *
+   * Causes:
+   *  * 400 Already Bound
+   */
+  ALREADY_BOUND = 112,
+  /**
+   * An attempt was made to bind to a Guaranteed Messaging Topic Endpoint with an
+   * invalid topic.
+   *
+   * Causes:
+   *  * 400 Invalid Topic Name
+   */
+  INVALID_TOPIC_NAME_FOR_TOPIC_ENDPOINT = 113,
+  /**
+   * An attempt was made to bind to an unknown Queue name (for example, not
+   * configured on the router).
+   *
+   * Causes:
+   *  * 503 Unknown Queue
+   */
+  UNKNOWN_QUEUE_NAME = 114,
+  /**
+   * An attempt was made to perform an operation on an unknown Guaranteed Messaging
+   * Topic Endpoint name (for example, not configured on router).
+   *
+   * Causes:
+   *  * 503 Unknown Durable Topic Endpoint
+   */
+  UNKNOWN_TOPIC_ENDPOINT_NAME = 115,
+  /**
+   * An attempt was made to bind to a Guaranteed Messaging Queue that has already reached
+   * its maximum number of clients.
+   *
+   * Causes:
+   *  * 503 Max clients exceeded for Queue
+   */
+  MAX_CLIENTS_FOR_QUEUE = 116,
+  /**
+   * An attempt was made to bind to a Guaranteed Messaging Topic Endpoint that has already
+   * reached its maximum number of clients.
+   *
+   * Causes:
+   *  * 503 Max clients exceeded for durable Topic Endpoint
+   */
+  MAX_CLIENTS_FOR_TE = 117,
+  /**
+   * An unexpected unbind response was received for a Guaranteed Messaging Queue or Topic
+   * Endpoint (for example, the Queue or Topic Endpoint was deleted from the router).
+   */
+  UNEXPECTED_UNBIND = 118,
+  /**
+   * The specified Guaranteed Messaging Queue was not found when publishing a message.
+   *
+   * Causes:
+   *  * 400 Queue Not Found
+   */
+  QUEUE_NOT_FOUND = 119,
+  /**
+   * Message was not delivered because the Guaranteed Message spool is over its
+   * allotted space quota.
+   *
+   * Causes:
+   *  * 503 Spool Over Quota
+   */
+  SPOOL_OVER_QUOTA = 120,
+  /**
+   * An attempt was made to operate on a shutdown Guaranteed Messaging queue.
+   *
+   * Causes:
+   *  * 503 Queue Shutdown
+   */
+  QUEUE_SHUTDOWN = 121,
+  /**
+   * An attempt was made to operate on a shutdown Guaranteed Messaging Topic Endpoint.
+   *
+   * Causes:
+   *  * 503 Durable Topic Endpoint Shutdown
+   *  * 503 TE Shutdown
+   *  * 503 Endpoint Shutdown
+   */
+  TOPIC_ENDPOINT_SHUTDOWN = 122,
+  /**
+   * An attempt was made to bind to a non-durable Guaranteed Messaging Queue or Topic
+   * Endpoint, and the router is out of resources.
+   *
+   * Causes:
+   *  * 503 No More Non-Durable Queue or Topic Endpoint
+   */
+  NO_MORE_NON_DURABLE_QUEUE_OR_TOPIC_ENDPOINT = 123,
+  /**
+   * An attempt was made to create a Queue or Topic Endpoint that already exists.
+   * This subcode is only returned if {@link SessionProperties.ignoreProvisionEndpointExists} was not set for the current session.
+   *
+   * Causes:
+   *  * 400 Endpoint Already Exists
+   */
+  ENDPOINT_ALREADY_EXISTS = 124,
+  /**
+   * An attempt was made to delete or create a Queue or Topic Endpoint when the
+   * Session does not have authorization for the action. This subcode is also returned when an
+   * attempt is made to remove a message from an endpoint when the Session does not have 'consume'
+   * authorization, or when an attempt is made to add or remove a Topic subscription from a Queue
+   * when the Session does not have 'modify-topic' authorization.
+   *
+   * Causes:
+   *  * 403 Permission Not Allowed
+   */
+  PERMISSION_NOT_ALLOWED = 125,
+  /**
+   * An attempt was made to bind to a Queue or Topic Endpoint with an invalid
+   * selector.
+   *
+   * Causes:
+   *  * 400 Invalid Selector
+   */
+  INVALID_SELECTOR = 126,
+  /**
+   * Publishing the message was denied due to exceeding the maximum spooled message
+   * count.
+   *
+   * Causes:
+   *  * 503 Max message usage exceeded
+   */
+  MAX_MESSAGE_USAGE_EXCEEDED = 127,
+  /**
+   * An attempt was made to create a dynamic durable endpoint, and it was found to
+   * exist with different properties.
+   *
+   * Causes:
+   *  * 400 Endpoint Property Mismatch
+   */
+  ENDPOINT_PROPERTY_MISMATCH = 128,
+  /**
+   * The client attempted to publish an Guaranteed Messaging message to a topic that
+   * did not have any guaranteed subscription matches, or only matched a replicated topic.
+   *
+   * Causes:
+   *  * 503 No Subscription Match
+   */
+  NO_SUBSCRIPTION_MATCH = 129,
+  /**
+   * The application attempted to acknowledge a message that arrived via a delivery
+   * mode that does not allow acknowledgements.
+   */
+  MESSAGE_DELIVERY_MODE_MISMATCH = 130,
+  /**
+   * The message was already acknowledged.
+   */
+  MESSAGE_ALREADY_ACKNOWLEDGED = 131,
+  /**
+   * The API-supplied subscription did not match when attempting to bind to a
+   * non-exclusive durable topic endoint.
+   *
+   * Causes:
+   *  * 403 Subscription Does Not Match
+   */
+
+  SUBSCRIPTION_DOES_NOT_MATCH = 133,
+  /**
+   * The API-supplied selector did not match when attempting to bind to a
+   * non-exclusive durable topic endpoint.
+   *
+   * Causes:
+   *  * 403 Selector Does Not Match
+   */
+  SELECTOR_DOES_NOT_MATCH = 134,
+  /**
+   * The subscriber has provided an incorrectly formatted durable topic endpoint name.
+   *
+   * Causes:
+   *  * 400 Invalid Durable Topic Endpoint Name
+   */
+  INVALID_DTE_NAME = 135,
+  /**
+   * The unsubscribe request was denied by the router because the durable topic endpoint
+   * had one or more clients bound.
+   *
+   * Causes:
+   *  * 400 Unsubscribe Not Allowed, Client(s) Bound To DTE
+   */
+  UNSUBSCRIBE_NOT_ALLOWED_CLIENTS_BOUND = 136,
+  /**
+   * An application callback threw an error back to the API. The reason property describes
+   * the error that occurred.
+   */
+  CALLBACK_ERROR = 137,
+  /**
+   * A published message was discarded by the router because it will not be published
+   * anywhere based on the NoLocal properties. This can be considered normal.
+   *
+   * Causes:
+   * * 400 Nolocal Discard
+   */
+  NOLOCAL_DISCARD = 138,
+  /**
+   * The operation is delayed because Guaranteed Messaging is not ready on the router.
+   *
+   * Causes:
+   * * 507 Ad Not Ready
+   */
+  GM_NOT_READY = 140,
+  /**
+   * The message was rejected because one or more matching endpoints'
+   * reject-low-priority-msg-limit was exceeded.
+   *
+   * Causes:
+   * * 503 Low Priority Msg Congestion
+   */
+  LOW_PRIORITY_MSG_CONGESTION = 141,
+  /**
+   * The specified endpoint quota was out of range.
+   *
+   * Causes:
+   * * 400 Quota Out Of Range
+   */
+  QUOTA_OUT_OF_RANGE = 142,
+  /**
+   * Unable to load the certificate from the TrustStore for a SSL
+   * secured session.
+   */
+  FAILED_LOADING_TRUSTSTORE = 143,
+  /**
+   * The client failed to load certificate and/or private key files.
+   */
+  FAILED_LOADING_CERTIFICATE_AND_KEY = 144,
+  /**
+   * DNS resolution failed for all hostnames.
+   */
+  UNRESOLVED_HOSTS = 145,
+  /**
+   * Replay is not supported on the Solace Message Router
+   */
+  REPLAY_NOT_SUPPORTED = 146,
+  /**
+   * Replay is not enabled in the message-vpn
+   */
+  REPLAY_DISABLED = 147,
+  /**
+   * The client attempted to start replay on a flow bound to a non-exclusive endpoint
+   */
+  CLIENT_INITIATED_REPLAY_NON_EXCLUSIVE_NOT_ALLOWED = 148,
+  /**
+   * The client attempted to start replay on an inactive flow
+   */
+  CLIENT_INITIATED_REPLAY_INACTIVE_FLOW_NOT_ALLOWED = 149,
+  /**
+   * N/A - Browser Flows are not supported.
+   */
+  CLIENT_INITIATED_REPLAY_BROWSER_FLOW_NOT_ALLOWED = 150,
+  /**
+   * Replay is not supported on temporary endpoints
+   */
+  REPLAY_TEMPORARY_NOT_SUPPORTED = 151,
+  /**
+   * The client attempted to start a replay but provided an unknown start location type.
+   */
+  UNKNOWN_START_LOCATION_TYPE = 152,
+  /**
+   * A replay in progress on a flow was administratively cancelled, causing the flow to be unbound
+   */
+  REPLAY_CANCELLED = 153,
+  /**
+   * A replay in progress on a flow failed because messages to be replayed were trimmed
+   * from the replay log
+   */
+  REPLAY_MESSAGE_UNAVAILABLE = 154,
+  /**
+   * A replay was requested but the requested start time is not available in the replay log
+   */
+  REPLAY_START_TIME_NOT_AVAILABLE = 155,
+  /**
+   * The Solace Message Router attempted to replay a message, but the queue/topic
+   * endpoint rejected the message to the sender
+   */
+  REPLAY_MESSAGE_REJECTED = 156,
+  /**
+   * A replay in progress on a flow failed because the replay log was modified
+   */
+  REPLAY_LOG_MODIFIED = 157,
+  /**
+   * Endpoint error ID in the bind request does not match the endpoint's error ID.
+   */
+  MISMATCHED_ENDPOINT_ERROR_ID = 158,
+  /**
+   * A replay was requested, but the router does not have sufficient resources
+   * to fulfill the request, due to too many active replays.
+   */
+  OUT_OF_REPLAY_RESOURCES = 159,
+
+  /**
+   * A replay was in progress on a Durable Topic Endpoint (DTE)
+   * when its topic or selector was modified, causing the replay to fail.
+   */
+  TOPIC_OR_SELECTOR_MODIFIED_ON_DURABLE_TOPIC_ENDPOINT = 160,
+  /**
+   * A replay in progress on a flow failed
+   */
+  REPLAY_FAILED = 161,
+  /**
+   * A replay was started on the queue or DTE, either by another client or by the router.
+   */
+  REPLAY_STARTED = 162,
+  /**
+   * Router does not support Compressed TLS
+   */
+  COMPRESSED_TLS_NOT_SUPPORTED = 163,
+  /**
+   * The client attempted to add a shared subscription, but the capability is not supported
+   * by the appliance.
+   */
+  SHARED_SUBSCRIPTIONS_NOT_SUPPORTED = 164,
+  /**
+   * The client attempted to add a shared subscription on a client that is not permitted to
+   * use shared subscriptions.
+   */
+  SHARED_SUBSCRIPTIONS_NOT_ALLOWED = 165,
+  /**
+   * The client attempted to add a shared subscription to a queue or topic endpoint.
+   */
+  SHARED_SUBSCRIPTIONS_ENDPOINT_NOT_ALLOWED = 166,
+  /**
+   * A replay was requested but the requested start message is not available in the replay log.
+   */
+  REPLAY_START_MESSAGE_NOT_AVAILABLE = 167,
+  /**
+   * Replication Group Message Id are not comparable.
+   * Messages must be published to the same broker or HA pair for their Replicaton Group
+   * Message Id to be comparable.
+   */
+  MESSAGE_ID_NOT_COMPARABLE = 168,
+}
+
+/**
+ * Base for all errors thrown by the API.
+ *
+ * @see solace.SolaceError
+ */
+export interface SolaceError {
+  /**
+   * Error Message.
+   */
+  message: string;
+
+  /**
+   * The name of the error.
+   */
+  name: string;
+}
+
+/**
+ * An error thrown by the API when an operational error is encountered.
+ *
+ * @see solace.OperationError
+ */
+export interface OperationError extends SolaceError {
+  /**
+   * The subcode for the error.
+   */
+  subcode: ErrorSubcode;
+  /**
+   * The reason for the error: an embedded error object or exception.
+   */
+  reason: any;
+}
+
+/**
+ * Represents a request failure event; request failure events are passed to the application
+ * event handling callback provided when sending the request {@link Session#sendRequest}.
+ *
+ * @see solace.RequestError
+ */
+export interface RequestError extends SolaceError {
+
+  /**
+   * A code that provides more information about the error event.
+   */
+  requestEventCode: SessionEventCode;
+}
+
+/**
+ * Represents a SDT unsupported value error.
+ *
+ * An SDT field was assigned a value that is within the type range for the given SDT type,
+ * but is not supported on this platform/runtime.
+ *
+ * This occurs when a received {@link SDTContainerMap} or {@link SDTContainerStream}
+ * contains a field with a value that can not represented in the local architecture.
+ *
+ * Possible causes include:
+ * * receive 64 bit integer that cannot be represented accurately in a javaScript number. JavaScript
+ *   numbers are floats and can only hold a 48 bit integer without loss of precission. Any integer
+ *   greater than 281474976710655 or less than -281474976710655 will cause this exception.
+ *
+ * @see solace.SDTUnsupportedValueError
+ */
+export interface SDTUnsupportedValueError extends SolaceError {
+
+  /**
+   * A code that provides more information about the error event.
+   */
+  requestEventCode: SessionEventCode;
+}
+
+/**
+ * Represents an enumeration of session properties that can be modified by
+ * {@link Session.updateProperty} after the {@link Session} is originally created.
+ *
+ * These correspond to session properties in {@link SessionProperties}.
+ *
+ * @see solace.MutableSessionProperty
+ */
+export enum MutableSessionProperty {
+  /**
+   * Client name: {@link SessionProperties#clientName}
+   */
+  CLIENT_NAME = 1,
+  /**
+   * Application description: {@link SessionProperties#applicationDescription}
+   */
+  CLIENT_DESCRIPTION = 2,
+}
+
+/**
+ * A callback that returns replies to requests sent via {@link Session#sendRequest}.
+ * The replyReceivedCallback <b>must</b> be provided to the API as the third argument of {@link Sesssion#sendRequest}.
+ *
+ * @param session The session object that received the reply.
+ * @param message The reply message received.
+ * @param userObject The user object associated with the callback. 'undefined' when not provided to <i>sendRequest</i>
+ *
+ * @see solace.Session.replyReceivedCallback
+ */
+export type replyReceivedCallback = (session: Session, message: Message, userObject: any | undefined) => void;
+
+/**
+ * A callback that returns errors associated with requests sent via {@link Session#sendRequest}.
+ * The requestFailedCallback <b>must</b> be provided to the API as the fourth argument of {@link Sesssion#sendRequest}
+ *
+ * @param session The session object associated with the event.
+ * @param error The event associated with the failure.
+ * @param userObject The user object associated with the callback. 'undefined' when not provided to <i>sendRequest</i>
+ *
+ * @see solace.Session.requestFailedCallback
+ */
+export type requestFailedCallback = (session: Session, error: RequestError, userObject: any | undefined) => void;
+
+/**
+ * Statistics for sent/received messages and control operations.
+ *
+ * @see solace.StatType
+ */
+export enum StatType {
+
+  /**
+   * Count of bytes sent as part of data messages.
+   */
+  TX_TOTAL_DATA_BYTES = 0,
+  /**
+   * Count of data messages sent.
+   */
+  TX_TOTAL_DATA_MSGS = 1,
+  /**
+   * Count of bytes sent as part of direct data messages.
+   */
+  TX_DIRECT_BYTES = 2,
+  /**
+   * Count of direct data messages sent.
+   */
+  TX_DIRECT_MSGS = 3,
+  /**
+   * Count of bytes sent as part of control messages.
+   */
+  TX_CONTROL_BYTES = 4,
+  /**
+   * Count of control messages sent.
+   */
+  TX_CONTROL_MSGS = 5,
+  /**
+   * Count of request messages sent.
+   */
+  TX_REQUEST_SENT = 6,
+  /**
+   * Count of request timeouts that occurred.
+   */
+  TX_REQUEST_TIMEOUT = 7,
+  /**
+   * Count of bytes received as part of data messages.
+   */
+  RX_TOTAL_DATA_BYTES = 8,
+  /**
+   * Count of data messages received.
+   */
+  RX_TOTAL_DATA_MSGS = 9,
+  /**
+   * Count of bytes received as part of direct data messages.
+   */
+  RX_DIRECT_BYTES = 10,
+  /**
+   * Count of direct data messages received.
+   */
+  RX_DIRECT_MSGS = 11,
+  /**
+   * Count of bytes received as part of control messages.
+   */
+  RX_CONTROL_BYTES = 12,
+  /**
+   * Count of control messages received.
+   */
+  RX_CONTROL_MSGS = 13,
+  /**
+   * Count discard message indications received on incoming messages.
+   */
+  RX_DISCARD_MSG_INDICATION = 14,
+  /**
+   * Count of reply messaged received.
+   */
+  RX_REPLY_MSG_RECVED = 15,
+  /**
+   * Count of received reply messages that were discarded.
+   */
+  RX_REPLY_MSG_DISCARD = 16,
+  /**
+   * Count of messages discarded due to the presence of an unknown element or unknown protocol in the SMF header.
+   */
+  RX_DISCARD_SMF_UNKNOWN_ELEMENT = 17,
+
+  // ------- SolCache Session
+
+  /**
+   * Count of cache requests sent. One conceptual request (i.e. one API call)
+   * may involve many requests and replies.
+   */
+  CACHE_REQUEST_SENT = 18,
+  /**
+   * Count of OK responses to cache requests.
+   */
+  CACHE_REQUEST_OK_RESPONSE = 19,
+  /**
+   * Count of cache requests that returned a failure response.
+   */
+  CACHE_REQUEST_FAIL_RESPONSE = 20,
+  /**
+   * Count of cache replies discarded because a request has been fulfilled.
+   */
+  CACHE_REQUEST_FULFILL_DISCARD_RESPONSE = 21,
+  /**
+   * Count of cached messages delivered to the application.
+   */
+  RX_CACHE_MSG = 22,
+  /**
+   * Count of cache requests that were incomplete.
+   */
+  CACHE_REQUEST_INCOMPLETE_RESPONSE = 23,
+  /**
+   * The cache session operation completed when live data arrived on the requested topic.
+   */
+  CACHE_REQUEST_LIVE_DATA_FULFILL = 24,
+
+  // ------ Guaranteed Messaging
+
+  /**
+   * Count of bytes sent as part of persistent data messages.
+   */
+  TX_PERSISTENT_BYTES = 25,
+  /**
+   * Count of persistent data messages sent.
+   */
+  TX_PERSISTENT_MSGS = 26,
+  /**
+   * Count of non-persistent data bytes sent.
+   */
+  TX_NONPERSISTENT_BYTES = 27,
+  /**
+   * Count of non-persistent data messages sent.
+   */
+  TX_NONPERSISTENT_MSGS = 28,
+  /**
+   * The number of bytes redelivered in Persistent messages.
+   */
+  TX_PERSISTENT_BYTES_REDELIVERED = 29,
+  /**
+   * The number of Persistent messages redelivered.
+   */
+  TX_PERSISTENT_REDELIVERED = 30,
+  /**
+   * The number of bytes redelivered in Non-Persistent messages.
+   */
+  TX_NONPERSISTENT_BYTES_REDELIVERED = 31,
+  /**
+   * The number of Non-Persistent messages redelivered.
+   */
+  TX_NONPERSISTENT_REDELIVERED = 32,
+  /**
+   * The number of acknowledgments received.
+   */
+  TX_ACKS_RXED = 33,
+  /**
+   * The number of times the transmit window closed.
+   */
+  TX_WINDOW_CLOSE = 34,
+  /**
+   * The number of times the acknowledgment timer expired.
+   */
+  TX_ACK_TIMEOUT = 35,
+  /**
+   * Count of bytes received as part of persistent data messages.
+   */
+  RX_PERSISTENT_BYTES = 36,
+  /**
+   * Count of persistent data messages received.
+   */
+  RX_PERSISTENT_MSGS = 37,
+  /**
+   * Count of bytes received as part of non-persistent data messages.
+   */
+  RX_NONPERSISTENT_BYTES = 38,
+  /**
+   * Count of non-persistent data messages received.
+   */
+  RX_NONPERSISTENT_MSGS = 39,
+  /**
+   * Count of acknowledgements sent to the Solace Message Router
+   * for guaranteed messages received by the API.
+   */
+  RX_ACKED = 40,
+  /**
+   * Count of guaranteed messages discarded for being duplicates.
+   */
+  RX_DISCARD_DUPLICATE = 41,
+  /**
+   * Count of guaranteed messages discarded due to no match message consumer for the message.
+   */
+  RX_DISCARD_NO_MATCHING_CONSUMER = 42,
+  /**
+   * Count of guaranteed messages discarded for being received out of order.
+   */
+  RX_DISCARD_OUT_OF_ORDER = 43,
+}
+
+/**
+ * Represents an enumeration of peer capabilities.
+ *
+ * @see solace.CapabilityType
+ */
+export enum CapabilityType {
+  /**
+   * Peer's software load version.
+   * Type: string.
+   */
+  PEER_SOFTWARE_VERSION = 0,
+  /**
+   * Peer's software release date.
+   * Type: string.
+   */
+  PEER_SOFTWARE_DATE = 1,
+  /**
+   * Peer's platform.
+   * Type: string.
+   */
+  PEER_PLATFORM = 2,
+  /**
+   * Speed (in Mbps) of the port the client connects to.
+   * Type: number.
+   */
+  PEER_PORT_SPEED = 3,
+  /**
+   * Type of the port the client has connected to (currently 0: Ethernet).
+   * Type: number.
+   */
+  PEER_PORT_TYPE = 4,
+  /**
+   * Maximum size of a Direct message (in bytes), including all optional message headers and data.
+   * Type: number.
+   */
+  MAX_DIRECT_MSG_SIZE = 5,
+  /**
+   * Peer's router name. Type: string.
+   *
+   * This property is useful when sending SEMP requests to a peer's SEMP topic, which may be constructed as `#P2P/routername/#client/SEMP`.
+   */
+  PEER_ROUTER_NAME = 6,
+  /**
+   * Peer supports message eliding.
+   * Type: boolean.
+   */
+  MESSAGE_ELIDING = 7,
+  /**
+   * Peer supports NoLocal option (client may avoid receiving messages published by itself).
+   */
+  NO_LOCAL = 8,
+  /**
+   * Peer supports Guaranteed Message Consumer connections for receiving guaranteed messages.
+   */
+  GUARANTEED_MESSAGE_CONSUME = 9,
+  /**
+   * Peer supports temporary endpoints.
+   */
+  TEMPORARY_ENDPOINT = 10,
+  /**
+   * Peer supports Guaranteed Message Publisher connections for sedning guaranteed messages.
+   */
+  GUARANTEED_MESSAGE_PUBLISH = 11,
+  /**
+   * Peer supports Guaranteed Messages Browser connections for receiving guaranteed messages
+   */
+  GUARANTEED_MESSAGE_BROWSE = 12,
+  /**
+   * Peer supports creating/modify/disposing endpoints.
+   */
+  ENDPOINT_MGMT = 13,
+  /**
+   * Peer supports selectors on Guaranteed Message Consumers.
+   */
+  SELECTOR = 14,
+  /**
+   * Maximum size of a Direct message (in bytes), including all optional message headers and data.
+   * Type: number.
+   */
+  MAX_GUARANTEED_MSG_SIZE = 15,
+  /**
+   * Peer supports Guaranteed Messaging Consumer state change updates.
+   * Type: boolean
+   */
+  ACTIVE_CONSUMER_INDICATION = 16,
+  /**
+   * Peer accepts compressed (DEFLATE) data.
+   * Type: boolean.
+   */
+  COMPRESSION = 17,
+  /**
+   * Peer supports Guaranteed Messaging cut-through.
+   * Type: boolean
+   */
+  CUT_THROUGH = 18,
+  /**
+   * Peer supports provisioned queue and topic-endpoint discard behavior.
+   * Type: boolean
+   */
+  ENDPOINT_DISCARD_BEHAVIOR = 19,
+  /**
+   * Peer supports Guaranteed Messaging message TTL and Dead-Message Queues.
+   * Type: boolean
+   */
+  ENDPOINT_MESSAGE_TTL = 20,
+  /**
+   * Peer accepts JNDI queries. Type: boolean.
+   */
+  JNDI = 21,
+  /**
+   * Peer supports per topic sequence numbering for Guaranteed Messaging messages.
+   * Type: boolean
+   */
+  PER_TOPIC_SEQUENCE_NUMBERING = 22,
+  /**
+   * Peer supports QueueSubscriptionAdd for managing subscriptions on queue endpoints.
+   * Type: boolean
+   */
+  QUEUE_SUBSCRIPTIONS = 23,
+  /**
+   * Peer supports add/remove subscriptions for a specified clientName.
+   * Type: boolean
+   */
+  SUBSCRIPTION_MANAGER = 24,
+  /**
+   * Peer supports transacted sessions.
+   * Type: boolean.
+   */
+  TRANSACTED_SESSION = 25,
+  /**
+   * Peer support Message Replay.
+   * Type: boolean.
+   */
+  MESSAGE_REPLAY = 26,
+  /**
+   * Peer supports TLS downgrade to compression (encrypted and plaintext)
+   * Type: boolean
+   */
+  COMPRESSED_SSL = 27,
+  /**
+   * The peer can support \#share and \#noexport subscriptions
+   * Type: Boolean
+   */
+  SHARED_SUBSCRIPTIONS = 28,
+  /**
+   * The EndpointErrorId in replay bind responses can be trusted.
+   */
+  BR_REPLAY_ERRORID = 29,
+}
+
+
+/**
+ * Encapsulates the properties of a cache session.
+ *
+ * @see solace.CacheSessionProperties
+ */
+export interface CacheSessionProperties {
+  /**
+   * A property that specifies the cache name to which CacheSession operations should be sent.
+   */
+  cacheName?: string;
+
+  /**
+   * The maximum allowable message age in seconds to deliver in response to cache requests.
+   * 0 means no restriction on age.
+   *
+   * @default 0
+   */
+  maxAgeSec?: number;
+
+  /**
+   * The maximum number of messages per Topic to deliver in response to cache requests.
+   * 0 means no restriction on the number of messages.
+   *
+   * @default 1
+   */
+  maxMessages?: number;
+
+  /**
+   * The timeout for a cache request, in milliseconds.
+   * The valid range for this property is >= 3000.
+   *
+   * @default 10000
+   */
+  timeoutMsec?: number;
+}
+
+/**
+ * A session for performing cache requests.
+ *
+ * Applications must use {@link Session#createCacheSession} to construct this class.
+ *
+ * The supplied {@link CacheSessionProperties} will be copied. Subsequent modifications
+ * to the passed properties will not modify the session. The properties may be reused.
+ *
+ * @see solace.CacheSession
+ */
+export interface CacheSession {
+
+  /**
+   * Disposes the session.
+   *
+   * No cache requests will be sent by this CacheSession after it is disposed.
+   *
+   * Any subsequent operations on the session will throw {OperationError}.
+   *
+   * Any pending operations will immediately terminate, returning
+   * * {@link CacheRequestResult}
+   *   * #returnCode === {@link CacheReturnCode.INCOMPLETE}
+   *   * #subcode === {@link CacheReturnSubcode.CACHE_SESSION_DISPOSED}
+   * @throws {OperationError} if the CacheSession is already _disposed.
+   */
+  dispose(): void;
+
+  /**
+   * Gets the cache session properties.
+   *
+   * @throws {OperationError} if the CacheSession is disposed.
+   */
+  getProperties(): CacheSessionProperties;
+
+  /**
+   * Issues an asynchronous cache request. The result of the request will be returned via the listener.
+   *
+   * @param requestID The application-assigned ID number for the request.
+   * @param topic The topic destination for which the cache request will be  made.
+   * @param subscribe If true, the session will subscribe to the given {Topic}, if it is not already subscribed, before performing the cache request.
+   * @param {CacheLiveDataAction} liveDataAction The action to perform when the {@link CacheSession} receives live data on the given topic.
+   * @param {CacheCBInfo} cbInfo Callback info for the cache request.
+   *
+   * @throws {OperationError} In the following cases:
+   * * If the CacheSession is disposed.
+   *  Subcode: {@link ErrorSubcode.INVALID_OPERATION}
+   * * If one or more parameters were invalid.
+   *  Subcode: {@link ErrorSubcode.PARAMETER_INVALID_TYPE}
+   * * If the supplied topic and live data action cannot be combined.
+   *  Subcode: {@link ErrorSubcode.PARAMETER_CONFLICT}
+   * * If the supplied topic or live data action cannot be used given the current outstanding
+   *  requests.
+   *  Subcode: {@link ErrorSubcode.PARAMETER_CONFLICT}
+   */
+  sendCacheRequest(requestID: number, topic: Destination, subscribe: boolean, liveDataAction: CacheLiveDataAction, cbInfo: CacheCBInfo): void;
+}
+
+/**
+ * Enumeration of CacheLiveDataAction values, specifying how the CacheSession should handle live data associated with a cache request in progress.
+ *
+ * @see solace.CacheLiveDataAction
+ */
+export enum CacheLiveDataAction {
+  /**
+   * End the cache request when live data arrives that matches the topic.
+   *
+   * Note that wildcard cache requests must always be {@link CacheLiveDataAction.FLOW_THRU}.
+   */
+  FULFILL = 1,
+  /**
+   * Queue arriving live data that matches the topic, until the cache request
+   * completes.
+   *
+   * Note that wildcard cache requests must always be {@link CacheLiveDataAction.FLOW_THRU}.
+   */
+  QUEUE = 2,
+  /**
+   * Continue the outstanding cache request while allowing live data to flow through to the application.
+   *
+   * Note that wildcard cache requests must always be {@link CacheLiveDataAction.FLOW_THRU}.
+   */
+  FLOW_THRU = 3,
+}
+
+/**
+ * Encapsulates a {@link CacheSession}'s request listener callback function and optional application-specified context object.
+ *
+ * Instances of this class are required as a parameter to {@link CacheSession#sendCacheRequest} when creating a CacheSession request.
+ *
+ * @memberof solace
+ */
+export interface CacheCBInfo {
+
+  /**
+   * The function that will be called by the cache session when a request completes.
+   */
+  cacheCBFunction: cacheRequestCallback;
+}
+
+/**
+ * This callback is called by a cache session when a cache completes.
+ *
+ * @param requestID The ID of the request on which the event is notified.
+ * @param result The result of the cache request.
+ * @param userObject The user object provided.
+ *
+ * @see solace.CacheCBInfo.cacheRequestCallback
+ */
+export type cacheRequestCallback = (requestID: number, result: CacheRequestResult, userObject: any) => void;
+
+/**
+ * A CacheRequestResult object is provided on the callback {@link cacheRequestCallback} when a cache request completes.
+ *
+ * An object that indicates the termination of a cache request, and provides details how it concluded.
+ *
+ * @see solace.CacheRequestResult
+ */
+export interface CacheRequestResult {
+
+  /**
+   * Gets the return code from the cache request result.
+   */
+  getReturnCode(): CacheReturnCode;
+
+  /**
+   * Gets the return subcode from the cache request result.
+   */
+  getReturnSubcode(): CacheReturnSubcode;
+
+  /**
+   * Gets the topic object associated with the cache request.
+   */
+  getTopic(): Destination;
+
+  /**
+   * Gets the error, if any, associated with the returned result.
+   */
+  getError(): string;
+}
+
+/**
+ * Enumeration of CacheReturnCode types.
+ *
+ * The method {@link CacheRequestResult#getReturnCode} returns on of these basic results of a cache request.
+ * More details are available in the associated {@link CacheReturnSubcode}, retrieved by {@link CacheRequestResult#getReturnSubcode}.
+ *
+ * @see solace.CacheReturnCode
+ */
+export enum CacheReturnCode {
+  /**
+   * The cache request succeeded.  See the subcode for more information.
+   */
+  OK = 1,
+  /**
+   * The cache request was not processed.  See the subcode for more information.
+   */
+  FAIL = 2,
+  /**
+   * The cache request was processed but could not be completed.
+   * See the subcode for more information.
+   */
+  INCOMPLETE = 3,
+}
+
+/**
+ * Enumeration of CacheReturnSubcode types.
+ *
+ * @see solace.CacheReturnSubcode
+ */
+export enum CacheReturnSubcode {
+  /**
+   * The cache request completed successfully.
+   */
+  REQUEST_COMPLETE = 0,
+  /**
+   * The cache request completed when live data arrived on the topic requested.
+   */
+  LIVE_DATA_FULFILL = 1,
+  /**
+   * The cache instance or session returned an error response to the cache request.
+   */
+  ERROR_RESPONSE = 2,
+  /**
+   * The cache request failed because the {@link Session} used to construct it has been disposed.
+   */
+  INVALID_SESSION = 3,
+  /**
+   * The cache request failed because the request timeout expired.
+   */
+  REQUEST_TIMEOUT = 4,
+  /**
+   * The cache request was made on the same topic as an existing request, and {@link CacheLiveDataAction.FLOW_THRU} was not set.
+   */
+  REQUEST_ALREADY_IN_PROGRESS = 5,
+  /**
+   * The cache reply returned no data.
+   */
+  NO_DATA = 6,
+  /**
+   * The cache reply returned suspect data.
+   */
+  SUSPECT_DATA = 7,
+  /**
+   * The request was terminated because the cache session was disposed.
+   */
+  CACHE_SESSION_DISPOSED = 8,
+  /**
+   * The request was terminated because the subscription request for the specified topic failed.
+   */
+  SUBSCRIPTION_ERROR = 9,
+}
+
+/**
+ * A Message Consumer is created by calling {@link Session#createMessageConsumer}.
+ *
+ * A MessageConsumer controls Guaranteed Message delivery to this client.
+ *
+ * Consumer characteristics and behavior are defined by {@link MessageConsumerProperties}.
+ *
+ * The properties can also be supplied as a simple key-value {Object}. The queue descriptor,
+ * {@link MessageConsumerProperties#queueDescriptor} must be specified to identify the
+ * Guaranteed Message Queue or Guaranteed Message Topic Endpoint on the Solace Message Router.
+ *
+ * The MessageConsumer object is an EventEmitter, and will emit events to which the
+ * application may choose to subscribe, such as the connection to the Solace Message Router
+ * going up or down.
+ *
+ * If a registered listener for an emitted event throws an exception, this is caught and emitted as
+ * an 'error'.
+ *
+ * @fires MessageConsumerEventName#ACTIVE
+ * @fires MessageConsumerEventName#CONNECT_FAILED_ERROR
+ * @fires MessageConsumerEventName#DISPOSED
+ * @fires MessageConsumerEventName#DOWN
+ * @fires MessageConsumerEventName#DOWN_ERROR
+ * @fires MessageConsumerEventName#GM_DISABLED
+ * @fires MessageConsumerEventName#INACTIVE
+ * @fires MessageConsumerEventName#MESSAGE
+ * @fires MessageConsumerEventName#UP
+ *
+ * @see solace.MessageConsumer
+ */
+export interface MessageConsumer {
+
+  /**
+   * Begins delivery of messages to this consumer. This method opens the protocol window to the
+   * Solace Message Router so further messages can be received.
+   *
+   * A newly created consumer is in started state.
+   *
+   * If the consumer was already started, this method has no effect.
+   *
+   * A consumer is stopped by calling {@link MessageConsumer.stop}
+   *
+   * @throws {OperationError}
+   * * if the Message Consumer is disposed.
+   *   subcode = {@link ErrorSubcode.INVALID_OPERATION}
+   * * if the Message Consumer is disconnected.
+   *   subcode = {@link ErrorSubcode.INVALID_OPERATION}
+   */
+  start(): void;
+
+  /**
+   * Stops messages from being delivered to this consumer from the Solace Message Router.
+   * Messages may continue to be prefetched by the API and queued internally
+   * until {@link MessageConsumer#start} is called.
+   *
+   * If the consumer was already stopped, this method has no effect.
+   *
+   * @throws {OperationError}
+   * * if the Message Consumer is disconnected.
+   *   subcode = {@link ErrorSubcode.INVALID_OPERATION}
+   */
+  stop(): void;
+
+  /**
+   * Connects the consumer immediately.
+   *
+   * The application should add event listeners (see {@link MessageConsumerEventName}). If there is no listener
+   * added for {@link MessageConsumerEventName#MESSAGE} then up to a window {@link MessageConsumerProperties.windowSize}
+   * of messages can be queued internally.
+   *
+   * @throws {OperationError}
+   *  * if consumer is not supported by router for this client.
+   *  subcode = {@link ErrorSubcode.INVALID_OPERATION}
+   *
+   */
+  connect(): void;
+
+  /**
+   * Initiates an orderly disconnection of the Message Consumer.
+   *
+   * The API will send any pending client acknowledgements on the Message Consumer, then send an unbind request.
+   * Any messages subsequently received are discarded silently. When the unbind message is acknowledged,
+   * the application receives a {@link MessageConsumerEventName#DOWN} event if it has set a listener
+   * for that event.
+   *
+   * @throws {OperationError}
+   * * if the Message Consumer is disconnected.
+   *   subcode = {@link ErrorSubcode.INVALID_OPERATION}
+   */
+  disconnect(): void;
+
+  /**
+   * Disposes the Guaranteed Message connection, removing all listeners and releasing references.
+   */
+  dispose(): void;
+
+  /**
+   * Returns the destination that should be used to publish messages that this consumer
+   * will receive.
+   * * For topic endpoints, this is the topic to which the topic endpoint is subscribed.
+   * * For queues, this is the associated queue destination.
+   *
+   * The destination returned can be used to set the ReplyTo field in a message, or otherwise communicated
+   * to partners that need to send messages to this Message Consumer. This is especially useful
+   * for temporary endpoints (Queues and Topic Endpoints), as the destination is unknown before the endpoint
+   * is created.
+   *
+   * This method will succeed after {@link MessageConsumerEventName#UP} for temporaries with generated destinations.
+   *
+   * @throws {OperationError}
+   * * if the {@link MessageConsumer} is disconnected and the destination is temporary.
+   */
+  getDestination(): Destination;
+
+  /**
+   * Creates and returns copy of the properties for this MessageConsumer.
+   *
+   * For non-durable endpoints, the `MessageConsumerProperties` returned will include a {@link QueueDescriptor}
+   * that contains the resolved name.
+   *
+   * A new copy of the properties object is returned each time this property is accessed.
+   * The returned object cannot be polled for mutations such as the one described above.
+   */
+  getProperties(): MessageConsumerProperties;
+
+  /**
+   * After the MessageConsumer has connected to an endpoint ({@link MessageConsumerEventName#UP}),
+   * accesstype representsthe access type for the endpoint to which this Message Consumer is bound.
+   */
+  readonly accessType: QueueAccessType;
+
+  /**
+   * After the MessageConsumer has connected as indicated by the event {@link MessageConsumerEventName#UP},
+   * queueDiscardBehavior represents the discard behavior flags for the endpoint to which this Message Consumer
+   * is bound.
+   */
+  readonly queueDiscardBehavior: QueueDiscardBehavior;
+
+  /**
+   * After the MessageConsumer has connected as indicated by the event {@link MessageConsumerEventName#UP}
+   * respectsTTL is `true` when the endpoint respects Time To Live on messages and 'false' otherwise.
+   */
+  readonly respectsTTL: boolean;
+
+  /**
+   * After the MessageConsumer has connected as indicated by the event {@link MessageConsumerEventName#UP},
+   * this property represents permissions granted by the router to this user on this Message Consumer.
+   */
+  readonly permissions: QueuePermissions;
+
+  /**
+   * Clears all statistics for this Guaranteed Message Connection. All previous Guaranteed Message Connection
+   * statistics are lost when this is called.
+   *
+   * @throws {OperationError}
+   *  * if the Message Consumer is disposed. subcode = {@link ErrorSubcode.INVALID_OPERATION}
+   */
+  clearStats(): void;
+
+  /**
+   * Returns a statistic for this Guaranteed Message connection.
+   *
+   * @param statType The statistic to return.
+   */
+  getStat(statType: StatType): number;
+
+  /**
+   * Returns true if this Guaranteed Message Consumer was disposed.
+   */
+  disposed: boolean;
+
+  /**
+   * The owning session for this MessageConsumer.
+   */
+  readonly session: Session;
+
+  /**
+   * Registers a callback which is called when given event occurs.
+   */
+  on(eventName: MessageConsumerEventName, listener: (event: SessionEvent | Message | SolaceError | void) => void): void;
+
+  /**
+   * Registers a callback which is called when given event occurs. The callback is unregistered after received the first event.
+   */
+  once(eventName: MessageConsumerEventName, listener: (event: SessionEvent | Message | SolaceError | void) => void): void;
+}
+
+/**
+ * An enumeration of message consumer event names.
+ *
+ * A {@link MessageConsumer} will emit these events as part of its lifecycle.
+ *
+ * Applications, having created a {@link MessageConsumer} can choose to listen to all of the events described here,
+ * or any subset of these events.
+ *
+ * For Example:
+ * <pre>
+ *   <code>
+ *     mc = solace.Session.createMessageConsumer(...);
+ *     mc.on(solace.MessageConsumerEventName.CONNECT_FAILED_ERROR,
+ *           function connectFailedErrorEventCb(error) {
+ *             // details is an OperationError object
+ *           });
+ *   </code>
+ * </pre>
+ *
+ * @see solace.MessageConsumerEventName
+ */
+export enum MessageConsumerEventName {
+  /**
+   * The message consumer is established.
+   */
+  UP = 'MessageConsumerEventName_up',
+  /**
+   * The message consumer is successfully disconnected. The message consumer is disabled.
+   */
+  DOWN = 'MessageConsumerEventName_down',
+  /**
+   * The message consumer has become active.
+   */
+  ACTIVE = 'MessageConsumerEventName_active',
+  /**
+   * The message consumer has become inactive.
+   */
+  INACTIVE = 'MessageConsumerEventName_inactive',
+  /**
+   * The message consumer was established and then disconnected by the router,
+   * likely due to operator intervention. The message consumer is disabled.
+   *
+   * @param {OperationError} error Details of the error.
+   */
+  DOWN_ERROR = 'MessageConsumerEventName_downError',
+  /**
+   * The message consumer was established and then disconnected by the router,
+   * likely due to operator intervention, but flow auto reconnect is active.
+   *
+   * The message consumer is disabled, but actively reconnecting.
+   *
+   * Expect a {@link RECONNECTED} or {@link DOWN_ERROR} on success of failure. respectively.
+   *
+   * See also {@link MessageConsumerProperties.reconnectAttempts} and {@link MessageConsumerPropertiesreconnectIntervalInMsecs}.
+   *
+   * @param {OperationError} error Details of the error that triggered the reconnect.
+   */
+  RECONNECTING = 'MessageConsumerEventName_reconnecting',
+  /**
+   * The message consumer successfully auto-reconnected.
+   */
+  RECONNECTED = 'MessageConsumerEventName_reconnected',
+  /**
+   * The message consumer attempted to connect but was unsuccessful.
+   * The message consumer is disabled.
+   *
+   * @param {OperationError} error Details of the error.
+   */
+  CONNECT_FAILED_ERROR = 'MessageConsumerEventName_connectFailedError',
+  /**
+   * The message consumer will not connect because the current session is incompatible with Guaranteed Messaging.
+   * The message consumer is disabled until a compatible session is available.
+   */
+  GM_DISABLED = 'MessageConsumerEventName_GMDisabled',
+  /**
+   * The message consumer is being disposed. No further events will be emitted.
+   */
+  DISPOSED = 'MessageConsumerEventName_disposed',
+  /**
+   * A message was received on the message consumer.
+   *
+   * If the application throws an exception in this listener, and the consumer was configured to automatically acknowledge messages
+   * (see {@link MessageConsumerProperties#acknowledgeMode}), the API will not acknowledge the message, since it may not have been
+   * successfully processed by the application. Such a message must be acknowledged manually. If the application did not retain a
+   * reference to the message, it may be redelivered by calling {@link MessageConsumer#disconnect} followed by {@link MessageConsumer#connect}
+   * depending on the configuration of the queue.
+   *
+   * When there is no listener for <i>MESSAGE</i> on a MessageConsumer, messages are queued internally until a listener is added.
+   *
+   * @param {Message} message The received message being delivered in this event.
+   */
+  MESSAGE = 'MessageConsumerEventName_message',
+}
+
+/**
+ * Defines the properties for a {@link QueueBrowser}.
+ *
+ * @see solace.QueueBrowserProperties
+ */
+export interface QueueBrowserProperties {
+
+  /**
+   * Defines the queue from which to consume.
+   *  * For durable queues and durable topic endpoints, this must be a {@link QueueDescriptor}.
+   */
+  queueDescriptor?: QueueDescriptor;
+
+  /**
+   * The bind timeout in milliseconds when creating a connection to the Solace Message Router.
+   *  * The valid range is >= 50.
+   *
+   * @default 10000
+   */
+  connectTimeoutInMsecs?: number;
+
+  /**
+   * Gets and sets the maximum number of bind attempts when creating a connection to the
+   * Solace Message Router.
+   *  * The valid range is >= 1.
+   *
+   * @default 3
+   */
+  connectAttempts?: number;
+
+  /**
+   * The window size for Guaranteed Message delivery.
+   *
+   * This is the maximum number of messages that will be prefetched from the Solace
+   * Messaging Router and queued internally by the API while waiting for the
+   * application to accept delivery of the messages.
+   *   * The valid range is 1 <= windowSize <= 255.
+   *
+   * @default 255
+   */
+  windowSize?: number;
+
+  /**
+   * The transport acknowledgement timeout for guaranteed messaging in milliseconds.
+   *
+   * When the {@link QueueBrowserProperties.transportAcknowledgeTimeoutInMsecs} is not
+   * exceeded, acknowledgements will be returned to the router at intervals not less than
+   * this value.
+   *   * The valid range is 20 <= transportAcknowledgeTimeoutInMsecs <= 1500.
+   *
+   * @default 1000
+   */
+  transportAcknowledgeTimeoutInMsecs?: number;
+
+  /**
+   * The threshold for sending an acknowledgement, as a percentage.
+   *
+   * The API sends a transport acknowledgment every N messages where N is calculated as this
+   * percentage of the transport window size if the endpoint's max-delivered-unacked-msgs-per-flow
+   * setting at bind time is greater than or equal to the transport window size. Otherwise,
+   * N is calculated as this percentage of the endpoint's max-delivered-unacked-msgs-per-flow
+   * setting at bind time.
+   * * The valid range is 1 <= transportAcknowledgeThresholdPercentage <= 75.
+   *
+   * @default 60
+   */
+  transportAcknowledgeThresholdPercentage?: number;
+
+  /**
+   * Allow additional properties, e.g., properties of new `solclientjs` versions.
+   */
+  [key: string]: any;
+}
+
+/**
+ * A Queue Browser is created by calling {@link Session#createQueueBrowser}.
+ *
+ * A Queue Browser allows client applications to look at messages spooled on Endpoints
+ * without removing them. Messages are browsed from oldest to newest.
+ *
+ * After being browsed, messages are still available for consumption over normal flows.
+ * However, it is possible to selectively remove messages from the persistent store of an Endpoint.
+ * In this case, these removed messages will no longer be available for consumption.
+ *
+ * Note: If browsing a queue with an active consumer, no guarantee is made that the browser will
+ * receive all messages published to the queue. The consumer can receive and acknowledge messages
+ * before they are delivered to the browser.
+ *
+ * One typical application is to use Browsers to allow message bus administrators to remove “stuck”
+ * Guaranteed messages from an Endpoint without having to modify or disrupt existing applications.
+ * A message can get stuck if:
+ *
+ *  1) It has been received by an application, but for some reason, that application has failed to
+ *     acknowledge it.
+ *  2) All active message selectors have failed to match this particular message and therefore the
+ *     message bus has not delivered it to any client yet. The current release only supports
+ *     browsing Endpoints of type Queue.
+ *
+ * Note that the delivery restrictions imposed by the queue’s Access type
+ * (exclusive or non-exclusive), do not apply when browsing messages with a Browser.
+ *
+ * Browser characteristics and behavior are defined by {@link QueueBrowserProperties}.
+ * The properties can also be supplied as a simple key-value {Object}. The queue descriptor,
+ * {@link QueueBrowserProperties#queueDescriptor} must be specified to identify the
+ * Guaranteed Message Queue on the Solace Message Router.
+ *
+ * The Browser is an EventEmitter, and will emit events to which the application may choose to
+ * subscribe, such as the connection to the Solace Message Router going up or down.
+ *
+ * If a registered listener for an emitted event throws an exception, this is caught and emitted as
+ * an 'error'.
+ *
+ * @see solace.QueueBrowser
+ */
+export interface QueueBrowser {
+
+  /**
+   * Connects the queue browser immediately.
+   *
+   * The application should add event listeners (see {@link QueueBrowserEventName}).
+   * If there is no listener added for {@link QueueBrowserEventName#MESSAGE} then up to a window
+   * {@link QueueBrowserProperties.windowSize} of messages can be queued internally.
+   *
+   * @throws {OperationError}
+   *  * if consumer is not supported by router for this client.
+   *  subcode = {@link ErrorSubcode.INVALID_OPERATION}
+   *
+   */
+  connect(): void;
+
+  /**
+   * Initiates an orderly disconnection of the queue browser.
+   *
+   * The API will send an unbind request. Any messages subsequently received are discarded silently.
+   * When the unbind message is acknowledged, the application receives a {@link QueueBrowserEventName#DOWN}
+   * event if it has set a listener for that event.
+   *
+   * @throws {OperationError}
+   * * if the Message Consumer is disconnected.
+   *   subcode = {@link ErrorSubcode.INVALID_OPERATION}
+   */
+  disconnect(): void;
+
+  /**
+   * Begins delivery of messages to this queue browser.
+   *
+   * This method opens the protocol window to the Solace Message Router so further messages can be received.
+   *
+   * A newly created queue browser is in started state.
+   *
+   * If the queue browser was already started, this method has no effect.
+   *
+   * A consumer is stopped by calling {@link QueueBrowser.stop}
+   *
+   * @throws {OperationError}
+   * * if the Queue BrowserMessage Consumer is disposed.
+   *   subcode = {@link ErrorSubcode.INVALID_OPERATION}
+   * * if the Message Consumer is disconnected.
+   *   subcode = {@link ErrorSubcode.INVALID_OPERATION}
+   */
+  start(): void;
+
+  /**
+   * Stops messages from being delivered to this queue browser from the Solace Message Router.
+   *
+   * Messages may continue to be prefetched by the API and queued internally until
+   * {@link QueueBrowser#start} is called.
+   *
+   * If the queue browser was already stopped, this method has no effect.
+   *
+   * @throws {OperationError}
+   * * if the Queue Browser is disconnected.
+   *   subcode = {@link ErrorSubcode.INVALID_OPERATION}
+   */
+  stop(): void;
+
+  /**
+   * Removes a message from the queue by acknowledging it.
+   *
+   * The {@link QueueBrowser} does not automatically acknowledge messages once they have been received.
+   *
+   * The API does not send acknowledgments immediately. It stores the state for acknowledged messages internally
+   * and acknowledges messages, in bulk, when a threshold or timer is reached.
+   */
+  removeMessageFromQueue(message: Message): void;
+
+  /**
+   * Registers a callback which is called when given event occurs.
+   */
+  on(eventName: QueueBrowserEventName, listener: (event: SessionEvent | Message | SolaceError | void) => void): void;
+
+  /**
+   * Registers a callback which is called when given event occurs. The callback is unregistered after received the first event.
+   */
+  once(eventName: QueueBrowserEventName, listener: (event: SessionEvent | Message | SolaceError | void) => void): void;
+
+  /**
+   * Allow additional properties, e.g., properties of new `solclientjs` versions.
+   */
+  [key: string]: any;
+}
+
+/**
+ * An enumeration of queue browser event names.
+ *
+ * A {@link QueueBrowser} will emit these events as part of its lifecycle.
+ *
+ * Applications, having created a {@link QueueBrowser} can choose to listen to all of the events described
+ * here, or any subset of these events.
+ *
+ * For Example:
+ * <pre>
+ *   <code>
+ *     qb = solace.Session.createQueueBrowser(...);
+ *     qb.on(solace.QueueBrowserEventName.CONNECT_FAILED_ERROR,
+ *           function connectFailedErrorEventCb(error) {
+ *             // details is an OperationError object
+ *           });
+ *   </code>
+ * </pre>
+ *
+ * @see solace.QueueBrowserEventName
+ */
+export enum QueueBrowserEventName {
+  /**
+   * The queue browser is established.
+   */
+  UP = 'QueueBrowserEventName_up',
+  /**
+   * The queue browser is successfully disconnected. The queue browser is disabled.
+   */
+  DOWN = 'QueueBrowserEventName_down',
+  /**
+   * The queue browser was established and then disconnected by the router,
+   * likely due to operator intervention. The queue browser is disabled.
+   */
+  DOWN_ERROR = 'QueueBrowserEventName_downError',
+  /**
+   * The queue browser attempted to connect but was unsuccessful. The queue browser is disabled.
+   *
+   * @param {OperationError} error Details of the error.
+   */
+  CONNECT_FAILED_ERROR = 'QueueBrowserEventName_connectFailedError',
+  /**
+   * The queue browser will not connect because the current session is incompatible with
+   * Guaranteed Messaging. The queue browser is disabled until a compatible session is available.
+   */
+  GM_DISABLED = 'QueueBrowserEventName_GMDisabled',
+  /**
+   * The queue browser is being disposed. No further events will be emitted.
+   */
+  DISPOSED = 'QueueBrowserEventName_disposed',
+  /**
+   * A message was received on the queue browser.
+   *
+   * If the application did not retain a reference to the message, it may be redelivered by calling
+   * {@link QueueBrowser#disconnect} followed by {@link QueueBrowser#connect} depending on the
+   * configuration of the queue.
+   *
+   * When there is no listener for <i>MESSAGE</i> on a QueueBrowser, messages are queued
+   * internally until a listener is added.
+   *
+   * @param {Message} message The received message being delivered in this event.
+   */
+  MESSAGE = 'QueueBrowserEventName_message',
 }

@@ -8,7 +8,7 @@ import { TopicMatcher } from './topic-matcher';
 import { observeInside } from '@scion/toolkit/operators';
 import { SolaceSessionProvider } from './solace-session-provider';
 import { SolaceMessageClientConfig } from './solace-message-client.config';
-import { Destination, Message, MessageDeliveryModeType, SDTField, SDTFieldType, SessionProperties } from './solace.model';
+import { Destination, Message, MessageDeliveryModeType, SDTField, SDTFieldType, Session, SessionEvent, SessionEventCode, SessionProperties } from './solace.model';
 import { TopicSubscriptionCounter } from './topic-subscription-counter';
 import { SerialExecutor } from './serial-executor.service';
 import { SolaceObjectFactory } from './solace-object-factory';
@@ -17,9 +17,9 @@ import { SolaceObjectFactory } from './solace-object-factory';
 export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { // tslint:disable-line:class-name
 
   private _message$ = new Subject<Message>();
-  private _event$ = new Subject<solace.SessionEvent>();
+  private _event$ = new Subject<SessionEvent>();
 
-  private _session: Promise<solace.Session>;
+  private _session: Promise<Session>;
   private _destroy$ = new Subject<void>();
   private _sessionDisposed$ = new Subject<void>();
   private _whenDestroy = this._destroy$.pipe(take(1)).toPromise();
@@ -74,46 +74,46 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
           this._subscriptionExecutor = new SerialExecutor();
           this._subscriptionCounter = new TopicSubscriptionCounter();
 
-          const session: solace.Session = this._sessionProvider.provide(new solace.SessionProperties(sessionProperties));
+          const session: Session = this._sessionProvider.provide(SolaceObjectFactory.createSessionProperties(sessionProperties));
 
           // When the Session is ready to send/receive messages and perform control operations.
-          session.on(solace.SessionEventCode.UP_NOTICE, (event: solace.SessionEvent) => {
+          session.on(SessionEventCode.UP_NOTICE, (event: SessionEvent) => {
             this._event$.next(event);
             resolve(session);
           });
 
           // When the session has gone down, and an automatic reconnection attempt is in progress.
-          session.on(solace.SessionEventCode.RECONNECTED_NOTICE, (event: solace.SessionEvent) => this._event$.next(event));
+          session.on(SessionEventCode.RECONNECTED_NOTICE, (event: SessionEvent) => this._event$.next(event));
 
           // Emits when the session was established and then went down.
-          session.on(solace.SessionEventCode.DOWN_ERROR, (event: solace.SessionEvent) => this._event$.next(event));
+          session.on(SessionEventCode.DOWN_ERROR, (event: SessionEvent) => this._event$.next(event));
 
           // Emits when the session attempted to connect but was unsuccessful.
-          session.on(solace.SessionEventCode.CONNECT_FAILED_ERROR, (event: solace.SessionEvent) => {
+          session.on(SessionEventCode.CONNECT_FAILED_ERROR, (event: SessionEvent) => {
             this._event$.next(event);
             reject(event);
           });
 
           // When the session connect operation failed, or the session that was once up, is now disconnected.
-          session.on(solace.SessionEventCode.DISCONNECTED, (event: solace.SessionEvent) => this._event$.next(event));
+          session.on(SessionEventCode.DISCONNECTED, (event: SessionEvent) => this._event$.next(event));
 
           // When the session has gone down, and an automatic reconnection attempt is in progress.
-          session.on(solace.SessionEventCode.RECONNECTING_NOTICE, (event: solace.SessionEvent) => this._event$.next(event));
+          session.on(SessionEventCode.RECONNECTING_NOTICE, (event: SessionEvent) => this._event$.next(event));
 
           // When a direct message was received on the session.
-          session.on(solace.SessionEventCode.MESSAGE, (message: Message): void => this._message$.next(message));
+          session.on(SessionEventCode.MESSAGE, (message: Message): void => this._message$.next(message));
 
           // When a subscribe or unsubscribe operation succeeded.
-          session.on(solace.SessionEventCode.SUBSCRIPTION_OK, (event: solace.SessionEvent) => this._event$.next(event));
+          session.on(SessionEventCode.SUBSCRIPTION_OK, (event: SessionEvent) => this._event$.next(event));
 
           // When a subscribe or unsubscribe operation was rejected by the broker.
-          session.on(solace.SessionEventCode.SUBSCRIPTION_ERROR, (event: solace.SessionEvent) => this._event$.next(event));
+          session.on(SessionEventCode.SUBSCRIPTION_ERROR, (event: SessionEvent) => this._event$.next(event));
 
           // When a message published with a guaranteed message delivery strategy, that is {@link MessageDeliveryModeType.PERSISTENT} or {@link MessageDeliveryModeType.NON_PERSISTENT}, was acknowledged by the router.
-          session.on(solace.SessionEventCode.ACKNOWLEDGED_MESSAGE, (event: solace.SessionEvent) => this._event$.next(event));
+          session.on(SessionEventCode.ACKNOWLEDGED_MESSAGE, (event: SessionEvent) => this._event$.next(event));
 
           // When a message published with a guaranteed message delivery strategy, that is {@link MessageDeliveryModeType.PERSISTENT} or {@link MessageDeliveryModeType.NON_PERSISTENT}, was rejected by the router.
-          session.on(solace.SessionEventCode.REJECTED_MESSAGE_ERROR, (event: solace.SessionEvent) => this._event$.next(event));
+          session.on(SessionEventCode.REJECTED_MESSAGE_ERROR, (event: SessionEvent) => this._event$.next(event));
 
           session.connect();
         }
@@ -133,7 +133,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
     // Disconnect the session gracefully from the Solace event broker.
     // Gracefully means waiting for the 'DISCONNECT' confirmation event before disposing the session,
     // so that the broker can cleanup resources accordingly.
-    const whenDisconnected = this.whenEvent(solace.SessionEventCode.DISCONNECTED).then(() => this.dispose());
+    const whenDisconnected = this.whenEvent(SessionEventCode.DISCONNECTED).then(() => this.dispose());
     this._zone.runOutsideAngular(() => session.disconnect());
     await whenDisconnected;
   }
@@ -147,7 +147,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
     this._session = null;
     this._subscriptionExecutor.destroy();
     this._subscriptionCounter.destroy();
-    await session.dispose();
+    session.dispose();
     this._sessionDisposed$.next();
   }
 
@@ -225,7 +225,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
         }
 
         const subscribeCorrelationKey = UUID.randomUUID();
-        const whenSubscribed = this.whenEvent(solace.SessionEventCode.SUBSCRIPTION_OK, {rejectOnEvent: solace.SessionEventCode.SUBSCRIPTION_ERROR, correlationKey: subscribeCorrelationKey})
+        const whenSubscribed = this.whenEvent(SessionEventCode.SUBSCRIPTION_OK, {rejectOnEvent: SessionEventCode.SUBSCRIPTION_ERROR, correlationKey: subscribeCorrelationKey})
           .then(() => true)
           .catch(event => {
             console.warn(`[SolaceMessageClient] Solace event broker rejected subscription on topic ${topic}.`, event); // tslint:disable-line:no-console
@@ -262,7 +262,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
         }
 
         const unsubscribeCorrelationKey = UUID.randomUUID();
-        const whenUnsubscribed = this.whenEvent(solace.SessionEventCode.SUBSCRIPTION_OK, {rejectOnEvent: solace.SessionEventCode.SUBSCRIPTION_ERROR, correlationKey: unsubscribeCorrelationKey})
+        const whenUnsubscribed = this.whenEvent(SessionEventCode.SUBSCRIPTION_OK, {rejectOnEvent: SessionEventCode.SUBSCRIPTION_ERROR, correlationKey: unsubscribeCorrelationKey})
           .then(() => true)
           .catch(event => {
             console.warn(`[SolaceMessageClient] Solace event broker rejected unsubscription on topic ${topic}.`, event); // tslint:disable-line:no-console
@@ -357,13 +357,13 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
 
     // When publishing a message with a guaranteed message delivery strategy, resolve the Promise when acknowledged by the broker, or reject it otherwise.
     const correlationKey = message.getCorrelationKey() || UUID.randomUUID();
-    const whenAcknowledged = this.whenEvent(solace.SessionEventCode.ACKNOWLEDGED_MESSAGE, {rejectOnEvent: solace.SessionEventCode.REJECTED_MESSAGE_ERROR, correlationKey: correlationKey});
+    const whenAcknowledged = this.whenEvent(SessionEventCode.ACKNOWLEDGED_MESSAGE, {rejectOnEvent: SessionEventCode.REJECTED_MESSAGE_ERROR, correlationKey: correlationKey});
     message.setCorrelationKey(correlationKey);
     session.send(message);
     await whenAcknowledged;
   }
 
-  public get session(): Promise<solace.Session> {
+  public get session(): Promise<Session> {
     return this._session || Promise.reject('[SolaceMessageClient] Not connected to the Solace message broker. Did you forget to initialize the `SolaceClient` via `SolaceMessageClientModule.forRoot({...}) or to invoke \'connect\'`?');
   }
 
@@ -375,7 +375,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
    * - the Promise resolves or rejects outside the Angular zone
    * - the Promise is bound the current session, i.e., will ony be settled as long as the current session is not disposed.
    */
-  private whenEvent(resolveOnEvent: number, options?: { rejectOnEvent?: number; correlationKey?: string; }): Promise<any> {
+  private whenEvent(resolveOnEvent: SessionEventCode, options?: { rejectOnEvent?: SessionEventCode; correlationKey?: string; }): Promise<SessionEvent> {
     return this._event$
       .pipe(
         assertNotInAngularZone(),
@@ -428,7 +428,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
         assertNotInAngularZone(),
         takeUntil(this._destroy$),
       )
-      .subscribe((event: solace.SessionEvent) => {
+      .subscribe((event: SessionEvent) => {
         console.debug(`[SolaceMessageClient] solclientjs session event:  ${solace.SessionEventCode.nameOf(event.sessionEventCode)}`, event); // tslint:disable-line:no-console
       });
   }
@@ -472,23 +472,23 @@ function isNamedWildcardSegment(segment: string): boolean {
  * Set of events indicating final disconnection from the broker with no recovery possible.
  */
 const SESSION_DIED_EVENTS = new Set<number>()
-  .add(solace.SessionEventCode.DOWN_ERROR) // is emitted when reaching the limit of connection retries after a connection interruption
-  .add(solace.SessionEventCode.DISCONNECTED); // is emitted when disconnected from the session
+  .add(SessionEventCode.DOWN_ERROR) // is emitted when reaching the limit of connection retries after a connection interruption
+  .add(SessionEventCode.DISCONNECTED); // is emitted when disconnected from the session
 /**
  * Set of events indicating a connection to be established.
  */
 const CONNECTION_ESTABLISHED_EVENTS = new Set<number>()
-  .add(solace.SessionEventCode.UP_NOTICE)
-  .add(solace.SessionEventCode.RECONNECTED_NOTICE);
+  .add(SessionEventCode.UP_NOTICE)
+  .add(SessionEventCode.RECONNECTED_NOTICE);
 
 /**
  * Set of events indicating a connection to be lost.
  */
 const CONNECTION_LOST_EVENTS = new Set<number>()
-  .add(solace.SessionEventCode.DOWN_ERROR)
-  .add(solace.SessionEventCode.CONNECT_FAILED_ERROR)
-  .add(solace.SessionEventCode.DISCONNECTED)
-  .add(solace.SessionEventCode.RECONNECTING_NOTICE);
+  .add(SessionEventCode.DOWN_ERROR)
+  .add(SessionEventCode.CONNECT_FAILED_ERROR)
+  .add(SessionEventCode.DISCONNECTED)
+  .add(SessionEventCode.RECONNECTING_NOTICE);
 
 /**
  * Throws if emitting inside the Angular zone.

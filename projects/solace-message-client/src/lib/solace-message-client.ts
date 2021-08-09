@@ -1,8 +1,7 @@
 // tslint:disable:no-redundant-jsdoc
-import * as solace from 'solclientjs/lib-browser/solclient-full';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, EMPTY, noop, Observable, OperatorFunction } from 'rxjs';
-import { Message, MessageDeliveryModeType, MessageType, SDTField } from './solace.model';
+import { Message, MessageDeliveryModeType, MessageType, SDTField, Session } from './solace.model';
 import { map } from 'rxjs/operators';
 import { SolaceMessageClientConfig } from './solace-message-client.config';
 
@@ -24,10 +23,10 @@ export abstract class SolaceMessageClient {
   public abstract readonly connected$: Observable<boolean>;
 
   /**
-   * Promise that resolves to the {@link solace.Session} when connected to the message broker, or that rejects if no connection
+   * Promise that resolves to the {@link Session} when connected to the message broker, or that rejects if no connection
    * could be established, or if no connect attempt has been made yet.
    */
-  public abstract readonly session: Promise<solace.Session>;
+  public abstract readonly session: Promise<Session>;
 
   /**
    * Connects to the Solace message broker with the specified configuration. Has no effect if already connected.
@@ -186,7 +185,7 @@ export class NullSolaceMessageClient implements SolaceMessageClient {
     return Promise.resolve();
   }
 
-  public get session(): Promise<solace.Session> {
+  public get session(): Promise<Session> {
     return new Promise(noop);
   }
 
