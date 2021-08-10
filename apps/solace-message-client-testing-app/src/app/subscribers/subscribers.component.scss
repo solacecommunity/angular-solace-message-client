@@ -1,0 +1,90 @@
+@use 'solace-client-theme' as app-theme;
+@use '~@angular/material/theming';
+
+:host {
+  display: grid;
+  margin: .25em;
+
+  > mat-card {
+    display: flex;
+    flex-direction: column;
+
+    > mat-card-header {
+      flex: none;
+      display: flex;
+      flex-direction: column;
+
+      > header {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 2em;
+
+        > span.title {
+          font-size: theming.mat-font-size(app-theme.$typography, title);
+          margin-bottom: .25em;
+        }
+
+        > span.sub-title {
+          font-size: theming.mat-font-size(app-theme.$typography, subheading-1);
+          color: theming.mat-color(app-theme.$foreground, secondary-text);
+        }
+      }
+
+      > div.divider {
+        display: grid;
+        align-items: center;
+        position: relative; // positioning context for mat-fab-button
+        margin-bottom: 2em;
+
+        > mat-divider {
+          position: absolute;
+        }
+
+        > button[mat-fab].add {
+          justify-self: center;
+        }
+      }
+    }
+
+    > mat-card-content {
+      flex: auto;
+      position: relative; // positioning context for mat-tab-group
+
+      > mat-tab-group {
+        position: absolute; // position absolutely to the bounds of the mat-card-content
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+
+        div.tab {
+          display: flex;
+          align-items: center;
+
+          > input.tab-name {
+            cursor: default;
+          }
+
+          > button.delete {
+            line-height: 1;
+          }
+
+          &:not(:hover) {
+            > button.delete {
+              visibility: hidden;
+            }
+          }
+        }
+
+        ::ng-deep .mat-tab-body-wrapper {
+          flex: auto; // fill availablevertical space
+
+          ::ng-deep .mat-tab-body-content {
+            display: grid; // fill available vertical space
+          }
+        }
+      }
+    }
+  }
+}
+

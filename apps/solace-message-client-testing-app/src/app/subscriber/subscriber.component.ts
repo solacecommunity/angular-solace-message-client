@@ -1,11 +1,12 @@
 import { ChangeDetectorRef, Component, OnDestroy, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { MessageEnvelope, SolaceMessageClient } from 'solace-message-client';
-import { Subject, Subscription } from 'rxjs';
+import { MessageEnvelope, QueueType, SolaceMessageClient } from 'solace-message-client';
+import { Observable, Subject, Subscription } from 'rxjs';
 import { filter, finalize, takeUntil } from 'rxjs/operators';
 import { SciViewportComponent } from '@scion/toolkit/viewport';
 
-export const TOPIC = 'topic';
+export const DESTINATION = 'destination';
+export const DESTINATION_TYPE = 'destinationType';
 export const SUBSCRIPTION = 'subscription';
 export const FOLLOW_TAIL = 'followTail';
 
@@ -16,7 +17,8 @@ export const FOLLOW_TAIL = 'followTail';
 })
 export class SubscriberComponent implements OnDestroy {
 
-  public readonly TOPIC = TOPIC;
+  public readonly DESTINATION = DESTINATION;
+  public readonly DESTINATION_TYPE = DESTINATION_TYPE;
   public readonly SUBSCRIPTION = SUBSCRIPTION;
   public readonly FOLLOW_TAIL = FOLLOW_TAIL;
 
@@ -30,11 +32,14 @@ export class SubscriberComponent implements OnDestroy {
   @ViewChild(SciViewportComponent)
   private _viewport: SciViewportComponent;
 
+  public SubscriptionDestinationType = SubscriptionDestinationType;
+
   constructor(public solaceMessageClient: SolaceMessageClient,
               private _cd: ChangeDetectorRef) {
     this.form = new FormGroup({
       [SUBSCRIPTION]: new FormGroup({
-        [TOPIC]: new FormControl('', Validators.required),
+        [DESTINATION]: new FormControl('', Validators.required),
+        [DESTINATION_TYPE]: new FormControl(SubscriptionDestinationType.TOPIC, Validators.required),
       }),
       [FOLLOW_TAIL]: new FormControl(true),
     });
@@ -45,9 +50,33 @@ export class SubscriberComponent implements OnDestroy {
     this.form.get(SUBSCRIPTION).disable();
     this.subscribeError = null;
 
+    const destination: string = this.form.get([SUBSCRIPTION, DESTINATION]).value;
+    const destinationType: SubscriptionDestinationType = this.form.get([SUBSCRIPTION, DESTINATION_TYPE]).value;
+    const message$: Observable<MessageEnvelope> = (() => {
+      switch (destinationType) {
+        case SubscriptionDestinationType.TOPIC: {
+          return this.solaceMessageClient.observe$(destination);
+        }
+        case SubscriptionDestinationType.QUEUE: {
+          return this.solaceMessageClient.consume$({
+            queueDescriptor: {type: QueueType.QUEUE, name: destination},
+          });
+        }
+        case SubscriptionDestinationType.TOPIC_ENDPOINT: {
+          return this.solaceMessageClient.consume$(destination);
+        }
+        default: {
+          throw Error(`[UnsupportedDestinationError] Expected '${SubscriptionDestinationType.TOPIC}', '${SubscriptionDestinationType.QUEUE}', or '${SubscriptionDestinationType.TOPIC_ENDPOINT}', but was ${destinationType}`);
+        }
+      }
+    })();
+
     try {
-      this._subscription = this.solaceMessageClient.observe$(this.form.get([SUBSCRIPTION, TOPIC]).value)
-        .pipe(finalize(() => this.form.get(SUBSCRIPTION).enable()))
+      this._subscription = message$
+        .pipe(
+          finalize(() => this.form.get(SUBSCRIPTION).enable()),
+          takeUntil(this._destroy$),
+        )
         .subscribe(
           (envelope: MessageEnvelope) => {
             this.envelopes = this.envelopes.concat(envelope);
@@ -57,7 +86,7 @@ export class SubscriberComponent implements OnDestroy {
               this.scrollToEnd();
             }
           },
-          error => this.subscribeError = error.toString(),
+          error => this.subscribeError = error,
         );
     }
     catch (error) {
@@ -101,4 +130,20 @@ export class SubscriberComponent implements OnDestroy {
   public ngOnDestroy(): void {
     this._destroy$.next();
   }
+
+  public tooltips = { // tslint:disable-line:member-ordering
+    topic: 'Subscribes to messages published to the given topic.',
+    queue: 'Subscribes for messages sent to the given durable queue. The queue needs to be administratively configured on the broker.',
+    topicEndpoint: `Subscribes to a non-durable topic endpoint (similar to a queue) that subscribes to the given topic destination. The topic endpoint needs NOT to be configured on the broker.
+
+                    Unlike a durable endpoint, the lifecycle of a non-durable endpoint (also known as a private, temporary endpoint) is bound to the client that created it, with an additional 60s in case of unexpected disconnect.
+
+                    Topic endpoints in particular are useful for not losing messages in the event of short connection interruptions as messages are retained on the broker until they are consumed.`,
+  };
+}
+
+export enum SubscriptionDestinationType {
+  QUEUE = 'QUEUE',
+  TOPIC = 'TOPIC',
+  TOPIC_ENDPOINT = 'TOPIC_ENDPOINT',
 }

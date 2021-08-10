@@ -1,7 +1,7 @@
 // tslint:disable:no-redundant-jsdoc
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, EMPTY, noop, Observable, OperatorFunction } from 'rxjs';
-import { Message, MessageDeliveryModeType, MessageType, SDTField, Session } from './solace.model';
+import { Message, MessageConsumerProperties, MessageDeliveryModeType, MessageType, SDTField, Session } from './solace.model';
 import { map } from 'rxjs/operators';
 import { SolaceMessageClientConfig } from './solace-message-client.config';
 
@@ -64,13 +64,14 @@ export abstract class SolaceMessageClient {
    * **Multi-Level Wildcard Character (`>`)**:
    * -  when used as the last segment, it provides a "one or more" wildcard match for any topics with an identical prefix to the subscription.
    *
+   * See https://docs.solace.com/PubSub-Basics/Wildcard-Charaters-Topic-Subs.htm for more information and examples.
+   *
    * If a segment begins with a colon (`:`), it is called a named wildcard segment that acts as a placeholder for any value. The characters after the leading colon give the segment its name.
-   * Internally, named wildcard segments are translated to single-level wildcard segments. But, named segments allow retrieving substituted segment values when receiving a message in an easy manner.
+   * Internally, named wildcard segments are translated to single-level wildcard segments. Named segments allow retrieving substituted segment values when receiving a message in an easy manner.
    * E.g., the topic 'myhome/:room/temperature' is translated to 'myhome/* /temperature', matching messages sent to topics like 'myhome/kitchen/temperature' or 'myhome/livingroom/temperature'.
    * Substituted segment values are then available in {@link MessageEnvelope.params}, or as the second element of the tuple when using {@link mapToBinary} or {@link mapToText}
    * RxJS operators.
    *
-   * See https://docs.solace.com/PubSub-Basics/Wildcard-Charaters-Topic-Subs.htm for more information and examples.
    *
    * The Observables emits the messages as received by the Solace broker. You can use one of the following custom RxJS operators to map the message to its payload.
    * - {@link mapToBinary}
@@ -82,9 +83,74 @@ export abstract class SolaceMessageClient {
    *        In place of using a single-level wildcard segment (`*`), you can also use a named wildcard segment starting with a colon (`:`), allowing you to retrieve
    *        substituted values of wildcard segments when receiving a message.
    * @param options - Controls how to observe the topic.
-   * @return Observable that emits when receiving a message published to the given topic. If not connected to the broker yet, or if the connect attempt failed, the Observable errors.
+   * @return Observable that emits when receiving a message published to the given topic. The Observable never completes. If not connected to the broker yet, or if the connect attempt failed, the Observable errors.
    */
   public abstract observe$(topic: string, options?: ObserveOptions): Observable<MessageEnvelope>;
+
+  /**
+   * Consumes messages from a given topic endpoint or queue endpoint. Endpoint names are case-sensitive and consist of one or more segments, each separated by a forward slash.
+   *
+   * If passing a `string` topic literal (that is, not a {@link MessageConsumerProperties} object), creates a private, non-durable topic endpoint on the broker that subscribes
+   * to messages published to the given topic. From the consumer's point of view, this is similar to observe a topic using {@link SolaceMessageClient#observe$}, with the difference
+   * that messages are not lost in the event of short connection interruptions as messages are retained on the broker until transported to the consumer. The lifecycle of a non-durable
+   * topic endpoint is bound to the client that created it, with an additional 60s in case of unexpected disconnect.
+   *
+   * It is important to understand that a topic is not the same thing as a topic endpoint. A topic is a message property the event broker uses to route a message to its destination.
+   * Topic endpoints, unlike topics, are objects that define the storage of messages for a consuming application. Topic endpoints are more closely related to queues than to topics.
+   * Messages cannot be published directly to topic endpoints, but only indirectly via topics. For more information, refer to https://solace.com/blog/queues-vs-topic-endpoints.
+   *
+   * To subscribe to a queue, or to pass a more advanced endpoint configuration, pass a {@link MessageConsumerProperties} object instead.
+   *
+   * ## Passing a `string` topic literal is equivalent to passing the following config:
+   *
+   * ```ts
+   * solaceMessageClient.consume$({
+   *   topicEndpointSubscription: SolaceObjectFactory.createTopicDestination('topic'),
+   *   queueDescriptor: {
+   *     type: QueueType.TOPIC_ENDPOINT,
+   *     durable: false,
+   *   },
+   * });
+   * ```
+   *
+   * ## To consume messages sent to a durable queue, pass the following config:
+   * ```ts
+   * solaceMessageClient.consume$({
+   *   queueDescriptor: {
+   *     type: QueueType.QUEUE,
+   *     name: 'queue',
+   *   },
+   * });
+   * ```
+   *
+   * For topic endpoints, you can subscribe to multiple topics simultaneously by using wildcard segments in the topic.
+   *
+   * **Single-Level Wildcard Character (`*`)**:
+   * - if a segment contains the asterisk (`*`) character as its only character, this segment is required and acts as a placeholder for any segment value.
+   * - if a segment ends with the asterisk (`*`) character, this segment acts as a placeholder for segment values starting with the characters before the asterisk.
+   *   The segment to match can have additional characters, must does not have to.
+   *
+   * **Multi-Level Wildcard Character (`>`)**:
+   * -  when used as the last segment, it provides a "one or more" wildcard match for any topics with an identical prefix to the subscription.
+   *
+   * See https://docs.solace.com/PubSub-Basics/Wildcard-Charaters-Topic-Subs.htm for more information and examples.
+   *
+   * If a segment begins with a colon (`:`), it is called a named wildcard segment that acts as a placeholder for any value. The characters after the leading colon give the segment its name.
+   * Internally, named wildcard segments are translated to single-level wildcard segments. Named segments allow retrieving substituted segment values when receiving a message in an easy manner.
+   * E.g., the topic 'myhome/:room/temperature' is translated to 'myhome/* /temperature', matching messages sent to topics like 'myhome/kitchen/temperature' or 'myhome/livingroom/temperature'.
+   * Substituted segment values are then available in {@link MessageEnvelope.params}, or as the second element of the tuple when using {@link mapToBinary} or {@link mapToText} RxJS operators.
+   *
+   * The Observables emits the messages as received by the Solace broker. You can use one of the following custom RxJS operators to map the message to its payload.
+   * - {@link mapToBinary}
+   * - {@link mapToText}
+   *
+   * @param topicOrDescriptor - If specifying a `string` literal, then it is used as the subscription topic to create a topic endpoint for, allowing messages to be reliably received even if the
+   *        connection is unstable. If passing a descriptor object, it is used as the config to connect to a queue or topic endpoint.
+   *        A topic endpoint subscription allows using wildcards (single-level or multi-level) to subscribe to multiple topics simultaneously. In place of using a single-level wildcard segment (`*`),
+   *        you can also use a named wildcard segment starting with a colon (`:`), allowing you to retrieve substituted values of wildcard segments when receiving a message.
+   * @return Observable that emits when receiving a message published to the given endpoint. The Observable never completes. If not connected to the broker yet, or if the connect attempt failed, the Observable errors.
+   */
+  public abstract consume$(topicOrDescriptor: string | MessageConsumerProperties): Observable<MessageEnvelope>;
 
   /**
    * Publishes a message to the given topic destination. The message is transported to all consumers subscribed to the topic.
@@ -174,6 +240,10 @@ export class NullSolaceMessageClient implements SolaceMessageClient {
   public readonly connected$ = new BehaviorSubject<boolean>(true);
 
   public observe$(topic: string, options?: ObserveOptions): Observable<MessageEnvelope> {
+    return EMPTY;
+  }
+
+  public consume$(topicOrDescriptor: string | MessageConsumerProperties): Observable<MessageEnvelope> {
     return EMPTY;
   }
 

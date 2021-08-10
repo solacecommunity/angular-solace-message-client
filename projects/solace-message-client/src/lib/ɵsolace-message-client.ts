@@ -8,7 +8,7 @@ import { TopicMatcher } from './topic-matcher';
 import { observeInside } from '@scion/toolkit/operators';
 import { SolaceSessionProvider } from './solace-session-provider';
 import { SolaceMessageClientConfig } from './solace-message-client.config';
-import { Destination, Message, MessageDeliveryModeType, SDTField, SDTFieldType, Session, SessionEvent, SessionEventCode, SessionProperties } from './solace.model';
+import { Destination, Message, MessageConsumer, MessageConsumerEventName, MessageConsumerProperties, MessageDeliveryModeType, OperationError, QueueType, SDTField, SDTFieldType, Session, SessionEvent, SessionEventCode, SessionProperties } from './solace.model';
 import { TopicSubscriptionCounter } from './topic-subscription-counter';
 import { SerialExecutor } from './serial-executor.service';
 import { SolaceObjectFactory } from './solace-object-factory';
@@ -154,9 +154,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
   public observe$(topic: string, options?: ObserveOptions): Observable<MessageEnvelope> {
     return new Observable((observer: Observer<MessageEnvelope>): TeardownLogic => {
       const unsubscribe$ = new Subject<void>();
-
-      // Replace named segments with a single-level wildcard character (`*`).
-      const solaceTopic = topic.split('/').map(segment => isNamedWildcardSegment(segment) ? '*' : segment).join('/');
+      const topicDestination = createSubscriptionTopicDestination(topic);
 
       // Complete the Observable when the session died.
       this._sessionDisposed$
@@ -176,25 +174,25 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
           merge<Message>(this._message$, subscriptionError$)
             .pipe(
               assertNotInAngularZone(),
-              filter(message => this._topicMatcher.matchesSubscriptionTopic(message.getDestination().getName(), solaceTopic)),
+              filter(message => this._topicMatcher.matchesSubscriptionTopic(message.getDestination(), topicDestination)),
               mapToMessageEnvelope(topic),
               observeInside(continueFn => this._zone.run(continueFn)),
               takeUntil(merge(this._sessionDisposed$, unsubscribe$)),
               finalize(async () => {
                 // Unsubscribe from the topic on the Solace session, but only if being the last subscription on that topic and if successfully subscribed to the Solace broker.
-                if (this._subscriptionCounter.decrementAndGet(solaceTopic) === 0 && !subscriptionErrored) {
-                  this.unsubscribeFromTopic(solaceTopic);
+                if (this._subscriptionCounter.decrementAndGet(topicDestination) === 0 && !subscriptionErrored) {
+                  this.unsubscribeFromTopic(topicDestination);
                 }
               }),
             )
             .subscribe(observer);
 
           // Subscribe to the topic on the Solace session, but only if being the first subscription on that topic.
-          if (this._subscriptionCounter.incrementAndGet(solaceTopic) === 1) {
-            this.subscribeToTopic(solaceTopic, options).then(success => {
+          if (this._subscriptionCounter.incrementAndGet(topicDestination) === 1) {
+            this.subscribeToTopic(topicDestination, options).then(success => {
               if (!success) {
                 subscriptionErrored = true;
-                subscriptionError$.error(`[SolaceMessageClient] Failed to subscribe to topic ${solaceTopic}.`);
+                subscriptionError$.error(`[SolaceMessageClient] Failed to subscribe to topic ${topicDestination}.`);
               }
             });
           }
@@ -212,7 +210,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
   /**
    * Subscribes to the given topic on the Solace session.
    */
-  private subscribeToTopic(topic: string, subscribeOptions: ObserveOptions): Promise<boolean> {
+  private subscribeToTopic(topic: Destination, subscribeOptions: ObserveOptions): Promise<boolean> {
     // Calls to `solace.Session.subscribe` and `solace.Session.unsubscribe` must be executed one after the other until the Solace Broker confirms
     // the operation. Otherwise a previous unsubscribe may cancel a later subscribe on the same topic.
     return this._subscriptionExecutor.scheduleSerial(async () => {
@@ -228,12 +226,12 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
         const whenSubscribed = this.whenEvent(SessionEventCode.SUBSCRIPTION_OK, {rejectOnEvent: SessionEventCode.SUBSCRIPTION_ERROR, correlationKey: subscribeCorrelationKey})
           .then(() => true)
           .catch(event => {
-            console.warn(`[SolaceMessageClient] Solace event broker rejected subscription on topic ${topic}.`, event); // tslint:disable-line:no-console
+            console.warn(`[SolaceMessageClient] Solace event broker rejected subscription on topic ${topic.getName()}.`, event); // tslint:disable-line:no-console
             return false;
           });
 
         session.subscribe(
-          SolaceObjectFactory.createTopicDestination(topic),
+          topic,
           true,
           subscribeCorrelationKey,
           subscribeOptions && subscribeOptions.requestTimeout,
@@ -249,7 +247,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
   /**
    * Unsubscribes from the given topic on the Solace session.
    */
-  private unsubscribeFromTopic(topic: string): Promise<boolean> {
+  private unsubscribeFromTopic(topic: Destination): Promise<boolean> {
     // Calls to `solace.Session.subscribe` and `solace.Session.unsubscribe` must be executed one after the other until the Solace Broker confirms
     // the operation. Otherwise a previous unsubscribe may cancel a later subscribe on the same topic.
     return this._subscriptionExecutor.scheduleSerial(async () => {
@@ -265,12 +263,12 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
         const whenUnsubscribed = this.whenEvent(SessionEventCode.SUBSCRIPTION_OK, {rejectOnEvent: SessionEventCode.SUBSCRIPTION_ERROR, correlationKey: unsubscribeCorrelationKey})
           .then(() => true)
           .catch(event => {
-            console.warn(`[SolaceMessageClient] Solace event broker rejected unsubscription on topic ${topic}.`, event); // tslint:disable-line:no-console
+            console.warn(`[SolaceMessageClient] Solace event broker rejected unsubscription on topic ${topic.getName()}.`, event); // tslint:disable-line:no-console
             return false;
           });
 
         session.unsubscribe(
-          SolaceObjectFactory.createTopicDestination(topic),
+          topic,
           true,
           unsubscribeCorrelationKey,
           undefined,
@@ -281,6 +279,80 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
         return false;
       }
     });
+  }
+
+  public consume$(topicOrDescriptor: string | MessageConsumerProperties): Observable<MessageEnvelope> {
+    if (topicOrDescriptor === undefined) {
+      throw Error('[SolaceMessageClient] Missing required topic or endpoint descriptor.');
+    }
+
+    // If passed a `string` literal, subscribe to a non-durable topic endpoint.
+    if (typeof topicOrDescriptor === 'string') {
+      return this.createMessageConsumer$({
+        topicEndpointSubscription: SolaceObjectFactory.createTopicDestination(topicOrDescriptor),
+        queueDescriptor: {type: QueueType.TOPIC_ENDPOINT, durable: false},
+      });
+    }
+
+    return this.createMessageConsumer$(topicOrDescriptor);
+  }
+
+  private createMessageConsumer$(consumerProperties: MessageConsumerProperties): Observable<MessageEnvelope> {
+    const topicEndpointSubscription = consumerProperties.topicEndpointSubscription?.getName();
+    if (topicEndpointSubscription) {
+      consumerProperties.topicEndpointSubscription = createSubscriptionTopicDestination(consumerProperties.topicEndpointSubscription.getName());
+    }
+
+    return new Observable((observer: Observer<Message>): TeardownLogic => {
+      let messageConsumer: MessageConsumer = undefined;
+      this.session
+        .then(session => {
+          messageConsumer = session.createMessageConsumer(consumerProperties);
+
+          // Define message consumer event listeners
+          messageConsumer.on(MessageConsumerEventName.UP, () => {
+            console.debug(`[SolaceMessageClient] solclientjs message consumer event: MessageConsumerEventName.UP`); // tslint:disable-line:no-console
+          });
+          messageConsumer.on(MessageConsumerEventName.CONNECT_FAILED_ERROR, (error: OperationError) => {
+            console.debug(`[SolaceMessageClient] solclientjs message consumer event: MessageConsumerEventName.CONNECT_FAILED_ERROR`, error); // tslint:disable-line:no-console
+            observer.error(error);
+          });
+          messageConsumer.on(MessageConsumerEventName.DOWN_ERROR, (error: OperationError) => {
+            console.debug(`[SolaceMessageClient] solclientjs message consumer event: MessageConsumerEventName.DOWN_ERROR`, error); // tslint:disable-line:no-console
+            observer.error(error);
+          });
+          messageConsumer.on(MessageConsumerEventName.DOWN, (error: OperationError) => { // event emitted after successful disconnect request
+            console.debug(`[SolaceMessageClient] solclientjs message consumer event: MessageConsumerEventName.DOWN`, error); // tslint:disable-line:no-console
+            messageConsumer?.dispose();
+            observer.complete();
+          });
+
+          // Define message event listener
+          messageConsumer.on(MessageConsumerEventName.MESSAGE, (message: Message) => {
+            console.debug(`[SolaceMessageClient] solclientjs message consumer event: MessageConsumerEventName.MESSAGE`, message); // tslint:disable-line:no-console
+            NgZone.assertNotInAngularZone();
+            observer.next(message);
+          });
+
+          // Connect the message consumer
+          messageConsumer.connect();
+        })
+        .catch(error => {
+          observer.error(error);
+          messageConsumer?.dispose();
+        });
+
+      return (): void => {
+        // Initiate an orderly disconnection of the consumer. In turn, we will receive a `MessageConsumerEventName#DOWN` event and dispose the consumer.
+        if (messageConsumer && !messageConsumer.disposed) {
+          messageConsumer.disconnect();
+        }
+      };
+    })
+      .pipe(
+        mapToMessageEnvelope(topicEndpointSubscription),
+        observeInside(continueFn => this._zone.run(continueFn)),
+      );
   }
 
   public publish(topic: string, data?: Data | Message, options?: PublishOptions): Promise<void> {
@@ -442,30 +514,59 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
 /**
  * Maps each {@link Message} to a {@link MessageEnvelope}, and resolves substituted named wildcard segments.
  */
-function mapToMessageEnvelope(subscriptionTopic: string): OperatorFunction<Message, MessageEnvelope> {
-  const subscriptionSegments = subscriptionTopic.split('/');
+function mapToMessageEnvelope(subscriptionTopic?: string): OperatorFunction<Message, MessageEnvelope> {
   return map((message: Message): MessageEnvelope => {
-    // collect params
-    const destinationSegments = message.getDestination().getName().split('/');
-    const params = subscriptionSegments.reduce((acc, subscriptionSegment, i) => {
-      if (isNamedWildcardSegment(subscriptionSegment)) {
-        return acc.set(subscriptionSegment.substr(1), destinationSegments[i]);
-      }
-      return acc;
-    }, new Map<string, string>());
-
-    // collect headers
-    const userPropertyMap = message.getUserPropertyMap();
-    const headers = userPropertyMap?.getKeys().reduce((acc, key) => {
-      return acc.set(key, userPropertyMap.getField(key).getValue());
-    }, new Map()) || new Map();
-
-    return {message, params, headers};
+    return {
+      message,
+      params: collectNamedTopicSegmentValues(message, subscriptionTopic),
+      headers: collectHeaders(message),
+    };
   });
 }
 
+/**
+ * Collects message headers from given message.
+ */
+function collectHeaders(message: Message): Map<string, any> {
+  const userPropertyMap = message.getUserPropertyMap();
+  return userPropertyMap?.getKeys().reduce((acc, key) => {
+    return acc.set(key, userPropertyMap.getField(key).getValue());
+  }, new Map()) || new Map();
+}
+
+/**
+ * Parses the effective message destination for named path segments, if any.
+ */
+function collectNamedTopicSegmentValues(message: Message, subscriptionTopic: string | undefined): Map<string, string> {
+  if (subscriptionTopic === undefined || !subscriptionTopic.length) {
+    return new Map<string, string>();
+  }
+
+  const subscriptionSegments = subscriptionTopic.split('/');
+  const effectiveDestinationSegments = message.getDestination().getName().split('/');
+  return subscriptionSegments.reduce((acc, subscriptionSegment, i) => {
+    if (isNamedWildcardSegment(subscriptionSegment)) {
+      return acc.set(subscriptionSegment.substr(1), effectiveDestinationSegments[i]);
+    }
+    return acc;
+  }, new Map<string, string>());
+}
+
+/**
+ * Tests whether given segment is a named path segment, i.e., a segment that acts as placeholer for any value, equivalent to the Solace single-level wildcard character (`*`).
+ */
 function isNamedWildcardSegment(segment: string): boolean {
   return segment.startsWith(':') && segment.length > 1;
+}
+
+/**
+ * Creates a Solace subscription topic with named topic segments replaced by single-level wildcard characters (`*`), if any.
+ */
+function createSubscriptionTopicDestination(topic: string): Destination {
+  const subscriptionTopic = topic.split('/')
+    .map(segment => isNamedWildcardSegment(segment) ? '*' : segment)
+    .join('/');
+  return SolaceObjectFactory.createTopicDestination(subscriptionTopic);
 }
 
 /**

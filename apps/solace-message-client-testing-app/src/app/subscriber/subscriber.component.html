@@ -1,39 +1,41 @@
-<mat-card [formGroup]="form">
-  <mat-card-content>
-    <header>Subscriber</header>
-    <span class="sub-title">Subscribe to a topic to receive messages published to that destination.</span>
+<ng-container [formGroup]="form">
+  <section class="subscription" [formGroupName]="SUBSCRIPTION">
+    <!-- Destination -->
+    <mat-form-field>
+      <mat-label>Destination</mat-label>
+      <input matInput [formControlName]="DESTINATION" appAutoFocus>
+    </mat-form-field>
 
-    <section class="subscription" [formGroupName]="SUBSCRIPTION">
-      <!-- Topic -->
-      <mat-form-field>
-        <mat-label>Topic</mat-label>
-        <input matInput [formControlName]="TOPIC">
-        <!-- Subscribe/Unsubscribe -->
-      </mat-form-field>
-      <button mat-stroked-button color="primary" (click)="onSubscribe()" *ngIf="!isSubscribed" [disabled]="form.invalid" class="subscribe">Subscribe</button>
-      <button mat-stroked-button color="primary" (click)="onUnsubscribe()" *ngIf="isSubscribed" [disabled]="form.invalid" class="unsubscribe">Unsubscribe</button>
-    </section>
+    <!-- Destination Type -->
+    <mat-form-field>
+      <mat-label>Destination Type</mat-label>
+      <mat-select [formControlName]="DESTINATION_TYPE">
+        <mat-option [value]="SubscriptionDestinationType.TOPIC" [matTooltip]="tooltips.topic" matTooltipClass="large">Topic</mat-option>
+        <mat-option [value]="SubscriptionDestinationType.QUEUE" [matTooltip]="tooltips.queue" matTooltipClass="large">Queue</mat-option>
+        <mat-option [value]="SubscriptionDestinationType.TOPIC_ENDPOINT" [matTooltip]="tooltips.topicEndpoint" matTooltipClass="large">Topic Endpoint</mat-option>
+      </mat-select>
+    </mat-form-field>
 
-    <!-- Messages -->
-    <sci-viewport class="messages">
-      <app-message-list-item *ngFor="let envelope of envelopes"
-                             [envelope]="envelope"
-                             (delete)="onDelete(envelope)">
-      </app-message-list-item>
-    </sci-viewport>
-  </mat-card-content>
+    <!-- Subscribe/Unsubscribe -->
+    <button mat-stroked-button color="primary" (click)="onSubscribe()" *ngIf="!isSubscribed" [disabled]="form.invalid" class="subscribe">Subscribe</button>
+    <button mat-stroked-button color="primary" (click)="onUnsubscribe()" *ngIf="isSubscribed" [disabled]="form.invalid" class="unsubscribe">Unsubscribe</button>
+  </section>
 
-  <mat-card-actions>
+  <!-- Messages -->
+  <sci-viewport class="messages">
+    <app-message-list-item *ngFor="let envelope of envelopes"
+                           [envelope]="envelope"
+                           (delete)="onDelete(envelope)">
+    </app-message-list-item>
+  </sci-viewport>
+
+  <!-- Follow tail -->
+  <mat-checkbox [formControlName]="FOLLOW_TAIL" color="primary" class="follow-tail">Follow tail</mat-checkbox>
+
+  <footer>
     <button mat-stroked-button (click)="onClear()" *ngIf="envelopes.length">Clear messages</button>
-  </mat-card-actions>
-
-  <mat-card-actions>
-    <mat-checkbox [formControlName]="FOLLOW_TAIL">Follow tail</mat-checkbox>
-  </mat-card-actions>
-
-  <mat-card-footer *ngIf="subscribeError">
-    <section class="error">
+    <section class="error" *ngIf="subscribeError">
       {{subscribeError}}
     </section>
-  </mat-card-footer>
-</mat-card>
+  </footer>
+</ng-container>
