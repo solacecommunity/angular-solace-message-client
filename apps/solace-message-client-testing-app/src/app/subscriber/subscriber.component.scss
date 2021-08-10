@@ -2,63 +2,54 @@
 @use '~@angular/material/theming';
 
 :host {
-  display: grid;
-  margin: .25em;
+  display: flex;
+  flex-direction: column;
+  margin-top: 3em;
 
-  > mat-card {
-    display: flex;
-    flex-direction: column;
+  > section.subscription {
+    flex: none;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    column-gap: 2em;
 
-    > mat-card-content {
-      flex: auto;
-      display: flex;
-      flex-direction: column;
-
-      > header {
-        flex: none;
-        font-size: theming.mat-font-size(app-theme.$typography, title);
-        margin-bottom: .25em;
-      }
-
-      > span.sub-title {
-        flex: none;
-        font-size: theming.mat-font-size(app-theme.$typography, subheading-1);
-        color: theming.mat-color(app-theme.$foreground, secondary-text);
-      }
-
-      > section.subscription {
-        flex: none;
-        display: grid;
-        grid-template-rows: max-content max-content 1fr;
-        row-gap: 1em;
-        margin-top: 3em;
-      }
-
-      > sci-viewport.messages {
-        --sci-viewport-content-grid-auto-rows: max-content;
-        --sci-viewport-content-grid-gap: 1em 0;
-        flex: 1 1 0;
-        margin-top: 1em;
-        min-height: 20em;
-
-        app-message-list-item {
-          border-bottom: 1px solid theming.mat-color(app-theme.$foreground, divider);
-        }
-      }
+    > button.subscribe, > button.unsubscribe {
+      grid-column: 1/-1;
     }
+  }
 
-    > mat-card-actions {
-      flex: none;
-      display: grid;
+  > sci-viewport.messages {
+    flex: 1 1 0;
+    --sci-viewport-content-grid-auto-rows: max-content;
+    --sci-viewport-content-grid-gap: 1em 0;
+    min-height: 20em;
+
+    app-message-list-item {
+      border-bottom: 1px solid theming.mat-color(app-theme.$foreground, divider);
     }
+  }
 
-    > mat-card-footer section.error {
-      flex: none;
-      margin: .75em;
+  > mat-checkbox.follow-tail {
+    flex: none;
+    margin-bottom: 1em; // to omit vertical scrollbar caused by matRipple
+    align-self: flex-end;
+  }
+
+  > footer {
+    flex: none;
+    display: grid;
+    grid-auto-rows: auto;
+    row-gap: 1em;
+
+    > section.error {
       border: 1px solid theming.mat-color(app-theme.$warn);
       background-color: theming.mat-color(app-theme.$warn, 100);
       border-radius: 3px;
       padding: 1em;
     }
   }
+}
+
+::ng-deep .mat-tooltip.large {
+  white-space: pre-line;
+  font-size: larger;
 }

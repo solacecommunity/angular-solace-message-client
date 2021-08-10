@@ -5,9 +5,9 @@ import { SolaceSessionProvider } from './solace-session-provider';
 import { ObserveCaptor } from '@scion/toolkit/testing';
 import { TestBed } from '@angular/core/testing';
 import { NgZone } from '@angular/core';
-import { Destination, DestinationType, Message, MessageDeliveryModeType, MessageType, SDTFieldType, Session, SessionEvent, SessionEventCode } from './solace.model';
+import { Destination, DestinationType, Message, MessageConsumer, MessageConsumerEventName, MessageConsumerProperties, MessageDeliveryModeType, MessageType, QueueType, SDTFieldType, Session, SessionEvent, SessionEventCode, SolaceError } from './solace.model';
 import { SolaceObjectFactory } from './solace-object-factory';
-import { asyncScheduler } from 'rxjs';
+import { asyncScheduler, noop } from 'rxjs';
 import { UUID } from '@scion/toolkit/uuid';
 import createSpyObj = jasmine.createSpyObj;
 import SpyObj = jasmine.SpyObj;
@@ -24,7 +24,7 @@ describe('SolaceMessageClient', () => {
     factoryProperties.profile = solace.SolclientFactoryProfiles.version10;
     solace.SolclientFactory.init(factoryProperties);
     // Mock the Solace Session
-    session = createSpyObj('sessionClient', ['on', 'connect', 'subscribe', 'unsubscribe', 'send', 'dispose', 'disconnect']);
+    session = createSpyObj('sessionClient', ['on', 'connect', 'subscribe', 'unsubscribe', 'send', 'dispose', 'disconnect', 'createMessageConsumer']);
     // Capture Solace lifecycle hooks
     session.on.and.callFake((eventCode: SessionEventCode, callback: (event: SessionEvent | Message) => void) => {
       sessionEventCallbacks.set(eventCode, callback);
@@ -1356,6 +1356,298 @@ describe('SolaceMessageClient', () => {
           .set('key7', '!UNKNOWN!'));
       });
     });
+
+    describe('SolaceMessageClient#consume$', () => {
+      it('should connect to a non-durable topic endpoint if passing a topic \'string\' literal', async () => {
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+
+        // Connect to the broker
+        solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
+        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+
+        // Subscribe to a non-durable topic endpoint
+        const messageConsumerMock = installMessageConsumerMock();
+        solaceMessageClient.consume$('topic').subscribe();
+        await drainMicrotaskQueue();
+
+        // Expect the message consumer to connect to the broker
+        expect(messageConsumerMock.messageConsumer.connect).toHaveBeenCalledTimes(1);
+
+        // Simulate the message consumer to be connected to the broker
+        await messageConsumerMock.simulateLifecycleEvent(MessageConsumerEventName.UP);
+
+        // Expect connected to a non-durable topic endpoint
+        expect(messageConsumerMock.messageConsumerProperties).toEqual({
+          topicEndpointSubscription: SolaceObjectFactory.createTopicDestination('topic'),
+          queueDescriptor: {
+            type: QueueType.TOPIC_ENDPOINT, durable: false,
+          },
+        });
+      });
+
+      it('should allow connecting to a durable queue endpoint', async () => {
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+
+        // Connect to the broker
+        solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
+        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+
+        // Subscribe to a durable queue endpoint
+        const messageConsumerMock = installMessageConsumerMock();
+        const config: MessageConsumerProperties = {
+          queueDescriptor: {type: QueueType.QUEUE, name: 'queue', durable: true},
+        };
+        solaceMessageClient.consume$(config).subscribe();
+        await drainMicrotaskQueue();
+
+        // Expect the message consumer to connect to the broker
+        expect(messageConsumerMock.messageConsumer.connect).toHaveBeenCalledTimes(1);
+
+        // Simulate the message consumer to be connected to the broker
+        await messageConsumerMock.simulateLifecycleEvent(MessageConsumerEventName.UP);
+
+        // Expect connected to a durable queue endpoint
+        expect(messageConsumerMock.messageConsumerProperties).toEqual({
+          queueDescriptor: {type: QueueType.QUEUE, name: 'queue', durable: true},
+        });
+      });
+
+      it('should allow connecting to a durable topic endpoint', async () => {
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+
+        // Connect to the broker
+        solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
+        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+
+        // Subscribe to a durable topic endpoint
+        const messageConsumerMock = installMessageConsumerMock();
+        const config: MessageConsumerProperties = {
+          topicEndpointSubscription: SolaceObjectFactory.createTopicDestination('topic'),
+          queueDescriptor: {type: QueueType.TOPIC_ENDPOINT, name: 'topic-endpoint', durable: true},
+        };
+        solaceMessageClient.consume$(config).subscribe();
+        await drainMicrotaskQueue();
+
+        // Expect the message consumer to connect to the broker
+        expect(messageConsumerMock.messageConsumer.connect).toHaveBeenCalledTimes(1);
+
+        // Simulate the message consumer to be connected to the broker
+        await messageConsumerMock.simulateLifecycleEvent(MessageConsumerEventName.UP);
+
+        // Expect connected to a durable topic endpoint
+        expect(messageConsumerMock.messageConsumerProperties).toEqual({
+          topicEndpointSubscription: SolaceObjectFactory.createTopicDestination('topic'),
+          queueDescriptor: {type: QueueType.TOPIC_ENDPOINT, name: 'topic-endpoint', durable: true},
+        });
+      });
+
+      it('should receive messages', async () => {
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+
+        // Connect to the broker
+        solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
+        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+
+        // Subscribe to a topic endpoint
+        const messageConsumerMock = installMessageConsumerMock();
+        const messageCaptor = new ObserveCaptor<MessageEnvelope>();
+        solaceMessageClient.consume$('topic/*').subscribe(messageCaptor);
+        await drainMicrotaskQueue();
+
+        // Simulate the message consumer to be connected to the broker
+        await messageConsumerMock.simulateLifecycleEvent(MessageConsumerEventName.UP);
+
+        // Simulate to receive a message
+        const message1 = createTopicMessage('topic/1');
+        await messageConsumerMock.simulateMessage(message1);
+
+        expect(messageCaptor.getValues()).toEqual([jasmine.objectContaining<MessageEnvelope>({message: message1})]);
+
+        // Simulate to receive another message
+        const message2 = createTopicMessage('topic/2');
+        await messageConsumerMock.simulateMessage(message2);
+
+        expect(messageCaptor.getValues()).toEqual([
+          jasmine.objectContaining<MessageEnvelope>({message: message1}),
+          jasmine.objectContaining<MessageEnvelope>({message: message2}),
+        ]);
+      });
+
+      it('should receive messages inside the Angular zone', async () => {
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+
+        // Connect to the broker
+        solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
+        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+
+        // Subscribe to a topic endpoint
+        const messageConsumerMock = installMessageConsumerMock();
+        let receivedMessageInsideAngularZone;
+        solaceMessageClient.consume$('topic').subscribe(() => {
+          receivedMessageInsideAngularZone = NgZone.isInAngularZone();
+        });
+        await drainMicrotaskQueue();
+
+        // Simulate the message consumer to be connected to the broker
+        await messageConsumerMock.simulateLifecycleEvent(MessageConsumerEventName.UP);
+
+        // Simulate to receive a message
+        await messageConsumerMock.simulateMessage(createTopicMessage('topic'));
+
+        // Expect message to be received inside the Angular zone
+        expect(receivedMessageInsideAngularZone).toBeTrue();
+      });
+
+      it('should error on connection error (CONNECT_FAILED_ERROR)', async () => {
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+
+        // Connect to the broker
+        solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
+        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+
+        // Subscribe to a non-durable topic endpoint
+        const messageConsumerMock = installMessageConsumerMock();
+        const messageCaptor = new ObserveCaptor<MessageEnvelope>();
+        solaceMessageClient.consume$('topic').subscribe(messageCaptor);
+        await drainMicrotaskQueue();
+
+        // Expect the message consumer to connect to the broker
+        expect(messageConsumerMock.messageConsumer.connect).toHaveBeenCalledTimes(1);
+
+        // Simulate that the connection cannot be established
+        await messageConsumerMock.simulateLifecycleEvent(MessageConsumerEventName.CONNECT_FAILED_ERROR, new Error());
+
+        // Expect the Observable to error
+        expect(messageCaptor.hasErrored()).toBeTrue();
+
+        // Expect to disconnect from the broker
+        expect(messageConsumerMock.messageConsumer.disconnect).toHaveBeenCalledTimes(1);
+        expect(messageConsumerMock.messageConsumer.dispose).toHaveBeenCalledTimes(1);
+      });
+
+      it('should complete the Observable when the connection goes down (DOWN), e.g., after a successful session disconnect', async () => {
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+
+        // Connect to the broker
+        solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
+        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+
+        // Subscribe to a non-durable topic endpoint
+        const messageConsumerMock = installMessageConsumerMock();
+        const messageCaptor = new ObserveCaptor<MessageEnvelope>();
+        solaceMessageClient.consume$('topic').subscribe(messageCaptor);
+        await drainMicrotaskQueue();
+
+        // Expect the message consumer to connect to the broker
+        expect(messageConsumerMock.messageConsumer.connect).toHaveBeenCalledTimes(1);
+
+        // Simulate the message consumer to be connected to the broker
+        await messageConsumerMock.simulateLifecycleEvent(MessageConsumerEventName.UP);
+
+        // Simulate the connection going down
+        await messageConsumerMock.simulateLifecycleEvent(MessageConsumerEventName.DOWN, new Error());
+
+        // Expect the Observable to complete
+        expect(messageCaptor.hasCompleted()).toBeTrue();
+        expect(messageConsumerMock.messageConsumer.disconnect).toHaveBeenCalledTimes(0);
+        expect(messageConsumerMock.messageConsumer.dispose).toHaveBeenCalledTimes(1);
+      });
+
+      it('should gracefully disconnect from the broker when unsubscribing from the Observable', async () => {
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+
+        // Connect to the broker
+        solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
+        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+
+        // Subscribe to a non-durable topic endpoint
+        const messageConsumerMock = installMessageConsumerMock();
+        const subscription = solaceMessageClient.consume$('topic').subscribe();
+        await drainMicrotaskQueue();
+
+        // Expect the message consumer to connect to the broker
+        expect(messageConsumerMock.messageConsumer.connect).toHaveBeenCalledTimes(1);
+
+        // Unsubscribe from the Observable
+        messageConsumerMock.disableFiringDownEventOnDisconnect();
+        subscription.unsubscribe();
+        await drainMicrotaskQueue();
+
+        // Expect a graceful disconnect
+        expect(messageConsumerMock.messageConsumer.disconnect).toHaveBeenCalledTimes(1);
+        expect(messageConsumerMock.messageConsumer.dispose).toHaveBeenCalledTimes(0);
+
+        messageConsumerMock.messageConsumer.disconnect.calls.reset();
+
+        // Simulate receiving 'MessageConsumerEventName.DOWN' event
+        await messageConsumerMock.simulateLifecycleEvent(MessageConsumerEventName.DOWN);
+        expect(messageConsumerMock.messageConsumer.disconnect).toHaveBeenCalledTimes(0);
+        expect(messageConsumerMock.messageConsumer.dispose).toHaveBeenCalledTimes(1);
+      });
+
+      it('should provide substituted values of named wildcard segments', async () => {
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+
+        // Connect to the broker
+        solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
+        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+
+        // Subscribe to a topic endpoint
+        const messageConsumerMock = installMessageConsumerMock();
+        const messageCaptor = new ObserveCaptor<MessageEnvelope>();
+        solaceMessageClient.consume$('myhome/:room/temperature').subscribe(messageCaptor);
+        await drainMicrotaskQueue();
+
+        // Simulate the message consumer to be connected to the broker
+        await messageConsumerMock.simulateLifecycleEvent(MessageConsumerEventName.UP);
+
+        // Simulate to receive a message
+        const message = createTopicMessage('myhome/kitchen/temperature');
+        await messageConsumerMock.simulateMessage(message);
+
+        // Expect params to be contained in the envelope
+        expect(messageCaptor.getValues()).toEqual([jasmine.objectContaining<MessageEnvelope>({
+          message: message,
+          params: new Map().set('room', 'kitchen'),
+        })]);
+      });
+
+      it('should provide headers contained in the message', async () => {
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+
+        // Connect to the broker
+        solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
+        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+
+        // Subscribe to a topic endpoint
+        const messageConsumerMock = installMessageConsumerMock();
+        const messageCaptor = new ObserveCaptor<MessageEnvelope>();
+        solaceMessageClient.consume$('topic').subscribe(messageCaptor);
+        await drainMicrotaskQueue();
+
+        // Simulate the message consumer to be connected to the broker
+        await messageConsumerMock.simulateLifecycleEvent(MessageConsumerEventName.UP);
+
+        // Simulate to receive a message
+        const message = createTopicMessage('topic');
+        const userPropertyMap = SolaceObjectFactory.createSDTMapContainer();
+        userPropertyMap.addField('key1', SDTFieldType.STRING, 'value');
+        userPropertyMap.addField('key2', SDTFieldType.BOOL, true);
+        userPropertyMap.addField('key3', SDTFieldType.INT32, 123);
+        message.setUserPropertyMap(userPropertyMap);
+
+        await messageConsumerMock.simulateMessage(message);
+
+        // Expect headers to be contained in the envelope
+        expect(messageCaptor.getValues()).toEqual([jasmine.objectContaining<MessageEnvelope>({
+          message: message,
+          headers: new Map()
+            .set('key1', 'value')
+            .set('key2', true)
+            .set('key3', 123),
+        })]);
+      });
+    });
   }
 
   /**
@@ -1434,6 +1726,13 @@ describe('SolaceMessageClient', () => {
     });
     return captor;
   }
+
+  /**
+   * Installs a message consumer mock;
+   */
+  function installMessageConsumerMock(): MessageConsumerMock {
+    return new MessageConsumerMock(session);
+  }
 });
 
 class SessionSubscribeCaptor {
@@ -1470,4 +1769,73 @@ function extractMessage(envelope: MessageEnvelope): Message {
  */
 async function drainMicrotaskQueue(): Promise<void> {
   await new Promise(resolve => asyncScheduler.schedule(resolve));
+}
+
+class MessageConsumerMock {
+
+  private _callbacks = new Map<MessageConsumerEventName, (event: Message | SolaceError | void) => void>();
+
+  public messageConsumer: SpyObj<MessageConsumer>;
+  public messageConsumerProperties: MessageConsumerProperties;
+
+  constructor(session: SpyObj<Session>) {
+    this.messageConsumer = createSpyObj('messageConsumer', ['on', 'connect', 'disconnect', 'dispose']);
+    this.messageConsumer.disposed = false;
+
+    // Configure session to return a message consumer mock and capture the passed config
+    session.createMessageConsumer.and.callFake((messageConsumerProperties: MessageConsumerProperties) => {
+      this.messageConsumerProperties = messageConsumerProperties;
+      return this.messageConsumer;
+    });
+
+    // Capture Solace lifecycle hooks
+    this.messageConsumer.on.and.callFake((eventName: MessageConsumerEventName, callback: (event: Message | SolaceError | void) => void) => {
+      this._callbacks.set(eventName, callback);
+    });
+
+    this.installMockDefaultBehavior();
+  }
+
+  private installMockDefaultBehavior(): void {
+    // Fire 'DOWN' event when invoking 'disconnect'
+    this.messageConsumer.disconnect.and.callFake(() => this.simulateLifecycleEvent(MessageConsumerEventName.DOWN));
+
+    // Mark message consumer disposed if calling 'dispose'
+    this.messageConsumer.dispose.and.callFake(() => {
+      this.messageConsumer.disposed = true;
+    });
+  }
+
+  /**
+   * Disables automatically firing 'MessageConsumerEventName.DOWN' event when calling 'disconnect'.
+   */
+  public disableFiringDownEventOnDisconnect(): void {
+    this.messageConsumer.disconnect.and.callFake(noop);
+  }
+
+  /**
+   * Simulates the Solace message broker to send a message to the Solace message consumer.
+   */
+  public async simulateLifecycleEvent(eventName: MessageConsumerEventName, error?: SolaceError): Promise<void> {
+    await drainMicrotaskQueue();
+
+    const callback = this._callbacks.get(eventName);
+    if (!callback) {
+      throw Error(`[SpecError] No callback registered for event '${eventName}'`);
+    }
+    callback && callback(error);
+    await drainMicrotaskQueue();
+  }
+
+  /**
+   * Simulates the Solace message broker to publish a message to the Solace message consumer.
+   */
+  public async simulateMessage(message: Message): Promise<void> {
+    const callback = this._callbacks.get(MessageConsumerEventName.MESSAGE);
+    if (!callback) {
+      throw Error(`[SpecError] No callback registered for event '${MessageConsumerEventName.MESSAGE}'`);
+    }
+    callback && callback(message);
+    await drainMicrotaskQueue();
+  }
 }

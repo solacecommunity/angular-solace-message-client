@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Destination } from './solace.model';
 
 /**
  * Matches exact topics as used when publishing messages against subscription topics.
@@ -9,9 +10,9 @@ import { Injectable } from '@angular/core';
 @Injectable()
 export class TopicMatcher {
 
-  public matchesSubscriptionTopic(testeeTopic: string, subscriptionTopic: string): boolean {
-    const testeeSegments = testeeTopic.split('/');
-    const subscriptionTopicSegments = subscriptionTopic.split('/');
+  public matchesSubscriptionTopic(testeeTopic: string | Destination, subscriptionTopic: string | Destination): boolean {
+    const testeeSegments = coerceTopicName(testeeTopic).split('/');
+    const subscriptionTopicSegments = coerceTopicName(subscriptionTopic).split('/');
 
     for (let i = 0; i < subscriptionTopicSegments.length; i++) {
       const subscriptionTopicSegment = subscriptionTopicSegments[i];
@@ -40,4 +41,11 @@ export class TopicMatcher {
     }
     return testeeSegments.length === subscriptionTopicSegments.length;
   }
+}
+
+function coerceTopicName(topic: string | Destination): string {
+  if (typeof topic === 'string') {
+    return topic;
+  }
+  return topic.getName();
 }

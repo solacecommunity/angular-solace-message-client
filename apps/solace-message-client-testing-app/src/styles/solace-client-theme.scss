@@ -1,7 +1,7 @@
 @use '~@angular/material/theming';
 
 $primary: theming.mat-palette(theming.$mat-indigo);
-$accent: theming.mat-palette(theming.$mat-pink, A200, A100, A400);
+$accent: theming.mat-palette(theming.$mat-light-blue, A200, A100, A400);
 $warn: theming.mat-palette(theming.$mat-red);
 $foreground: theming.$mat-light-theme-foreground;
 $background: theming.$mat-light-theme-background;

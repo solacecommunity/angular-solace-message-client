@@ -8,7 +8,7 @@ import { SolaceMessageClientModule } from 'solace-message-client';
 import { SciSashboxModule } from '@scion/toolkit/sashbox';
 import { PublisherComponent } from './publisher/publisher.component';
 import { SubscriberComponent } from './subscriber/subscriber.component';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ConnectComponent } from './connect/connect.component';
 import { TryMeComponent } from './try-me/try-me.component';
 import { SOLACE_CONNECT_PROPERTIES_SESSION_KEY } from './constants';
@@ -26,17 +26,24 @@ import { CommonModule } from '@angular/common';
 import { SessionPropertiesComponent } from './session-properties/session-properties.component';
 import { StringifyMapPipe } from './stringify-map.pipe';
 import { MessageListItemComponent } from './message-list-item/message-list-item.component';
+import { MatTabsModule } from '@angular/material/tabs';
+import { SubscribersComponent } from './subscribers/subscribers.component';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { AutofocusDirective } from './autofocus.directive';
 
 @NgModule({
   declarations: [
     AppComponent,
     PublisherComponent,
     SubscriberComponent,
+    SubscribersComponent,
     ConnectComponent,
     MessageListItemComponent,
     TryMeComponent,
     SessionPropertiesComponent,
     StringifyMapPipe,
+    AutofocusDirective,
   ],
   imports: [
     CommonModule,
@@ -44,6 +51,7 @@ import { MessageListItemComponent } from './message-list-item/message-list-item.
     BrowserAnimationsModule,
     AppRoutingModule,
     ReactiveFormsModule,
+    FormsModule,
     SolaceMessageClientModule.forRoot(
       JSON.parse(sessionStorage.getItem(SOLACE_CONNECT_PROPERTIES_SESSION_KEY)),
     ),
@@ -58,6 +66,9 @@ import { MessageListItemComponent } from './message-list-item/message-list-item.
     MatCardModule,
     SciViewportModule,
     SciSashboxModule,
+    MatTabsModule,
+    MatDividerModule,
+    MatTooltipModule,
   ],
   providers: [
     {provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: {floatLabel: 'always', appearance: 'outline'}},

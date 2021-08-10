@@ -6,59 +6,77 @@
   margin: .25em;
 
   > mat-card {
+    display: flex;
+    flex-direction: column;
+
     > mat-card-content {
+      flex: auto;
+      display: flex;
+      flex-direction: column;
+
       > header {
+        flex: none;
         font-size: theming.mat-font-size(app-theme.$typography, title);
         margin-bottom: .25em;
       }
 
       > span.sub-title {
+        flex: none;
         font-size: theming.mat-font-size(app-theme.$typography, subheading-1);
         color: theming.mat-color(app-theme.$foreground, secondary-text);
       }
 
-      > form {
-        display: grid;
-        grid-auto-rows: auto;
-        grid-template-columns: 1fr auto;
-        gap: 1em 2em;
-        margin-top: 3em;
+      > sci-viewport {
+        flex: 1 1 0;
 
-        textarea.message {
-          height: 10em;
-        }
+        form {
+          display: grid;
+          grid-auto-rows: auto;
+          grid-template-columns: 1fr auto;
+          place-content: start;
+          column-gap: 2em;
+          margin-top: 3em;
 
-        > mat-form-field, > button {
-          grid-column: 1/-1;
-        }
+          textarea.message {
+            height: 10em;
+          }
 
-        > mat-form-field.destination, > mat-form-field.message-type {
-          grid-column: 1
-        }
+          > mat-form-field, > button {
+            grid-column: 1/-1;
+          }
 
-        > mat-form-field.destination-type, > mat-form-field.message-delivery-mode {
-          grid-column: 2;
+          > mat-form-field.destination, > mat-form-field.message-type {
+            grid-column: 1
+          }
+
+          > mat-form-field.destination-type, > mat-form-field.message-delivery-mode {
+            grid-column: 2;
+          }
         }
       }
     }
 
-    > mat-card-footer section.sending {
-      margin: .75em;
-      color: theming.mat-color(app-theme.$foreground, secondary-text);
-      background-color: theming.mat-color(app-theme.$foreground, secondary-text, .0125);
-      border: 1px solid theming.mat-color(app-theme.$foreground, secondary-text, .12);
-      border-radius: 3px;
-      padding: 1em;
-      font-style: italic;
-      text-align: center;
-    }
+    > mat-card-footer {
+      flex: none;
 
-    > mat-card-footer section.error {
-      margin: .75em;
-      border: 1px solid theming.mat-color(app-theme.$warn);
-      border-radius: 3px;
-      background-color: theming.mat-color(app-theme.$warn, 100);
-      padding: 1em;
+      > section.sending {
+        margin: .75em;
+        color: theming.mat-color(app-theme.$foreground, secondary-text);
+        background-color: theming.mat-color(app-theme.$foreground, secondary-text, .0125);
+        border: 1px solid theming.mat-color(app-theme.$foreground, secondary-text, .12);
+        border-radius: 3px;
+        padding: 1em;
+        font-style: italic;
+        text-align: center;
+      }
+
+      > section.error {
+        margin: .75em;
+        border: 1px solid theming.mat-color(app-theme.$warn);
+        border-radius: 3px;
+        background-color: theming.mat-color(app-theme.$warn, 100);
+        padding: 1em;
+      }
     }
   }
 }
