@@ -12,16 +12,16 @@ import { LocationService } from '../location.service';
 })
 export class TryMeComponent {
 
-  private _sessionProperties: SessionProperties;
+  public sessionProperties: SessionProperties;
 
   constructor(public solaceMessageClient: SolaceMessageClient,
               private _snackBar: MatSnackBar,
               private _locationService: LocationService) {
-    this._sessionProperties = JSON.parse(sessionStorage.getItem(SOLACE_CONNECT_PROPERTIES_SESSION_KEY));
+    this.sessionProperties = JSON.parse(localStorage.getItem(SOLACE_CONNECT_PROPERTIES_SESSION_KEY));
   }
 
   public onLogout(): void {
-    this._locationService.navigateToAppRoot({clearSessionStorage: true});
+    this._locationService.navigateToAppRoot({clearConnectProperties: true});
   }
 
   public onDisconnect(): void {
@@ -29,7 +29,7 @@ export class TryMeComponent {
   }
 
   public onConnect(): void {
-    this.solaceMessageClient.connect(this._sessionProperties).then(
+    this.solaceMessageClient.connect(this.sessionProperties).then(
       () => console.log('Connected to Solace message broker'),
       error => console.error('Failed to connect to Solace message broker', error),
     );
@@ -37,7 +37,7 @@ export class TryMeComponent {
 
   public onSessionPropertiesOpen(): void {
     this._snackBar.openFromComponent(SessionPropertiesComponent, {
-      data: this._sessionProperties,
+      data: this.sessionProperties,
       verticalPosition: 'top',
     });
   }

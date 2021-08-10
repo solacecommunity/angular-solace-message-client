@@ -53,7 +53,7 @@ import { AutofocusDirective } from './autofocus.directive';
     ReactiveFormsModule,
     FormsModule,
     SolaceMessageClientModule.forRoot(
-      JSON.parse(sessionStorage.getItem(SOLACE_CONNECT_PROPERTIES_SESSION_KEY)),
+      JSON.parse(localStorage.getItem(SOLACE_CONNECT_PROPERTIES_SESSION_KEY)),
     ),
     ClipboardModule,
     MatButtonModule,

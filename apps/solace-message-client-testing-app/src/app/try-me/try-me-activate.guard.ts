@@ -9,7 +9,7 @@ export class TryMeActivateGuard implements CanActivate {
   }
 
   public canActivate(next: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean | UrlTree {
-    if (sessionStorage.getItem(SOLACE_CONNECT_PROPERTIES_SESSION_KEY)) {
+    if (localStorage.getItem(SOLACE_CONNECT_PROPERTIES_SESSION_KEY)) {
       return true;
     }
     return this._router.createUrlTree(['/connect']);

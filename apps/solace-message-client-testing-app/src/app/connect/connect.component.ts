@@ -52,8 +52,8 @@ export class ConnectComponent {
       generateReceiveTimestamps: true,
     };
 
-    sessionStorage.setItem(SOLACE_CONNECT_PROPERTIES_SESSION_KEY, JSON.stringify(solaceConnectProperties));
-    this._locationService.navigateToAppRoot({clearSessionStorage: false});
+    localStorage.setItem(SOLACE_CONNECT_PROPERTIES_SESSION_KEY, JSON.stringify(solaceConnectProperties));
+    this._locationService.navigateToAppRoot({clearConnectProperties: false});
   }
 
   public onReset(): void {
