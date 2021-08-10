@@ -22,7 +22,7 @@
 </sci-sashbox>
 
 <ng-template #connected_template>
-  Connected to the Solace Message Broker
+  Connected to {{sessionProperties.url}} / {{sessionProperties.vpnName}}
 </ng-template>
 <ng-template #disconnected_template>
   Disconnected from the Solace Message Broker
