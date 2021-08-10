@@ -8,7 +8,7 @@ import { TopicMatcher } from './topic-matcher';
 import { observeInside } from '@scion/toolkit/operators';
 import { SolaceSessionProvider } from './solace-session-provider';
 import { SolaceMessageClientConfig } from './solace-message-client.config';
-import { Destination, Message, MessageConsumer, MessageConsumerEventName, MessageConsumerProperties, MessageDeliveryModeType, OperationError, QueueType, SDTField, SDTFieldType, Session, SessionEvent, SessionEventCode, SessionProperties } from './solace.model';
+import { Destination, Message, MessageConsumer, MessageConsumerEventName, MessageConsumerProperties, MessageDeliveryModeType, OperationError, QueueBrowser, QueueBrowserEventName, QueueBrowserProperties, QueueType, SDTField, SDTFieldType, Session, SessionEvent, SessionEventCode, SessionProperties } from './solace.model';
 import { TopicSubscriptionCounter } from './topic-subscription-counter';
 import { SerialExecutor } from './serial-executor.service';
 import { SolaceObjectFactory } from './solace-object-factory';
@@ -351,6 +351,80 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
     })
       .pipe(
         mapToMessageEnvelope(topicEndpointSubscription),
+        observeInside(continueFn => this._zone.run(continueFn)),
+      );
+  }
+
+  public browse$(queueOrDescriptor: string | QueueBrowserProperties): Observable<MessageEnvelope> {
+    if (queueOrDescriptor === undefined) {
+      throw Error('[SolaceMessageClient] Missing required queue or descriptor.');
+    }
+
+    // If passed a `string` literal, connect to the given queue using default 'browsing' options.
+    if (typeof queueOrDescriptor === 'string') {
+      return this.createQueueBrowser$({
+        queueDescriptor: {type: QueueType.QUEUE, name: queueOrDescriptor},
+      });
+    }
+
+    return this.createQueueBrowser$(queueOrDescriptor);
+  }
+
+  private createQueueBrowser$(queueBrowserProperties: QueueBrowserProperties): Observable<MessageEnvelope> {
+    return new Observable((observer: Observer<Message>): TeardownLogic => {
+      let queueBrowser: QueueBrowser = undefined;
+      let disposed = false;
+      this.session
+        .then(session => {
+          queueBrowser = session.createQueueBrowser(queueBrowserProperties);
+
+          // Define browser event listeners
+          queueBrowser.on(QueueBrowserEventName.UP, () => {
+            console.debug(`[SolaceMessageClient] solclientjs queue browser event: QueueBrowserEventName.UP`); // tslint:disable-line:no-console
+            queueBrowser.start();
+          });
+          queueBrowser.on(QueueBrowserEventName.CONNECT_FAILED_ERROR, (error: OperationError) => {
+            console.debug(`[SolaceMessageClient] solclientjs queue browser event: QueueBrowserEventName.CONNECT_FAILED_ERROR`, error); // tslint:disable-line:no-console
+            observer.error(error);
+          });
+          queueBrowser.on(QueueBrowserEventName.DOWN_ERROR, (error: OperationError) => {
+            console.debug(`[SolaceMessageClient] solclientjs queue browser event: QueueBrowserEventName.DOWN_ERROR`, error); // tslint:disable-line:no-console
+            observer.error(error);
+          });
+          queueBrowser.on(QueueBrowserEventName.DOWN, (error: OperationError) => { // event emitted after successful disconnect request
+            console.debug(`[SolaceMessageClient] solclientjs queue browser event: QueueBrowserEventName.DOWN`, error); // tslint:disable-line:no-console
+            observer.complete();
+          });
+          queueBrowser.on(QueueBrowserEventName.DISPOSED, (error: OperationError) => { // event emitted after successful disconnect request
+            console.debug(`[SolaceMessageClient] solclientjs queue browser event: QueueBrowserEventName.DOWN`, error); // tslint:disable-line:no-console
+            disposed = true;
+            observer.complete();
+          });
+
+          // Define browser event listener
+          queueBrowser.on(QueueBrowserEventName.MESSAGE, (message: Message) => {
+            console.debug(`[SolaceMessageClient] solclientjs queue browser event: QueueBrowserEventName.MESSAGE`, message); // tslint:disable-line:no-console
+            NgZone.assertNotInAngularZone();
+            observer.next(message);
+          });
+
+          // Connect the browser
+          queueBrowser.connect();
+        })
+        .catch(error => {
+          observer.error(error);
+        });
+
+      return (): void => {
+        // Initiate an orderly disconnection of the browser. In turn, we will receive a `QueueBrowserEventName#DOWN` event and dispose the consumer.
+        if (queueBrowser && !disposed) {
+          queueBrowser.stop();
+          queueBrowser.disconnect();
+        }
+      };
+    })
+      .pipe(
+        mapToMessageEnvelope(),
         observeInside(continueFn => this._zone.run(continueFn)),
       );
   }

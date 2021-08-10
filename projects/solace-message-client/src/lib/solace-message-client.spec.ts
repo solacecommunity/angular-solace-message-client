@@ -5,7 +5,7 @@ import { SolaceSessionProvider } from './solace-session-provider';
 import { ObserveCaptor } from '@scion/toolkit/testing';
 import { TestBed } from '@angular/core/testing';
 import { NgZone } from '@angular/core';
-import { Destination, DestinationType, Message, MessageConsumer, MessageConsumerEventName, MessageConsumerProperties, MessageDeliveryModeType, MessageType, QueueType, SDTFieldType, Session, SessionEvent, SessionEventCode, SolaceError } from './solace.model';
+import { Destination, DestinationType, Message, MessageConsumer, MessageConsumerEventName, MessageConsumerProperties, MessageDeliveryModeType, MessageType, QueueBrowser, QueueBrowserEventName, QueueBrowserProperties, QueueType, SDTFieldType, Session, SessionEvent, SessionEventCode, SolaceError } from './solace.model';
 import { SolaceObjectFactory } from './solace-object-factory';
 import { asyncScheduler, noop } from 'rxjs';
 import { UUID } from '@scion/toolkit/uuid';
@@ -24,7 +24,7 @@ describe('SolaceMessageClient', () => {
     factoryProperties.profile = solace.SolclientFactoryProfiles.version10;
     solace.SolclientFactory.init(factoryProperties);
     // Mock the Solace Session
-    session = createSpyObj('sessionClient', ['on', 'connect', 'subscribe', 'unsubscribe', 'send', 'dispose', 'disconnect', 'createMessageConsumer']);
+    session = createSpyObj('sessionClient', ['on', 'connect', 'subscribe', 'unsubscribe', 'send', 'dispose', 'disconnect', 'createMessageConsumer', 'createQueueBrowser']);
     // Capture Solace lifecycle hooks
     session.on.and.callFake((eventCode: SessionEventCode, callback: (event: SessionEvent | Message) => void) => {
       sessionEventCallbacks.set(eventCode, callback);
@@ -1648,6 +1648,230 @@ describe('SolaceMessageClient', () => {
         })]);
       });
     });
+
+    describe('SolaceMessageClient#browse$', () => {
+
+      it('should connect to a queue if passing a queue \'string\' literal', async () => {
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+
+        // Connect to the broker
+        solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
+        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+
+        // Connect to the queue browser
+        const queueBrowserMock = installQueueBrowserMock();
+        solaceMessageClient.browse$('queue').subscribe();
+        await drainMicrotaskQueue();
+
+        // Expect the queue browser to connect to the broker
+        expect(queueBrowserMock.queueBrowser.connect).toHaveBeenCalledTimes(1);
+
+        // Simulate the queue browser to be connected to the broker
+        await queueBrowserMock.simulateLifecycleEvent(QueueBrowserEventName.UP);
+
+        // Expect connected to the queue browser
+        expect(queueBrowserMock.queueBrowserProperties).toEqual({
+          queueDescriptor: {
+            type: QueueType.QUEUE, name: 'queue',
+          },
+        });
+      });
+
+      it('should allow connecting to a queue endpoint passing a config', async () => {
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+
+        // Connect to the broker
+        solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
+        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+
+        // Connect to the queue browser
+        const queueBrowserMock = installQueueBrowserMock();
+        const properties: QueueBrowserProperties = {
+          queueDescriptor: {
+            type: QueueType.QUEUE, name: 'queue',
+          },
+        };
+        solaceMessageClient.browse$(properties).subscribe();
+        await drainMicrotaskQueue();
+
+        // Expect the queue browser to connect to the broker
+        expect(queueBrowserMock.queueBrowser.connect).toHaveBeenCalledTimes(1);
+
+        // Simulate the queue browser to be connected to the broker
+        await queueBrowserMock.simulateLifecycleEvent(QueueBrowserEventName.UP);
+
+        // Expect connected to the queue browser
+        expect(queueBrowserMock.queueBrowserProperties).toEqual(properties);
+      });
+
+      it('should allow browsing messages', async () => {
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+
+        // Connect to the broker
+        solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
+        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+
+        // Connect to the queue browser
+        const queueBrowserMock = installQueueBrowserMock();
+        const messageCaptor = new ObserveCaptor<MessageEnvelope>();
+        solaceMessageClient.browse$('queue').subscribe(messageCaptor);
+        await drainMicrotaskQueue();
+
+        // Simulate the queue browser to be connected to the broker
+        await queueBrowserMock.simulateLifecycleEvent(QueueBrowserEventName.UP);
+
+        // Simulate to receive a message
+        const msg1 = createQueueMessage('queue');
+        const msg2 = createQueueMessage('queue');
+        const msg3 = createQueueMessage('queue');
+
+        await queueBrowserMock.simulateMessage(msg1);
+        await queueBrowserMock.simulateMessage(msg2);
+        await queueBrowserMock.simulateMessage(msg3);
+
+        expect(messageCaptor.getValues()).toEqual([
+          jasmine.objectContaining<MessageEnvelope>({message: msg1}),
+          jasmine.objectContaining<MessageEnvelope>({message: msg2}),
+          jasmine.objectContaining<MessageEnvelope>({message: msg3}),
+        ]);
+      });
+
+      it('should receive messages inside the Angular zone', async () => {
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+
+        // Connect to the broker
+        solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
+        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+
+        // Connect to the queue browser
+        const queueBrowserMock = installQueueBrowserMock();
+        let receivedMessageInsideAngularZone;
+        solaceMessageClient.browse$('queue').subscribe(() => {
+          receivedMessageInsideAngularZone = NgZone.isInAngularZone();
+        });
+        await drainMicrotaskQueue();
+
+        // Simulate the queue browser to be connected to the broker
+        await queueBrowserMock.simulateLifecycleEvent(QueueBrowserEventName.UP);
+
+        // Simulate to receive a message
+        await queueBrowserMock.simulateMessage(createQueueMessage('queue'));
+
+        // Expect message to be received inside the Angular zone
+        expect(receivedMessageInsideAngularZone).toBeTrue();
+      });
+
+      it('should start the queue browser when connected to the broker (UP)', async () => {
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+
+        // Connect to the broker
+        solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
+        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+
+        // Connect to the queue browser
+        const queueBrowserMock = installQueueBrowserMock();
+        solaceMessageClient.browse$('queue').subscribe();
+        await drainMicrotaskQueue();
+
+        // Expect the queue browser to connect to the broker
+        expect(queueBrowserMock.queueBrowser.connect).toHaveBeenCalledTimes(1);
+
+        // Simulate the queue browser to be connected to the broker
+        await queueBrowserMock.simulateLifecycleEvent(QueueBrowserEventName.UP, new Error());
+
+        // Expect the queue browser to be started
+        expect(queueBrowserMock.queueBrowser.start).toHaveBeenCalledTimes(1);
+      });
+
+      it('should error on connection error (CONNECT_FAILED_ERROR)', async () => {
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+
+        // Connect to the broker
+        solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
+        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+
+        // Connect to the queue browser
+        const queueBrowserMock = installQueueBrowserMock();
+        const messageCaptor = new ObserveCaptor<MessageEnvelope>();
+        solaceMessageClient.browse$('queue').subscribe(messageCaptor);
+        await drainMicrotaskQueue();
+
+        // Expect the queue browser to connect to the broker
+        expect(queueBrowserMock.queueBrowser.connect).toHaveBeenCalledTimes(1);
+
+        // Simulate that the connection cannot be established
+        await queueBrowserMock.simulateLifecycleEvent(QueueBrowserEventName.CONNECT_FAILED_ERROR, new Error());
+
+        // Expect the Observable to error
+        expect(messageCaptor.hasErrored()).toBeTrue();
+
+        // Expect to disconnect from the broker
+        expect(queueBrowserMock.queueBrowser.stop).toHaveBeenCalledTimes(1);
+        expect(queueBrowserMock.queueBrowser.disconnect).toHaveBeenCalledTimes(1);
+      });
+
+      it('should complete the Observable when the connection goes down (DOWN), e.g., after a successful session disconnect', async () => {
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+
+        // Connect to the broker
+        solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
+        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+
+        // Connect to the queue browser
+        const queueBrowserMock = installQueueBrowserMock();
+        const messageCaptor = new ObserveCaptor<MessageEnvelope>();
+        solaceMessageClient.browse$('queue').subscribe(messageCaptor);
+        await drainMicrotaskQueue();
+
+        // Expect the queue browser to connect to the broker
+        expect(queueBrowserMock.queueBrowser.connect).toHaveBeenCalledTimes(1);
+
+        // Simulate the queue browser to be connected to the broker
+        await queueBrowserMock.simulateLifecycleEvent(QueueBrowserEventName.UP);
+
+        // Simulate connection going down
+        await queueBrowserMock.simulateLifecycleEvent(QueueBrowserEventName.DOWN, new Error());
+
+        // Expect the Observable to complete
+        expect(messageCaptor.hasCompleted()).toBeTrue();
+      });
+
+      it('should provide headers contained in the message', async () => {
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+
+        // Connect to the broker
+        solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
+        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+
+        // Connect to the queue browser
+        const queueBrowserMock = installQueueBrowserMock();
+        const messageCaptor = new ObserveCaptor<MessageEnvelope>();
+        solaceMessageClient.browse$('queue').subscribe(messageCaptor);
+        await drainMicrotaskQueue();
+
+        // Simulate the queue browser to be connected to the broker
+        await queueBrowserMock.simulateLifecycleEvent(QueueBrowserEventName.UP);
+
+        // Simulate to receive a message
+        const message = createQueueMessage('queue');
+        const userPropertyMap = SolaceObjectFactory.createSDTMapContainer();
+        userPropertyMap.addField('key1', SDTFieldType.STRING, 'value');
+        userPropertyMap.addField('key2', SDTFieldType.BOOL, true);
+        userPropertyMap.addField('key3', SDTFieldType.INT32, 123);
+        message.setUserPropertyMap(userPropertyMap);
+
+        await queueBrowserMock.simulateMessage(message);
+
+        // Expect headers to be contained in the envelope
+        expect(messageCaptor.getValues()).toEqual([jasmine.objectContaining<MessageEnvelope>({
+          message: message,
+          headers: new Map()
+            .set('key1', 'value')
+            .set('key2', true)
+            .set('key3', 123),
+        })]);
+      });
+    });
   }
 
   /**
@@ -1687,6 +1911,12 @@ describe('SolaceMessageClient', () => {
   function createTopicMessage(topic: string): Message {
     const message = SolaceObjectFactory.createMessage();
     message.setDestination(SolaceObjectFactory.createTopicDestination(topic));
+    return message;
+  }
+
+  function createQueueMessage(queue: string): Message {
+    const message = SolaceObjectFactory.createMessage();
+    message.setDestination(SolaceObjectFactory.createDurableQueueDestination(queue));
     return message;
   }
 
@@ -1732,6 +1962,13 @@ describe('SolaceMessageClient', () => {
    */
   function installMessageConsumerMock(): MessageConsumerMock {
     return new MessageConsumerMock(session);
+  }
+
+  /**
+   * Installs a queue browser mock;
+   */
+  function installQueueBrowserMock(): QueueBrowserMock {
+    return new QueueBrowserMock(session);
   }
 });
 
@@ -1834,6 +2071,65 @@ class MessageConsumerMock {
     const callback = this._callbacks.get(MessageConsumerEventName.MESSAGE);
     if (!callback) {
       throw Error(`[SpecError] No callback registered for event '${MessageConsumerEventName.MESSAGE}'`);
+    }
+    callback && callback(message);
+    await drainMicrotaskQueue();
+  }
+}
+
+class QueueBrowserMock {
+
+  private _callbacks = new Map<QueueBrowserEventName, (event: Message | SolaceError | void) => void>();
+
+  public queueBrowser: SpyObj<QueueBrowser>;
+  public queueBrowserProperties: QueueBrowserProperties;
+
+  constructor(session: SpyObj<Session>) {
+    this.queueBrowser = createSpyObj('queueBrowser', ['on', 'connect', 'disconnect', 'start', 'stop']);
+
+    // Configure session to return a queue browser mock and capture the passed config
+    session.createQueueBrowser.and.callFake((queueBrowserProperties: QueueBrowserProperties) => {
+      this.queueBrowserProperties = queueBrowserProperties;
+      return this.queueBrowser;
+    });
+
+    // Capture Solace lifecycle hooks
+    this.queueBrowser.on.and.callFake((eventName: QueueBrowserEventName, callback: (event: Message | SolaceError | void) => void) => {
+      this._callbacks.set(eventName, callback);
+    });
+
+    this.installMockDefaultBehavior();
+  }
+
+  private installMockDefaultBehavior(): void {
+    // Fire 'DOWN' event when invoking 'disconnect'
+    this.queueBrowser.disconnect.and.callFake(() => {
+      this.simulateLifecycleEvent(QueueBrowserEventName.DOWN);
+      this.simulateLifecycleEvent(QueueBrowserEventName.DISPOSED);
+    });
+  }
+
+  /**
+   * Simulates the Solace message broker to send a message to the Solace queue browser.
+   */
+  public async simulateLifecycleEvent(eventName: QueueBrowserEventName, error?: SolaceError): Promise<void> {
+    await drainMicrotaskQueue();
+
+    const callback = this._callbacks.get(eventName);
+    if (!callback) {
+      throw Error(`[SpecError] No callback registered for event '${eventName}'`);
+    }
+    callback && callback(error);
+    await drainMicrotaskQueue();
+  }
+
+  /**
+   * Simulates the Solace message broker to publish a message to the Solace queue browser.
+   */
+  public async simulateMessage(message: Message): Promise<void> {
+    const callback = this._callbacks.get(QueueBrowserEventName.MESSAGE);
+    if (!callback) {
+      throw Error(`[SpecError] No callback registered for event '${QueueBrowserEventName.MESSAGE}'`);
     }
     callback && callback(message);
     await drainMicrotaskQueue();
