@@ -65,8 +65,11 @@ export class SubscriberComponent implements OnDestroy {
         case SubscriptionDestinationType.TOPIC_ENDPOINT: {
           return this.solaceMessageClient.consume$(destination);
         }
+        case SubscriptionDestinationType.QUEUE_BROWSER: {
+          return this.solaceMessageClient.browse$(destination);
+        }
         default: {
-          throw Error(`[UnsupportedDestinationError] Expected '${SubscriptionDestinationType.TOPIC}', '${SubscriptionDestinationType.QUEUE}', or '${SubscriptionDestinationType.TOPIC_ENDPOINT}', but was ${destinationType}`);
+          throw Error(`[UnsupportedDestinationError] Expected '${SubscriptionDestinationType.TOPIC}', '${SubscriptionDestinationType.QUEUE}', '${SubscriptionDestinationType.TOPIC_ENDPOINT}', or '${SubscriptionDestinationType.QUEUE_BROWSER}', but was ${destinationType}`);
         }
       }
     })();
@@ -139,6 +142,7 @@ export class SubscriberComponent implements OnDestroy {
                     Unlike a durable endpoint, the lifecycle of a non-durable endpoint (also known as a private, temporary endpoint) is bound to the client that created it, with an additional 60s in case of unexpected disconnect.
 
                     Topic endpoints in particular are useful for not losing messages in the event of short connection interruptions as messages are retained on the broker until they are consumed.`,
+    queueBrowser: `Browses messages in a queue, without removing/consuming the messages.`,
   };
 }
 
@@ -146,4 +150,5 @@ export enum SubscriptionDestinationType {
   QUEUE = 'QUEUE',
   TOPIC = 'TOPIC',
   TOPIC_ENDPOINT = 'TOPIC_ENDPOINT',
+  QUEUE_BROWSER = 'QUEUE_BROWSER',
 }

@@ -1,7 +1,7 @@
 // tslint:disable:no-redundant-jsdoc
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, EMPTY, noop, Observable, OperatorFunction } from 'rxjs';
-import { Message, MessageConsumerProperties, MessageDeliveryModeType, MessageType, SDTField, Session } from './solace.model';
+import { Message, MessageConsumerProperties, MessageDeliveryModeType, MessageType, QueueBrowserProperties, SDTField, Session } from './solace.model';
 import { map } from 'rxjs/operators';
 import { SolaceMessageClientConfig } from './solace-message-client.config';
 
@@ -153,6 +153,14 @@ export abstract class SolaceMessageClient {
   public abstract consume$(topicOrDescriptor: string | MessageConsumerProperties): Observable<MessageEnvelope>;
 
   /**
+   * Browses messages in a queue, without removing/consuming the messages.
+   *
+   * @param queueOrDescriptor - Specifies the queue to browse, or a descriptor object describing how to connect to the queue browser.
+   * @return Observable that emits spooled messages in the specified queue. The Observable never completes. If not connected to the broker yet, or if the connect attempt failed, the Observable errors.
+   */
+  public abstract browse$(queueOrDescriptor: string | QueueBrowserProperties): Observable<MessageEnvelope>;
+
+  /**
    * Publishes a message to the given topic destination. The message is transported to all consumers subscribed to the topic.
    *
    * It is important to understand that a topic is not the same thing as a topic endpoint. A topic is a message property the event broker uses to route a message to its destination.
@@ -244,6 +252,10 @@ export class NullSolaceMessageClient implements SolaceMessageClient {
   }
 
   public consume$(topicOrDescriptor: string | MessageConsumerProperties): Observable<MessageEnvelope> {
+    return EMPTY;
+  }
+
+  public browse$(queueOrDescriptor: string | QueueBrowserProperties): Observable<MessageEnvelope> {
     return EMPTY;
   }
 
