@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
-import { Message, MessageDumpFlag, MessageEnvelope, MessageType } from 'solace-message-client';
+import { Message, MessageDumpFlag, MessageEnvelope, MessageType } from '@solace-community/angular-solace-message-client';
 import { ungzip } from 'pako';
 
 @Component({

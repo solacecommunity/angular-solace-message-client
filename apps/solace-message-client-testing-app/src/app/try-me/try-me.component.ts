@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { SessionProperties, SolaceMessageClient } from 'solace-message-client';
+import { SessionProperties, SolaceMessageClient } from '@solace-community/angular-solace-message-client';
 import { SOLACE_CONNECT_PROPERTIES_SESSION_KEY } from '../constants';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SessionPropertiesComponent } from '../session-properties/session-properties.component';

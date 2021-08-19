@@ -54,7 +54,7 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: solace-message-client
-          path: dist/solace-message-client
+          path: dist/@solace-community/angular-solace-message-client
       - uses: actions/upload-artifact@v2
         with:
           name: solace-message-client-api
@@ -74,7 +74,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: solace-message-client
-          path: dist/solace-message-client
+          path: dist/@solace-community/angular-solace-message-client
       - name: 'Building solace-message-client-testing-app'
         run: npm run solace-message-client-testing-app:build
       - uses: actions/upload-artifact@v2
@@ -164,10 +164,10 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: solace-message-client
-          path: dist/solace-message-client
+          path: dist/@solace-community/angular-solace-message-client
       - name: 'Publishing @solace-community/angular-solace-message-client to NPM'
         uses: SchweizerischeBundesbahnen/scion-toolkit/.github/actions/npm-publish@master
         with:
-          dist-folder: dist/solace-message-client
+          dist-folder: dist/@solace-community/angular-solace-message-client
           npm-token: ${{ secrets.NPM_PUBLISH_TOKEN }}
           dry-run: false

@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
-import { SessionProperties } from 'solace-message-client';
+import { SessionProperties } from '@solace-community/angular-solace-message-client';
 import { SOLACE_CONNECT_PROPERTIES_SESSION_KEY } from '../constants';
 import { LocationService } from '../location.service';
 

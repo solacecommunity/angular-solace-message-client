@@ -19,8 +19,8 @@
       "dom"
     ],
     "paths": {
-      "solace-message-client": [
-        "dist/solace-message-client"
+      "@solace-community/angular-solace-message-client": [
+        "dist/@solace-community/angular-solace-message-client"
       ]
     }
     /*
@@ -31,9 +31,9 @@
      * +=====================================+
      */
     //    "paths": {
-    //      "solace-message-client": [
+    //      "@solace-community/angular-solace-message-client": [
     //        "projects/solace-message-client/src/public-api"
-    //      ],
+    //      ]
     //    }
   },
   "angularCompilerOptions": {
