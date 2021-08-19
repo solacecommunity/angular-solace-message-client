@@ -1,7 +1,7 @@
 <a href="/README.md"><img src="/docs/site/logo.svg" height="80"></a>
 
-| [Overview][menu-overview] | [Getting Started][menu-getting-started] | [Try Me][menu-try-me] | [Changelog][menu-changelog] | Contributing |  
-| --- | --- | --- | --- | --- |
+| [Overview][menu-overview] | [Getting Started][menu-getting-started] | [Features][menu-features] | [Try Me][menu-try-me] | [Changelog][menu-changelog] | Contributing |  
+| --- | --- | --- | --- | --- | --- |
 
 ## Contributing
 We encourage other developers to join the project and contribute to making this library constantly better and more stable. If you are missing a feature, please create a feature request so we can discuss it and coordinate further development. To report a bug, please check existing issues first, and if found, leave a comment on the issue. Otherwise, file a bug or create a pull request with a proposed fix.
@@ -258,6 +258,7 @@ This chapter describes the tasks to publish a new release to NPM.
 
 [menu-overview]: /README.md
 [menu-getting-started]: /docs/site/getting-started.md
+[menu-features]: /docs/site/features.md
 [menu-try-me]: https://solacecommunity.github.io/angular-solace-message-client/tryme
 [menu-contributing]: /CONTRIBUTING.md
 [menu-changelog]: /docs/site/changelog/changelog.md
