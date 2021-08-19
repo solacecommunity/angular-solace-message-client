@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Data, DestinationType, MessageDeliveryModeType, MessageType, PublishOptions, SDTFieldType, SolaceMessageClient, SolaceObjectFactory } from 'solace-message-client';
+import { Data, DestinationType, MessageDeliveryModeType, MessageType, PublishOptions, SDTFieldType, SolaceMessageClient, SolaceObjectFactory } from '@solace-community/angular-solace-message-client';
 
 export const DESTINATION = 'destination';
 export const DESTINATION_TYPE = 'destinationType';

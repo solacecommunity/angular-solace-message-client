@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, OnDestroy, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { MessageEnvelope, QueueType, SolaceMessageClient } from 'solace-message-client';
+import { MessageEnvelope, QueueType, SolaceMessageClient } from '@solace-community/angular-solace-message-client';
 import { Observable, Subject, Subscription } from 'rxjs';
 import { filter, finalize, takeUntil } from 'rxjs/operators';
 import { SciViewportComponent } from '@scion/toolkit/viewport';

@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { SessionProperties } from 'solace-message-client';
+import { SessionProperties } from '@solace-community/angular-solace-message-client';
 import { MAT_SNACK_BAR_DATA, MatSnackBar } from '@angular/material/snack-bar';
 import { Clipboard } from '@angular/cdk/clipboard';
 

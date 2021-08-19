@@ -4,7 +4,7 @@ import { NgModule } from '@angular/core';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { SolaceMessageClientModule } from 'solace-message-client';
+import { SolaceMessageClientModule } from '@solace-community/angular-solace-message-client';
 import { SciSashboxModule } from '@scion/toolkit/sashbox';
 import { PublisherComponent } from './publisher/publisher.component';
 import { SubscriberComponent } from './subscriber/subscriber.component';
