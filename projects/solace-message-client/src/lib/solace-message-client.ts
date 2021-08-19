@@ -498,7 +498,7 @@ export interface MessageEnvelope {
  * Supported data types are:
  * - ArrayBufferLike, e.g. `ArrayBuffer`, `Uint8Array`, `Uint32Array`, or similar
  * - DataView
- * - string (latin1-encoded; only supported for backwards compatibility; use `TextEncoder.encode(...)` instead)
+ * - string (latin1-encoded; only supported for backwards compatibility; use `new TextEncoder.encode(...)` instead)
  *
  * ## Structured Data Message
  * Alternatively, you can exchange data using the structured data API by passing it as Structured Data Type (SDT) in the form of a {@link SDTField}

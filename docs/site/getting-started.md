@@ -1,7 +1,7 @@
 <a href="/README.md"><img src="/docs/site/logo.svg" height="80"></a>
 
-| [Overview][menu-overview] | Getting Started | [Try Me][menu-try-me] | [Changelog][menu-changelog] | [Contributing][menu-contributing] |  
-| --- | --- | --- | --- | --- |
+| [Overview][menu-overview] | Getting Started | [Features][menu-features] | [Try Me][menu-try-me] | [Changelog][menu-changelog] | [Contributing][menu-contributing] |  
+| --- | --- | --- | --- | --- | --- |
 
 ## Getting Started
 
@@ -59,7 +59,7 @@ Inject the service `SolaceMessageClient` into a component or service and publish
 ```typescript
 import { SolaceMessageClientModule } from '@solace-community/angular-solace-message-client';
 
-@Injectable()
+@Component(...)
 public class YourComponent {
 
   constructor(solaceMessageClient: SolaceMessageClient) {
@@ -79,7 +79,7 @@ Inject the service `SolaceMessageClient` into a component or service and subscri
 ```typescript
 import { SolaceMessageClientModule } from '@solace-community/angular-solace-message-client';
 
-@Injectable()
+@Component(...)
 public class YourComponent {
 
   constructor(solaceMessageClient: SolaceMessageClient) {
@@ -97,7 +97,7 @@ In the following example, we subscribe to the temperature of any room.
 ```typescript
 import { SolaceMessageClientModule } from '@solace-community/angular-solace-message-client';
 
-@Injectable()
+@Component(...)
 public class YourComponent {
 
   constructor(solaceMessageClient: SolaceMessageClient) {
@@ -112,7 +112,7 @@ public class YourComponent {
 As an alternative to the single-level wildcard `*`, you can also use a named wildcard segment. A named wildcard segment starts with a colon (`:`) followed by an arbitrary segment name, allowing you to retrieve substituted values of wildcard segments when receiving a message.
 
 ```typescript
-@Injectable()
+@Component(...)
 public class YourComponent {
 
   constructor(solaceMessageClient: SolaceMessageClient) {
@@ -129,6 +129,7 @@ public class YourComponent {
 
 [menu-overview]: /README.md
 [menu-getting-started]: /docs/site/getting-started.md
+[menu-features]: /docs/site/features.md
 [menu-try-me]: https://solacecommunity.github.io/angular-solace-message-client/tryme
 [menu-contributing]: /CONTRIBUTING.md
 [menu-changelog]: /docs/site/changelog/changelog.md
