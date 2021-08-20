@@ -318,7 +318,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
           // Define message consumer event listeners
           messageConsumer.on(MessageConsumerEventName.UP, () => {
             console.debug(`[SolaceMessageClient] solclientjs message consumer event: MessageConsumerEventName.UP`); // tslint:disable-line:no-console
-            consumerProperties?.onSubscribed?.();
+            consumerProperties?.onSubscribed?.(messageConsumer);
           });
           messageConsumer.on(MessageConsumerEventName.CONNECT_FAILED_ERROR, (error: OperationError) => {
             console.debug(`[SolaceMessageClient] solclientjs message consumer event: MessageConsumerEventName.CONNECT_FAILED_ERROR`, error); // tslint:disable-line:no-console

@@ -1,7 +1,7 @@
 // tslint:disable:no-redundant-jsdoc
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, EMPTY, noop, Observable, OperatorFunction } from 'rxjs';
-import { Message, MessageConsumerProperties, MessageDeliveryModeType, MessageType, QueueBrowserProperties, SDTField, Session } from './solace.model';
+import { Message, MessageConsumer, MessageConsumerProperties, MessageDeliveryModeType, MessageType, QueueBrowserProperties, SDTField, Session } from './solace.model';
 import { map } from 'rxjs/operators';
 import { SolaceMessageClientConfig } from './solace-message-client.config';
 
@@ -294,14 +294,21 @@ export interface ObserveOptions extends OnSubscribed {
 /**
  * A lifecycle hook that is called when subscribed to a destination.
  *
- * Use if you need to wait until the destination is actually subscribed, e.g, when implementing the request/response message exchange pattern.
+ * Use if you need to wait until the destination is actually subscribed, e.g, if implementing the request/response message exchange pattern,
+ * or for reading information about the endpoint if consuming messages via {@link SolaceMessageClient#consume$}.
  */
 export interface OnSubscribed {
 
   /**
    * Callback invoked when subscribed to a destination.
+   *
+   * @param messageConsumer - consumer object only passed if consuming messages from a topic endpoint or queue endpoint via {@link SolaceMessageClient#consume$},
+   *        but not if observing a topic destination via {@link SolaceMessageClient#observe$}.
+   *        * For non-durable endpoints, if not passing an endpoint name, Solace API generates a name which can be queried by calling {@link MessageConsumer#getDestination};
+   *          The generated descriptor can be queried by calling {@link MessageConsumer#getProperties#queueDescriptor};
+   *        * For durable endpoints, endpoint properties can be retrieved as configured on the broker by calling {@link MessageConsumer#getProperties#queueProperties};
    */
-  onSubscribed?(): void;
+  onSubscribed?(messageConsumer?: MessageConsumer): void;
 }
 
 /**
