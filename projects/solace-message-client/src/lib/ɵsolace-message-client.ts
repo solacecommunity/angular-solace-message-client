@@ -3,7 +3,7 @@ import { Injectable, NgZone, OnDestroy, Optional } from '@angular/core';
 import { ConnectableObservable, EMPTY, merge, MonoTypeOperatorFunction, noop, Observable, Observer, of, OperatorFunction, Subject, TeardownLogic, throwError } from 'rxjs';
 import { distinctUntilChanged, filter, finalize, map, mergeMap, publishReplay, take, takeUntil, tap } from 'rxjs/operators';
 import { UUID } from '@scion/toolkit/uuid';
-import { Data, MessageEnvelope, ObserveOptions, PublishOptions, SolaceMessageClient } from './solace-message-client';
+import { Data, MessageEnvelope, ObserveOptions, OnSubscribed, PublishOptions, SolaceMessageClient } from './solace-message-client';
 import { TopicMatcher } from './topic-matcher';
 import { observeInside } from '@scion/toolkit/operators';
 import { SolaceSessionProvider } from './solace-session-provider';
@@ -190,11 +190,17 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
           // Subscribe to the topic on the Solace session, but only if being the first subscription on that topic.
           if (this._subscriptionCounter.incrementAndGet(topicDestination) === 1) {
             this.subscribeToTopic(topicDestination, options).then(success => {
-              if (!success) {
+              if (success) {
+                options?.onSubscribed?.();
+              }
+              else {
                 subscriptionErrored = true;
                 subscriptionError$.error(`[SolaceMessageClient] Failed to subscribe to topic ${topicDestination}.`);
               }
             });
+          }
+          else {
+            options?.onSubscribed?.();
           }
         })
         .catch(error => {
@@ -281,7 +287,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
     });
   }
 
-  public consume$(topicOrDescriptor: string | MessageConsumerProperties): Observable<MessageEnvelope> {
+  public consume$(topicOrDescriptor: string | (MessageConsumerProperties & OnSubscribed)): Observable<MessageEnvelope> {
     if (topicOrDescriptor === undefined) {
       throw Error('[SolaceMessageClient] Missing required topic or endpoint descriptor.');
     }
@@ -297,7 +303,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
     return this.createMessageConsumer$(topicOrDescriptor);
   }
 
-  private createMessageConsumer$(consumerProperties: MessageConsumerProperties): Observable<MessageEnvelope> {
+  private createMessageConsumer$(consumerProperties: MessageConsumerProperties & OnSubscribed): Observable<MessageEnvelope> {
     const topicEndpointSubscription = consumerProperties.topicEndpointSubscription?.getName();
     if (topicEndpointSubscription) {
       consumerProperties.topicEndpointSubscription = createSubscriptionTopicDestination(consumerProperties.topicEndpointSubscription.getName());
@@ -312,6 +318,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
           // Define message consumer event listeners
           messageConsumer.on(MessageConsumerEventName.UP, () => {
             console.debug(`[SolaceMessageClient] solclientjs message consumer event: MessageConsumerEventName.UP`); // tslint:disable-line:no-console
+            consumerProperties?.onSubscribed?.();
           });
           messageConsumer.on(MessageConsumerEventName.CONNECT_FAILED_ERROR, (error: OperationError) => {
             console.debug(`[SolaceMessageClient] solclientjs message consumer event: MessageConsumerEventName.CONNECT_FAILED_ERROR`, error); // tslint:disable-line:no-console
