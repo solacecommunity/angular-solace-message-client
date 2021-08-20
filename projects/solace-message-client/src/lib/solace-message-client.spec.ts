@@ -11,6 +11,7 @@ import { asyncScheduler, noop } from 'rxjs';
 import { UUID } from '@scion/toolkit/uuid';
 import createSpyObj = jasmine.createSpyObj;
 import SpyObj = jasmine.SpyObj;
+import createSpy = jasmine.createSpy;
 
 // tslint:disable:variable-name
 describe('SolaceMessageClient', () => {
@@ -735,31 +736,25 @@ describe('SolaceMessageClient', () => {
       const sessionSubscribeCaptor = installSessionSubscribeCaptor();
 
       // Subscribe to topic
-      let onSubscribed1Called = false;
-      solaceMessageClient.observe$('topic', {
-        onSubscribed(): void {
-          onSubscribed1Called = true;
-        },
-      }).subscribe();
+      const onSubscribedCallback1 = createSpy('onSubscribed');
+      solaceMessageClient.observe$('topic', {onSubscribed: onSubscribedCallback1}).subscribe();
       await drainMicrotaskQueue();
 
       // Expect `onSubscribed` callback to be invoked after the receipt of `SUBSCRIPTION_OK` event
-      expect(onSubscribed1Called).toBeFalse();
+      expect(onSubscribedCallback1).toHaveBeenCalledTimes(0);
       await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
-      expect(onSubscribed1Called).toBeTrue();
+      expect(onSubscribedCallback1).toHaveBeenCalledTimes(1);
+      expect(onSubscribedCallback1).toHaveBeenCalledWith();
       sessionSubscribeCaptor.reset();
 
       // Subscribe to topic anew
-      let onSubscribed2Called = false;
-      solaceMessageClient.observe$('topic', {
-        onSubscribed(): void {
-          onSubscribed2Called = true;
-        },
-      }).subscribe();
+      const onSubscribedCallback2 = createSpy('onSubscribed');
+      solaceMessageClient.observe$('topic', {onSubscribed: onSubscribedCallback2}).subscribe();
       await drainMicrotaskQueue();
 
       // Expect `onSubscribed` callback to be invoked immediately
-      expect(onSubscribed2Called).toBeTrue();
+      expect(onSubscribedCallback2).toHaveBeenCalledTimes(1);
+      expect(onSubscribedCallback2).toHaveBeenCalledWith();
     });
 
     it('should not notify when subscription to topic destination failed', async () => {
@@ -772,18 +767,14 @@ describe('SolaceMessageClient', () => {
       const sessionSubscribeCaptor = installSessionSubscribeCaptor();
 
       // Subscribe to topic
-      let onSubscribedCalled = false;
-      solaceMessageClient.observe$('topic', {
-        onSubscribed(): void {
-          onSubscribedCalled = true;
-        },
-      }).subscribe();
+      const onSubscribedCallback = createSpy('onSubscribed');
+      solaceMessageClient.observe$('topic', {onSubscribed: onSubscribedCallback}).subscribe();
       await drainMicrotaskQueue();
 
-      // Expect `onSubscribedCalled` callback not to be invoked after the receipt of `SUBSCRIPTION_ERROR` event
-      expect(onSubscribedCalled).toBeFalse();
+      // Expect `onSubscribed` callback not to be invoked after the receipt of `SUBSCRIPTION_ERROR` event
+      expect(onSubscribedCallback).toHaveBeenCalledTimes(0);
       await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_ERROR, sessionSubscribeCaptor.correlationKey);
-      expect(onSubscribedCalled).toBeFalse();
+      expect(onSubscribedCallback).toHaveBeenCalledTimes(0);
     });
 
     it('should publish a message to a topic', async () => {
@@ -1718,40 +1709,38 @@ describe('SolaceMessageClient', () => {
 
         // Subscribe to endoint
         const messageConsumerMock = installMessageConsumerMock();
-        let onSubscribed1Called = false;
+        const onSubscribedCallback1 = createSpy('onSubscribed');
         solaceMessageClient.consume$({
           queueDescriptor: {
             type: QueueType.QUEUE,
             name: 'queue',
           },
-          onSubscribed(): void {
-            onSubscribed1Called = true;
-          },
+          onSubscribed: onSubscribedCallback1,
         }).subscribe();
         await drainMicrotaskQueue();
 
         // Simulate the message consumer to be connected to the broker
-        expect(onSubscribed1Called).toBeFalse();
+        expect(onSubscribedCallback1).toHaveBeenCalledTimes(0);
         await messageConsumerMock.simulateLifecycleEvent(MessageConsumerEventName.UP);
-        expect(onSubscribed1Called).toBeTrue();
+        expect(onSubscribedCallback1).toHaveBeenCalledTimes(1);
+        expect(onSubscribedCallback1).toHaveBeenCalledWith(messageConsumerMock.messageConsumer);
 
         // Subscribe to endpoint anew
-        let onSubscribed2Called = false;
+        const onSubscribedCallback2 = createSpy('onSubscribed');
         solaceMessageClient.consume$({
           queueDescriptor: {
             type: QueueType.QUEUE,
             name: 'queue',
           },
-          onSubscribed(): void {
-            onSubscribed2Called = true;
-          },
+          onSubscribed: onSubscribedCallback2,
         }).subscribe();
         await drainMicrotaskQueue();
 
         // Simulate the message consumer to be connected to the broker
-        expect(onSubscribed2Called).toBeFalse();
+        expect(onSubscribedCallback2).toHaveBeenCalledTimes(0);
         await messageConsumerMock.simulateLifecycleEvent(MessageConsumerEventName.UP);
-        expect(onSubscribed2Called).toBeTrue();
+        expect(onSubscribedCallback2).toHaveBeenCalledTimes(1);
+        expect(onSubscribedCallback2).toHaveBeenCalledWith(messageConsumerMock.messageConsumer);
       });
 
       it('should not notify when subscription to endpoint failed', async () => {
@@ -1763,22 +1752,20 @@ describe('SolaceMessageClient', () => {
 
         // Subscribe to endpoint
         const messageConsumerMock = installMessageConsumerMock();
-        let onSubscribedCalled = false;
+        const onSubscribedCallback = createSpy('onSubscribed');
         solaceMessageClient.consume$({
           queueDescriptor: {
             type: QueueType.QUEUE,
             name: 'queue',
           },
-          onSubscribed(): void {
-            onSubscribedCalled = true;
-          },
+          onSubscribed: onSubscribedCallback,
         }).subscribe();
         await drainMicrotaskQueue();
 
         // Simulate the message consumer to be connected to the broker
-        expect(onSubscribedCalled).toBeFalse();
+        expect(onSubscribedCallback).toHaveBeenCalledTimes(0);
         await messageConsumerMock.simulateLifecycleEvent(MessageConsumerEventName.CONNECT_FAILED_ERROR);
-        expect(onSubscribedCalled).toBeFalse();
+        expect(onSubscribedCallback).toHaveBeenCalledTimes(0);
       });
     });
 
