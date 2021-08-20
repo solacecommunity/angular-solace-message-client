@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>MessagePublisherAcknowledgeMode | Angular Solace Message Client - v11.0.1</title>
+	<title>QueueAccessType | Angular Solace Message Client - v11.0.1</title>
 	<meta name="description" content="Documentation for Angular Solace Message Client - v11.0.1">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -54,10 +54,10 @@
 					<a href="../modules.html">Angular Solace Message Client - v11.0.1</a>
 				</li>
 				<li>
-					<a href="messagepublisheracknowledgemode.html">MessagePublisherAcknowledgeMode</a>
+					<a href="queueaccesstype.html">QueueAccessType</a>
 				</li>
 			</ul>
-			<h1>Enumeration MessagePublisherAcknowledgeMode</h1>
+			<h1>Enumeration QueueAccessType</h1>
 		</div>
 	</div>
 </header>
@@ -67,11 +67,11 @@
 			<section class="tsd-panel tsd-comment">
 				<div class="tsd-comment tsd-typography">
 					<div class="lead">
-						<p>Represents authentication scheme enumeration.</p>
+						<p>Represents the possible endpoint access types. The corresponding endpoint property is {@link QueueProperties#accessType}.</p>
 					</div>
 					<dl class="tsd-comment-tags">
 						<dt>see</dt>
-						<dd><p>solace.MessagePublisherAcknowledgeMode</p>
+						<dd><p>solace.QueueAccessType</p>
 						</dd>
 					</dl>
 				</div>
@@ -83,8 +83,8 @@
 						<section class="tsd-index-section ">
 							<h3>Enumeration members</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="messagepublisheracknowledgemode.html#per_message" class="tsd-kind-icon">PER_<wbr>MESSAGE</a></li>
-								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="messagepublisheracknowledgemode.html#windowed" class="tsd-kind-icon">WINDOWED</a></li>
+								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="queueaccesstype.html#exclusive" class="tsd-kind-icon">EXCLUSIVE</a></li>
+								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="queueaccesstype.html#nonexclusive" class="tsd-kind-icon">NONEXCLUSIVE</a></li>
 							</ul>
 						</section>
 					</div>
@@ -93,32 +93,32 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Enumeration members</h2>
 				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
-					<a name="per_message" class="tsd-anchor"></a>
-					<h3>PER_<wbr>MESSAGE</h3>
-					<div class="tsd-signature tsd-kind-icon">PER_<wbr>MESSAGE<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;PER_MESSAGE&quot;</span></div>
+					<a name="exclusive" class="tsd-anchor"></a>
+					<h3>EXCLUSIVE</h3>
+					<div class="tsd-signature tsd-kind-icon">EXCLUSIVE<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;EXCLUSIVE&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L378">lib/solace.model.ts:378</a></li>
+							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L1752">lib/solace.model.ts:1752</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
-							<p>Applications receive an acknowledgement for every message.</p>
+							<p>An exclusive endpoint. The first client to bind receives the stored messages on the Endpoint.</p>
 						</div>
 					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
-					<a name="windowed" class="tsd-anchor"></a>
-					<h3>WINDOWED</h3>
-					<div class="tsd-signature tsd-kind-icon">WINDOWED<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;WINDOWED&quot;</span></div>
+					<a name="nonexclusive" class="tsd-anchor"></a>
+					<h3>NONEXCLUSIVE</h3>
+					<div class="tsd-signature tsd-kind-icon">NONEXCLUSIVE<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;NONEXCLUSIVE&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L382">lib/solace.model.ts:382</a></li>
+							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L1756">lib/solace.model.ts:1756</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
-							<p>Applications receive a windowed acknowledgement that acknowledges the returned correlation identifier and every message sent prior.</p>
+							<p>A non-exclusive (shared) Queue. Each client to bind receives messages in a round robin fashion.</p>
 						</div>
 					</div>
 				</section>
@@ -137,13 +137,13 @@
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-enum">
-						<a href="messagepublisheracknowledgemode.html" class="tsd-kind-icon">Message<wbr>Publisher<wbr>Acknowledge<wbr>Mode</a>
+						<a href="queueaccesstype.html" class="tsd-kind-icon">Queue<wbr>Access<wbr>Type</a>
 						<ul>
 							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
-								<a href="messagepublisheracknowledgemode.html#per_message" class="tsd-kind-icon">PER_<wbr>MESSAGE</a>
+								<a href="queueaccesstype.html#exclusive" class="tsd-kind-icon">EXCLUSIVE</a>
 							</li>
 							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
-								<a href="messagepublisheracknowledgemode.html#windowed" class="tsd-kind-icon">WINDOWED</a>
+								<a href="queueaccesstype.html#nonexclusive" class="tsd-kind-icon">NONEXCLUSIVE</a>
 							</li>
 						</ul>
 					</li>

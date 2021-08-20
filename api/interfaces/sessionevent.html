@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>MessagePublisherProperties | Angular Solace Message Client - v11.0.1</title>
+	<title>SessionEvent | Angular Solace Message Client - v11.0.1</title>
 	<meta name="description" content="Documentation for Angular Solace Message Client - v11.0.1">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -54,10 +54,10 @@
 					<a href="../modules.html">Angular Solace Message Client - v11.0.1</a>
 				</li>
 				<li>
-					<a href="messagepublisherproperties.html">MessagePublisherProperties</a>
+					<a href="sessionevent.html">SessionEvent</a>
 				</li>
 			</ul>
-			<h1>Interface MessagePublisherProperties</h1>
+			<h1>Interface SessionEvent</h1>
 		</div>
 	</div>
 </header>
@@ -67,11 +67,11 @@
 			<section class="tsd-panel tsd-comment">
 				<div class="tsd-comment tsd-typography">
 					<div class="lead">
-						<p>Properties that define the configuration for a guaranteed message publisher.</p>
+						<p>Represents a session event; events are passed to the application-provided event handling callback provided when creating the session.</p>
 					</div>
 					<dl class="tsd-comment-tags">
 						<dt>see</dt>
-						<dd><p>solace.MessagePublisherProperties</p>
+						<dd><p>solace.SessionEvent</p>
 						</dd>
 					</dl>
 				</div>
@@ -80,7 +80,7 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">MessagePublisherProperties</span>
+						<span class="target">SessionEvent</span>
 					</li>
 				</ul>
 			</section>
@@ -91,10 +91,12 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="messagepublisherproperties.html#acknowledgemode" class="tsd-kind-icon">acknowledge<wbr>Mode</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="messagepublisherproperties.html#acknowledgetimeoutinmsecs" class="tsd-kind-icon">acknowledge<wbr>Timeout<wbr>InMsecs</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="messagepublisherproperties.html#enabled" class="tsd-kind-icon">enabled</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="messagepublisherproperties.html#windowsize" class="tsd-kind-icon">window<wbr>Size</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="sessionevent.html#correlationkey" class="tsd-kind-icon">correlation<wbr>Key</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="sessionevent.html#errorsubcode" class="tsd-kind-icon">error<wbr>Subcode</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="sessionevent.html#infostr" class="tsd-kind-icon">info<wbr>Str</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="sessionevent.html#reason" class="tsd-kind-icon">reason</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="sessionevent.html#responsecode" class="tsd-kind-icon">response<wbr>Code</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="sessionevent.html#sessioneventcode" class="tsd-kind-icon">session<wbr>Event<wbr>Code</a></li>
 							</ul>
 						</section>
 					</div>
@@ -103,83 +105,96 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="acknowledgemode" class="tsd-anchor"></a>
-					<h3>acknowledge<wbr>Mode</h3>
-					<div class="tsd-signature tsd-kind-icon">acknowledge<wbr>Mode<span class="tsd-signature-symbol">:</span> <a href="../enums/messagepublisheracknowledgemode.html" class="tsd-signature-type" data-tsd-kind="Enumeration">MessagePublisherAcknowledgeMode</a></div>
+					<a name="correlationkey" class="tsd-anchor"></a>
+					<h3>correlation<wbr>Key</h3>
+					<div class="tsd-signature tsd-kind-icon">correlation<wbr>Key<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L366">lib/solace.model.ts:366</a></li>
+							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L2432">lib/solace.model.ts:2432</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
-							<p>The message-router sends windowed acknowledgements which the API converts to per-message acknowledgement by default. If
-							acknowledgeMode is Windowed, then the API will simply pass through the message-router acknowledgements.</p>
+							<p>A user-specified object made available in the response or confirmation event by including it as a
+								parameter in the orignal API call.
+							If the user did not specify a correlationKey, it will be <code>null</code>.</p>
 						</div>
-						<dl class="tsd-comment-tags">
-							<dt>default</dt>
-							<dd><p><a href="../enums/messagepublisheracknowledgemode.html#per_message">MessagePublisherAcknowledgeMode.PER_MESSAGE</a></p>
-							</dd>
-						</dl>
 					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="acknowledgetimeoutinmsecs" class="tsd-anchor"></a>
-					<h3>acknowledge<wbr>Timeout<wbr>InMsecs</h3>
-					<div class="tsd-signature tsd-kind-icon">acknowledge<wbr>Timeout<wbr>InMsecs<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<a name="errorsubcode" class="tsd-anchor"></a>
+					<h3>error<wbr>Subcode</h3>
+					<div class="tsd-signature tsd-kind-icon">error<wbr>Subcode<span class="tsd-signature-symbol">:</span> <a href="../enums/errorsubcode.html" class="tsd-signature-type" data-tsd-kind="Enumeration">ErrorSubcode</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L358">lib/solace.model.ts:358</a></li>
+							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L2425">lib/solace.model.ts:2425</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
-							<p>The time to wait for an acknowledgement, in milliseconds, before retransmitting unacknowledged messages.
-							The valid range is 20 &lt;= value &lt;= 60000.</p>
+							<p>if applicable, an error subcode. Defined in <a href="../enums/errorsubcode.html">ErrorSubcode</a>.</p>
 						</div>
-						<dl class="tsd-comment-tags">
-							<dt>default</dt>
-							<dd><p>2000</p>
-							</dd>
-						</dl>
 					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="enabled" class="tsd-anchor"></a>
-					<h3>enabled</h3>
-					<div class="tsd-signature tsd-kind-icon">enabled<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
+					<a name="infostr" class="tsd-anchor"></a>
+					<h3>info<wbr>Str</h3>
+					<div class="tsd-signature tsd-kind-icon">info<wbr>Str<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L342">lib/solace.model.ts:342</a></li>
+							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L2415">lib/solace.model.ts:2415</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
-							<p>When enabled, a Guaranteed Messaging Publisher is automatically created when a session is connected.</p>
+							<p>if applicable, an information string returned by the Solace Message Router.</p>
 						</div>
-						<p>The default value is the same as the value provided to {@link solace.SolclientFactory.init},
-						in the profile, {@link solace.SolclientFactoryProperties.profile}, in the field {@link solace.FactoryProfile#guaranteedMessagingEnabled}.</p>
 					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="windowsize" class="tsd-anchor"></a>
-					<h3>window<wbr>Size</h3>
-					<div class="tsd-signature tsd-kind-icon">window<wbr>Size<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<a name="reason" class="tsd-anchor"></a>
+					<h3>reason</h3>
+					<div class="tsd-signature tsd-kind-icon">reason<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L350">lib/solace.model.ts:350</a></li>
+							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L2439">lib/solace.model.ts:2439</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
-							<p>Maximum number of messages that can be published without acknowledgment.
-							The valid range is 1 &lt;= value &lt;= 255</p>
+							<p>Additional information if it is applicable.</p>
 						</div>
-						<dl class="tsd-comment-tags">
-							<dt>default</dt>
-							<dd><p>50</p>
-							</dd>
-						</dl>
+						<p>In case of subscribe or publish errors, it constains the topic.</p>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="responsecode" class="tsd-anchor"></a>
+					<h3>response<wbr>Code</h3>
+					<div class="tsd-signature tsd-kind-icon">response<wbr>Code<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L2420">lib/solace.model.ts:2420</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>if applicable, a response code returned by the Solace Message Router.</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="sessioneventcode" class="tsd-anchor"></a>
+					<h3>session<wbr>Event<wbr>Code</h3>
+					<div class="tsd-signature tsd-kind-icon">session<wbr>Event<wbr>Code<span class="tsd-signature-symbol">:</span> <a href="../enums/sessioneventcode.html" class="tsd-signature-type" data-tsd-kind="Enumeration">SessionEventCode</a></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L2410">lib/solace.model.ts:2410</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Further qualifies the session event.</p>
+						</div>
 					</div>
 				</section>
 			</section>
@@ -197,19 +212,25 @@
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-interface">
-						<a href="messagepublisherproperties.html" class="tsd-kind-icon">Message<wbr>Publisher<wbr>Properties</a>
+						<a href="sessionevent.html" class="tsd-kind-icon">Session<wbr>Event</a>
 						<ul>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="messagepublisherproperties.html#acknowledgemode" class="tsd-kind-icon">acknowledge<wbr>Mode</a>
+								<a href="sessionevent.html#correlationkey" class="tsd-kind-icon">correlation<wbr>Key</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="messagepublisherproperties.html#acknowledgetimeoutinmsecs" class="tsd-kind-icon">acknowledge<wbr>Timeout<wbr>InMsecs</a>
+								<a href="sessionevent.html#errorsubcode" class="tsd-kind-icon">error<wbr>Subcode</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="messagepublisherproperties.html#enabled" class="tsd-kind-icon">enabled</a>
+								<a href="sessionevent.html#infostr" class="tsd-kind-icon">info<wbr>Str</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="messagepublisherproperties.html#windowsize" class="tsd-kind-icon">window<wbr>Size</a>
+								<a href="sessionevent.html#reason" class="tsd-kind-icon">reason</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="sessionevent.html#responsecode" class="tsd-kind-icon">response<wbr>Code</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="sessionevent.html#sessioneventcode" class="tsd-kind-icon">session<wbr>Event<wbr>Code</a>
 							</li>
 						</ul>
 					</li>

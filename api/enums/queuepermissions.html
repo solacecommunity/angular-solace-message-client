@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>MessageDeliveryModeType | Angular Solace Message Client - v11.0.1</title>
+	<title>QueuePermissions | Angular Solace Message Client - v11.0.1</title>
 	<meta name="description" content="Documentation for Angular Solace Message Client - v11.0.1">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -54,10 +54,10 @@
 					<a href="../modules.html">Angular Solace Message Client - v11.0.1</a>
 				</li>
 				<li>
-					<a href="messagedeliverymodetype.html">MessageDeliveryModeType</a>
+					<a href="queuepermissions.html">QueuePermissions</a>
 				</li>
 			</ul>
-			<h1>Enumeration MessageDeliveryModeType</h1>
+			<h1>Enumeration QueuePermissions</h1>
 		</div>
 	</div>
 </header>
@@ -67,11 +67,19 @@
 			<section class="tsd-panel tsd-comment">
 				<div class="tsd-comment tsd-typography">
 					<div class="lead">
-						<p>Represents an enumeration of message delivery modes.</p>
+						<p>Represents the permissions applicable to a queue.</p>
 					</div>
+					<p>The corresponding endpoint property is {@link QueueProperties#permissions}.</p>
+					<p>The access controls:</p>
+					<ul>
+						<li>the permissions for all other users of the queue, this only applies to non-durable queues {@link QueueProperties#permissions};</li>
+						<li>for the current Message Consumer  on a queue or endpoint, <a href="../interfaces/messageconsumer.html#permissions">MessageConsumer.permissions</a></li>
+					</ul>
+					<p>For example, creating a temporary topic endpoint with MODIFY_TOPIC will allow
+					other users to modify the topic subscribed to that endpoint.</p>
 					<dl class="tsd-comment-tags">
 						<dt>see</dt>
-						<dd><p>solace.MessageDeliveryModeType</p>
+						<dd><p>solace.QueuePermissions</p>
 						</dd>
 					</dl>
 				</div>
@@ -83,9 +91,11 @@
 						<section class="tsd-index-section ">
 							<h3>Enumeration members</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="messagedeliverymodetype.html#direct" class="tsd-kind-icon">DIRECT</a></li>
-								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="messagedeliverymodetype.html#non_persistent" class="tsd-kind-icon">NON_<wbr>PERSISTENT</a></li>
-								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="messagedeliverymodetype.html#persistent" class="tsd-kind-icon">PERSISTENT</a></li>
+								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="queuepermissions.html#consume" class="tsd-kind-icon">CONSUME</a></li>
+								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="queuepermissions.html#delete" class="tsd-kind-icon">DELETE</a></li>
+								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="queuepermissions.html#modify_topic" class="tsd-kind-icon">MODIFY_<wbr>TOPIC</a></li>
+								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="queuepermissions.html#none" class="tsd-kind-icon">NONE</a></li>
+								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="queuepermissions.html#read_only" class="tsd-kind-icon">READ_<wbr>ONLY</a></li>
 							</ul>
 						</section>
 					</div>
@@ -94,72 +104,78 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Enumeration members</h2>
 				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
-					<a name="direct" class="tsd-anchor"></a>
-					<h3>DIRECT</h3>
-					<div class="tsd-signature tsd-kind-icon">DIRECT<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = 0</span></div>
+					<a name="consume" class="tsd-anchor"></a>
+					<h3>CONSUME</h3>
+					<div class="tsd-signature tsd-kind-icon">CONSUME<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;CONSUME&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L403">lib/solace.model.ts:403</a></li>
+							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L1732">lib/solace.model.ts:1732</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
-							<p>This mode provides at-most-once message delivery. Direct messages have
-							the following characteristics:</p>
-							<ul>
-								<li>They are not retained for clients that are not connected to a Solace Message Router.</li>
-								<li>They can be discarded when congestion or system failures are encountered.</li>
-								<li>They can be reordered in the event of network topology changes.</li>
-							</ul>
-						</div>
-						<p>Direct messages are most appropriate for messaging applications that require very
-							high-rate or very low-latency message transmission. Direct Messaging enables
-							applications to efficiently publish messages to a large number of clients
-						with matching subscriptions.</p>
-					</div>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
-					<a name="non_persistent" class="tsd-anchor"></a>
-					<h3>NON_<wbr>PERSISTENT</h3>
-					<div class="tsd-signature tsd-kind-icon">NON_<wbr>PERSISTENT<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = 2</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L425">lib/solace.model.ts:425</a></li>
-						</ul>
-					</aside>
-					<div class="tsd-comment tsd-typography">
-						<div class="lead">
-							<p>This mode is functionally the same as Persistent. It exists to facilitate interaction
-								with JMS applications. In most situations where you want to use Guaranteed Messaging,
-							it is recommended that you use <a href="messagedeliverymodetype.html#persistent">MessageDeliveryModeType.PERSISTENT</a>.</p>
+							<p>Client may read and consume messages.</p>
 						</div>
 					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
-					<a name="persistent" class="tsd-anchor"></a>
-					<h3>PERSISTENT</h3>
-					<div class="tsd-signature tsd-kind-icon">PERSISTENT<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = 1</span></div>
+					<a name="delete" class="tsd-anchor"></a>
+					<h3>DELETE</h3>
+					<div class="tsd-signature tsd-kind-icon">DELETE<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;DELETE&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L419">lib/solace.model.ts:419</a></li>
+							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L1740">lib/solace.model.ts:1740</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
-							<p>A Persistent delivery mode is used for Guaranteed Messaging, and this delivery mode
-								is most appropriate for applications that require persistent storage of the messages
-							they send or intend to receive. Persistent messages have the following characteristics:</p>
+							<p>Client may read and consume messages, modify topic(s) associated with the queue, and delete the queue.</p>
 						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
+					<a name="modify_topic" class="tsd-anchor"></a>
+					<h3>MODIFY_<wbr>TOPIC</h3>
+					<div class="tsd-signature tsd-kind-icon">MODIFY_<wbr>TOPIC<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;MODIFY_TOPIC&quot;</span></div>
+					<aside class="tsd-sources">
 						<ul>
-							<li>They cannot be discarded or lost (once they are acknowledged by the Solace Message Router).</li>
-							<li>They cannot be reordered in the event of network topology changes.</li>
-							<li>They cannot be delivered more than once to a single client (unless the redelivered
-							message flag is applied).</li>
-							<li>When they match subscriptions on durable endpoints, they are retained for a client
-							when that client is not connected.</li>
+							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L1736">lib/solace.model.ts:1736</a></li>
 						</ul>
-						<p>Persistent messages are most appropriate for applications that require persistent storage
-						of the messages they send or intend to receive.</p>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Client may read and consume messages, and modify topic(s) associated with the queue.</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
+					<a name="none" class="tsd-anchor"></a>
+					<h3>NONE</h3>
+					<div class="tsd-signature tsd-kind-icon">NONE<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;NONE&quot;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L1724">lib/solace.model.ts:1724</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>No client other than the queue&#39;s owner may access the endpoint.</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
+					<a name="read_only" class="tsd-anchor"></a>
+					<h3>READ_<wbr>ONLY</h3>
+					<div class="tsd-signature tsd-kind-icon">READ_<wbr>ONLY<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;READ_ONLY&quot;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L1728">lib/solace.model.ts:1728</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Client may read messages but not consume them.</p>
+						</div>
 					</div>
 				</section>
 			</section>
@@ -177,16 +193,22 @@
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-enum">
-						<a href="messagedeliverymodetype.html" class="tsd-kind-icon">Message<wbr>Delivery<wbr>Mode<wbr>Type</a>
+						<a href="queuepermissions.html" class="tsd-kind-icon">Queue<wbr>Permissions</a>
 						<ul>
 							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
-								<a href="messagedeliverymodetype.html#direct" class="tsd-kind-icon">DIRECT</a>
+								<a href="queuepermissions.html#consume" class="tsd-kind-icon">CONSUME</a>
 							</li>
 							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
-								<a href="messagedeliverymodetype.html#non_persistent" class="tsd-kind-icon">NON_<wbr>PERSISTENT</a>
+								<a href="queuepermissions.html#delete" class="tsd-kind-icon">DELETE</a>
 							</li>
 							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
-								<a href="messagedeliverymodetype.html#persistent" class="tsd-kind-icon">PERSISTENT</a>
+								<a href="queuepermissions.html#modify_topic" class="tsd-kind-icon">MODIFY_<wbr>TOPIC</a>
+							</li>
+							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
+								<a href="queuepermissions.html#none" class="tsd-kind-icon">NONE</a>
+							</li>
+							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
+								<a href="queuepermissions.html#read_only" class="tsd-kind-icon">READ_<wbr>ONLY</a>
 							</li>
 						</ul>
 					</li>

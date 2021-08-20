@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>MessageEnvelope | Angular Solace Message Client - v11.0.1</title>
+	<title>QueueDescriptor | Angular Solace Message Client - v11.0.1</title>
 	<meta name="description" content="Documentation for Angular Solace Message Client - v11.0.1">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -54,10 +54,10 @@
 					<a href="../modules.html">Angular Solace Message Client - v11.0.1</a>
 				</li>
 				<li>
-					<a href="messageenvelope.html">MessageEnvelope</a>
+					<a href="queuedescriptor.html">QueueDescriptor</a>
 				</li>
 			</ul>
-			<h1>Interface MessageEnvelope</h1>
+			<h1>Interface QueueDescriptor</h1>
 		</div>
 	</div>
 </header>
@@ -67,17 +67,52 @@
 			<section class="tsd-panel tsd-comment">
 				<div class="tsd-comment tsd-typography">
 					<div class="lead">
-						<p>Envelope containing the <a href="message.html">Message</a> and resolved values for named topic segments, if any.</p>
+						<p>Identifies a queue or topic endpoint on the message router.</p>
 					</div>
+					<p>Operations that make use of queue descriptors include</p>
+					<ul>
+						<li>{@link Session#createMessageConsumer}</li>
+						<li>{@link Session#dteUnsubscribe}</li>
+					</ul>
+					<p>For durable endpoints the name of that endpoint needs to be specified.
+						For non-durable endpoints, the name is generated when the <a href="messageconsumer.html">MessageConsumer</a> is connected.
+						The generated descriptor can be queried from the consumer after it has successfully connected
+					by calling {@link MessageConsumer#getProperties#queueDescriptor}.</p>
+					<dl class="tsd-comment-tags">
+						<dt>see</dt>
+						<dd><p>solace.QueueDescriptor</p>
+						</dd>
+						<dt>see</dt>
+						<dd><p>solace.AbstractQueueDescriptor</p>
+						</dd>
+					</dl>
 				</div>
 			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">MessageEnvelope</span>
+						<span class="target">QueueDescriptor</span>
 					</li>
 				</ul>
+			</section>
+			<section class="tsd-panel tsd-kind-interface">
+				<h3 class="tsd-before-signature">Indexable</h3>
+				<div class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">[</span>key: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">]: </span><span class="tsd-signature-type">any</span></div>
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>Allow additional properties, e.g., properties contained in new <code>solclientjs</code> versions.</p>
+					</div>
+					<p>Operations that make use of queue descriptors include</p>
+					<ul>
+						<li>{@link Session#createMessageConsumer}</li>
+						<li>{@link Session#dteUnsubscribe}</li>
+					</ul>
+					<p>For durable endpoints the name of that endpoint needs to be specified.
+						For non-durable endpoints, the name is generated when the <a href="messageconsumer.html">MessageConsumer</a> is connected.
+						The generated descriptor can be queried from the consumer after it has successfully connected
+					by calling {@link MessageConsumer#getProperties#queueDescriptor}.</p>
+				</div>
 			</section>
 			<section class="tsd-panel-group tsd-index-group">
 				<h2>Index</h2>
@@ -86,9 +121,9 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="messageenvelope.html#headers" class="tsd-kind-icon">headers</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="messageenvelope.html#message" class="tsd-kind-icon">message</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="messageenvelope.html#params" class="tsd-kind-icon">params</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="queuedescriptor.html#durable" class="tsd-kind-icon">durable</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="queuedescriptor.html#name" class="tsd-kind-icon">name</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="queuedescriptor.html#type" class="tsd-kind-icon">type</a></li>
 							</ul>
 						</section>
 					</div>
@@ -97,54 +132,56 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="headers" class="tsd-anchor"></a>
-					<h3>headers</h3>
-					<div class="tsd-signature tsd-kind-icon">headers<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Map</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></div>
+					<a name="durable" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> durable</h3>
+					<div class="tsd-signature tsd-kind-icon">durable<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace-message-client.ts#L507">lib/solace-message-client.ts:507</a></li>
+							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L1579">lib/solace.model.ts:1579</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
-							<p>Convenience API for accessing headers attached to the message.</p>
+							<p>Specifies whether this descriptor refers to a durable queue.</p>
 						</div>
 						<dl class="tsd-comment-tags">
-							<dt>see</dt>
-							<dd><p>Message.getUserPropertyMap</p>
+							<dt>default</dt>
+							<dd><p>true</p>
 							</dd>
 						</dl>
 					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="message" class="tsd-anchor"></a>
-					<h3>message</h3>
-					<div class="tsd-signature tsd-kind-icon">message<span class="tsd-signature-symbol">:</span> <a href="message.html" class="tsd-signature-type" data-tsd-kind="Interface">Message</a></div>
+					<a name="name" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> name</h3>
+					<div class="tsd-signature tsd-kind-icon">name<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace-message-client.ts#L495">lib/solace-message-client.ts:495</a></li>
+							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L1567">lib/solace.model.ts:1567</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
-							<p>Unmodified message as received by the Solace message broker.</p>
+							<p>The remote name to which this descriptor refers.</p>
 						</div>
+						<p>Required for durable queues and durable topic endpoints.
+							For non-durable endpoints, the name is generated when the <a href="messageconsumer.html">MessageConsumer</a> is connected.
+							The generated descriptor can be queried from the consumer after it has successfully connected
+						by calling {@link MessageConsumer#getProperties#queueDescriptor}.</p>
 					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="params" class="tsd-anchor"></a>
-					<h3>params</h3>
-					<div class="tsd-signature tsd-kind-icon">params<span class="tsd-signature-symbol">:</span> <a href="../modules.html#params" class="tsd-signature-type" data-tsd-kind="Type alias">Params</a></div>
+					<a name="type" class="tsd-anchor"></a>
+					<h3>type</h3>
+					<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <a href="../enums/queuetype.html" class="tsd-signature-type" data-tsd-kind="Enumeration">QueueType</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace-message-client.ts#L501">lib/solace-message-client.ts:501</a></li>
+							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L1572">lib/solace.model.ts:1572</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
-							<p>Contains the resolved values of named single-level wildcard segments as specified in the topic.
-								For example: If subscribed to the topic <code>person/:id</code> and a message is published to the topic <code>person/5</code>,
-							the resolved id with the value <code>5</code> is contained in the segments map.</p>
+							<p>The queue type to which this descriptor refers.</p>
 						</div>
 					</div>
 				</section>
@@ -163,16 +200,16 @@
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-interface">
-						<a href="messageenvelope.html" class="tsd-kind-icon">Message<wbr>Envelope</a>
+						<a href="queuedescriptor.html" class="tsd-kind-icon">Queue<wbr>Descriptor</a>
 						<ul>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="messageenvelope.html#headers" class="tsd-kind-icon">headers</a>
+								<a href="queuedescriptor.html#durable" class="tsd-kind-icon">durable</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="messageenvelope.html#message" class="tsd-kind-icon">message</a>
+								<a href="queuedescriptor.html#name" class="tsd-kind-icon">name</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="messageenvelope.html#params" class="tsd-kind-icon">params</a>
+								<a href="queuedescriptor.html#type" class="tsd-kind-icon">type</a>
 							</li>
 						</ul>
 					</li>

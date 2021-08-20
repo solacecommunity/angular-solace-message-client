@@ -3,8 +3,8 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>SolaceSessionProvider | Angular Solace Message Client - v11.0.0</title>
-	<meta name="description" content="Documentation for Angular Solace Message Client - v11.0.0">
+	<title>SolaceSessionProvider | Angular Solace Message Client - v11.0.1</title>
+	<meta name="description" content="Documentation for Angular Solace Message Client - v11.0.1">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
 	<script async src="../assets/js/search.js" id="search-script"></script>
@@ -24,7 +24,7 @@
 						<li class="state loading">Preparing search index...</li>
 						<li class="state failure">The search index is not available</li>
 					</ul>
-					<a href="../index.html" class="title">Angular Solace Message Client - v11.0.0</a>
+					<a href="../index.html" class="title">Angular Solace Message Client - v11.0.1</a>
 				</div>
 				<div class="table-cell" id="tsd-widgets">
 					<div id="tsd-filter">
@@ -51,7 +51,7 @@
 		<div class="container">
 			<ul class="tsd-breadcrumb">
 				<li>
-					<a href="../modules.html">Angular Solace Message Client - v11.0.0</a>
+					<a href="../modules.html">Angular Solace Message Client - v11.0.1</a>
 				</li>
 				<li>
 					<a href="solacesessionprovider.html">SolaceSessionProvider</a>
@@ -67,7 +67,7 @@
 			<section class="tsd-panel tsd-comment">
 				<div class="tsd-comment tsd-typography">
 					<div class="lead">
-						<p>Creates a {@link solace.Session} from a given config to connect to the Solace message broker.</p>
+						<p>Creates a <a href="../interfaces/session.html">Session</a> from a given config to connect to the Solace message broker.</p>
 					</div>
 					<p>You may override the default session provider in order to customize session construction, e.g., in tests, as following:
 					<code>{provide: SolaceSessionProvider, useClass: YourSessionProvider}</code></p>
@@ -124,27 +124,27 @@
 					<a name="provide" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagAbstract">Abstract</span> provide</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">provide<span class="tsd-signature-symbol">(</span>sessionProperties<span class="tsd-signature-symbol">: </span><a href="sessionproperties.html" class="tsd-signature-type" data-tsd-kind="Class">SessionProperties</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
+						<li class="tsd-signature tsd-kind-icon">provide<span class="tsd-signature-symbol">(</span>sessionProperties<span class="tsd-signature-symbol">: </span><a href="../interfaces/sessionproperties.html" class="tsd-signature-type" data-tsd-kind="Interface">SessionProperties</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/session.html" class="tsd-signature-type" data-tsd-kind="Interface">Session</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/e3b6cc7/projects/solace-message-client/src/lib/solace-session-provider.ts#L19">lib/solace-session-provider.ts:19</a></li>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace-session-provider.ts#L19">lib/solace-session-provider.ts:19</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Method invoked to create a {@link solace.Session} from given properties.</p>
+									<p>Method invoked to create a <a href="../interfaces/session.html">Session</a> from given properties.</p>
 								</div>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>sessionProperties: <a href="sessionproperties.html" class="tsd-signature-type" data-tsd-kind="Class">SessionProperties</a></h5>
+									<h5>sessionProperties: <a href="../interfaces/sessionproperties.html" class="tsd-signature-type" data-tsd-kind="Interface">SessionProperties</a></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/session.html" class="tsd-signature-type" data-tsd-kind="Interface">Session</a></h4>
 						</li>
 					</ul>
 				</section>
@@ -160,18 +160,6 @@
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
-					<li class=" tsd-kind-class">
-						<a href="sessionproperties.html" class="tsd-kind-icon">Session<wbr>Properties</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="solacemessageclient.html" class="tsd-kind-icon">Solace<wbr>Message<wbr>Client</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="solacemessageclientconfig.html" class="tsd-kind-icon">Solace<wbr>Message<wbr>Client<wbr>Config</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="solacemessageclientmodule.html" class="tsd-kind-icon">Solace<wbr>Message<wbr>Client<wbr>Module</a>
-					</li>
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-class">
@@ -187,18 +175,6 @@
 					</li>
 				</ul>
 				<ul class="after-current">
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/messageenvelope.html" class="tsd-kind-icon">Message<wbr>Envelope</a>
-					</li>
-					<li class=" tsd-kind-function">
-						<a href="../modules.html#maptobinary" class="tsd-kind-icon">map<wbr>ToBinary</a>
-					</li>
-					<li class=" tsd-kind-function tsd-has-type-parameter">
-						<a href="../modules.html#maptoobject" class="tsd-kind-icon">map<wbr>ToObject</a>
-					</li>
-					<li class=" tsd-kind-function">
-						<a href="../modules.html#maptotext" class="tsd-kind-icon">map<wbr>ToText</a>
-					</li>
 				</ul>
 			</nav>
 		</div>
@@ -214,11 +190,11 @@
 				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
 			</ul>
 			<ul class="tsd-legend">
-				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
-				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited property</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
 			</ul>
 			<ul class="tsd-legend">
-				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited property</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
@@ -227,7 +203,7 @@
 	</div>
 </footer>
 <div class="container tsd-generator">
-	<p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a>, the 3/18/2021 at 4:19:40 PM</p>
+	<p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a>, the 8/20/2021 at 1:22:00 PM</p>
 </div>
 <div class="overlay"></div>
 <script src="../assets/js/main.js"></script>

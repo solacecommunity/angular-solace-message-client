@@ -3,8 +3,8 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>AuthenticationScheme | Angular Solace Message Client - v11.0.0</title>
-	<meta name="description" content="Documentation for Angular Solace Message Client - v11.0.0">
+	<title>AuthenticationScheme | Angular Solace Message Client - v11.0.1</title>
+	<meta name="description" content="Documentation for Angular Solace Message Client - v11.0.1">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
 	<script async src="../assets/js/search.js" id="search-script"></script>
@@ -24,7 +24,7 @@
 						<li class="state loading">Preparing search index...</li>
 						<li class="state failure">The search index is not available</li>
 					</ul>
-					<a href="../index.html" class="title">Angular Solace Message Client - v11.0.0</a>
+					<a href="../index.html" class="title">Angular Solace Message Client - v11.0.1</a>
 				</div>
 				<div class="table-cell" id="tsd-widgets">
 					<div id="tsd-filter">
@@ -51,7 +51,7 @@
 		<div class="container">
 			<ul class="tsd-breadcrumb">
 				<li>
-					<a href="../modules.html">Angular Solace Message Client - v11.0.0</a>
+					<a href="../modules.html">Angular Solace Message Client - v11.0.1</a>
 				</li>
 				<li>
 					<a href="authenticationscheme.html">AuthenticationScheme</a>
@@ -67,8 +67,7 @@
 			<section class="tsd-panel tsd-comment">
 				<div class="tsd-comment tsd-typography">
 					<div class="lead">
-						<p>Represents authentication schemes that can be used. The corresponding session
-						property is {@link solace.authenticationScheme}.</p>
+						<p>Represents authentication schemes that can be used. The corresponding session property is <a href="authenticationscheme.html">AuthenticationScheme</a>.</p>
 					</div>
 					<dl class="tsd-comment-tags">
 						<dt>see</dt>
@@ -99,15 +98,13 @@
 					<div class="tsd-signature tsd-kind-icon">BASIC<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;AuthenticationScheme_basic&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/e3b6cc7/projects/solace-message-client/src/lib/solace.model.ts#L311">lib/solace.model.ts:311</a></li>
+							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L316">lib/solace.model.ts:316</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
-						<dl class="tsd-comment-tags">
-							<dt>description</dt>
-							<dd><p>Username/Password based authentication scheme.</p>
-							</dd>
-						</dl>
+						<div class="lead">
+							<p>Username/Password based authentication scheme.</p>
+						</div>
 					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
@@ -116,17 +113,28 @@
 					<div class="tsd-signature tsd-kind-icon">CLIENT_<wbr>CERTIFICATE<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;AuthenticationScheme_clientCertificate&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/e3b6cc7/projects/solace-message-client/src/lib/solace.model.ts#L330">lib/solace.model.ts:330</a></li>
+							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L326">lib/solace.model.ts:326</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Client-side certificate based authentication scheme.  The certificate and private key are provided by the browser.</p>
+						</div>
 						<dl class="tsd-comment-tags">
-							<dt>description</dt>
-							<dd><p>Client-side certificate based authentication scheme.  The certificate and
-								private key are provided by the browser.</p>
+							<dt>see</dt>
+							<dd><p>{@link SessionProperties.sslPfx}</p>
 							</dd>
-							<dt>target</dt>
-							<dd><p>browser</p>
+							<dt>see</dt>
+							<dd><p>{@link SessionProperties.sslPfxPassword}</p>
+							</dd>
+							<dt>see</dt>
+							<dd><p>{@link solace.SessionProperties.sslPrivateKey}</p>
+							</dd>
+							<dt>see</dt>
+							<dd><p>{@link solace.SessionProperties.sslPrivateKeyPassword}</p>
+							</dd>
+							<dt>see</dt>
+							<dd><p>{@link solace.SessionProperties.sslCertificate}</p>
 							</dd>
 						</dl>
 					</div>
@@ -143,33 +151,21 @@
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
-					<li class=" tsd-kind-class">
-						<a href="../classes/sessionproperties.html" class="tsd-kind-icon">Session<wbr>Properties</a>
+				</ul>
+				<ul class="current">
+					<li class="current tsd-kind-enum">
+						<a href="authenticationscheme.html" class="tsd-kind-icon">Authentication<wbr>Scheme</a>
+						<ul>
+							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
+								<a href="authenticationscheme.html#basic" class="tsd-kind-icon">BASIC</a>
+							</li>
+							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
+								<a href="authenticationscheme.html#client_certificate" class="tsd-kind-icon">CLIENT_<wbr>CERTIFICATE</a>
+							</li>
+						</ul>
 					</li>
-					<li class=" tsd-kind-class">
-						<a href="../classes/solacemessageclient.html" class="tsd-kind-icon">Solace<wbr>Message<wbr>Client</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="../classes/solacemessageclientconfig.html" class="tsd-kind-icon">Solace<wbr>Message<wbr>Client<wbr>Config</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="../classes/solacemessageclientmodule.html" class="tsd-kind-icon">Solace<wbr>Message<wbr>Client<wbr>Module</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="../classes/solacesessionprovider.html" class="tsd-kind-icon">Solace<wbr>Session<wbr>Provider</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/messageenvelope.html" class="tsd-kind-icon">Message<wbr>Envelope</a>
-					</li>
-					<li class=" tsd-kind-function">
-						<a href="../modules.html#maptobinary" class="tsd-kind-icon">map<wbr>ToBinary</a>
-					</li>
-					<li class=" tsd-kind-function tsd-has-type-parameter">
-						<a href="../modules.html#maptoobject" class="tsd-kind-icon">map<wbr>ToObject</a>
-					</li>
-					<li class=" tsd-kind-function">
-						<a href="../modules.html#maptotext" class="tsd-kind-icon">map<wbr>ToText</a>
-					</li>
+				</ul>
+				<ul class="after-current">
 				</ul>
 			</nav>
 		</div>
@@ -185,11 +181,11 @@
 				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
 			</ul>
 			<ul class="tsd-legend">
-				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
-				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited property</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
 			</ul>
 			<ul class="tsd-legend">
-				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited property</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
@@ -198,7 +194,7 @@
 	</div>
 </footer>
 <div class="container tsd-generator">
-	<p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a>, the 3/18/2021 at 4:19:39 PM</p>
+	<p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a>, the 8/20/2021 at 1:22:00 PM</p>
 </div>
 <div class="overlay"></div>
 <script src="../assets/js/main.js"></script>

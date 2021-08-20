@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>MessagePublisherAcknowledgeMode | Angular Solace Message Client - v11.0.1</title>
+	<title>CacheReturnCode | Angular Solace Message Client - v11.0.1</title>
 	<meta name="description" content="Documentation for Angular Solace Message Client - v11.0.1">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -54,10 +54,10 @@
 					<a href="../modules.html">Angular Solace Message Client - v11.0.1</a>
 				</li>
 				<li>
-					<a href="messagepublisheracknowledgemode.html">MessagePublisherAcknowledgeMode</a>
+					<a href="cachereturncode.html">CacheReturnCode</a>
 				</li>
 			</ul>
-			<h1>Enumeration MessagePublisherAcknowledgeMode</h1>
+			<h1>Enumeration CacheReturnCode</h1>
 		</div>
 	</div>
 </header>
@@ -67,11 +67,13 @@
 			<section class="tsd-panel tsd-comment">
 				<div class="tsd-comment tsd-typography">
 					<div class="lead">
-						<p>Represents authentication scheme enumeration.</p>
+						<p>Enumeration of CacheReturnCode types.</p>
 					</div>
+					<p>The method {@link CacheRequestResult#getReturnCode} returns on of these basic results of a cache request.
+					More details are available in the associated <a href="cachereturnsubcode.html">CacheReturnSubcode</a>, retrieved by {@link CacheRequestResult#getReturnSubcode}.</p>
 					<dl class="tsd-comment-tags">
 						<dt>see</dt>
-						<dd><p>solace.MessagePublisherAcknowledgeMode</p>
+						<dd><p>solace.CacheReturnCode</p>
 						</dd>
 					</dl>
 				</div>
@@ -83,8 +85,9 @@
 						<section class="tsd-index-section ">
 							<h3>Enumeration members</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="messagepublisheracknowledgemode.html#per_message" class="tsd-kind-icon">PER_<wbr>MESSAGE</a></li>
-								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="messagepublisheracknowledgemode.html#windowed" class="tsd-kind-icon">WINDOWED</a></li>
+								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="cachereturncode.html#fail" class="tsd-kind-icon">FAIL</a></li>
+								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="cachereturncode.html#incomplete" class="tsd-kind-icon">INCOMPLETE</a></li>
+								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="cachereturncode.html#ok" class="tsd-kind-icon">OK</a></li>
 							</ul>
 						</section>
 					</div>
@@ -93,32 +96,48 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Enumeration members</h2>
 				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
-					<a name="per_message" class="tsd-anchor"></a>
-					<h3>PER_<wbr>MESSAGE</h3>
-					<div class="tsd-signature tsd-kind-icon">PER_<wbr>MESSAGE<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;PER_MESSAGE&quot;</span></div>
+					<a name="fail" class="tsd-anchor"></a>
+					<h3>FAIL</h3>
+					<div class="tsd-signature tsd-kind-icon">FAIL<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = 2</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L378">lib/solace.model.ts:378</a></li>
+							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L3811">lib/solace.model.ts:3811</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
-							<p>Applications receive an acknowledgement for every message.</p>
+							<p>The cache request was not processed.  See the subcode for more information.</p>
 						</div>
 					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
-					<a name="windowed" class="tsd-anchor"></a>
-					<h3>WINDOWED</h3>
-					<div class="tsd-signature tsd-kind-icon">WINDOWED<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;WINDOWED&quot;</span></div>
+					<a name="incomplete" class="tsd-anchor"></a>
+					<h3>INCOMPLETE</h3>
+					<div class="tsd-signature tsd-kind-icon">INCOMPLETE<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = 3</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L382">lib/solace.model.ts:382</a></li>
+							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L3816">lib/solace.model.ts:3816</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
-							<p>Applications receive a windowed acknowledgement that acknowledges the returned correlation identifier and every message sent prior.</p>
+							<p>The cache request was processed but could not be completed.
+							See the subcode for more information.</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
+					<a name="ok" class="tsd-anchor"></a>
+					<h3>OK</h3>
+					<div class="tsd-signature tsd-kind-icon">OK<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = 1</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L3807">lib/solace.model.ts:3807</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>The cache request succeeded.  See the subcode for more information.</p>
 						</div>
 					</div>
 				</section>
@@ -137,13 +156,16 @@
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-enum">
-						<a href="messagepublisheracknowledgemode.html" class="tsd-kind-icon">Message<wbr>Publisher<wbr>Acknowledge<wbr>Mode</a>
+						<a href="cachereturncode.html" class="tsd-kind-icon">Cache<wbr>Return<wbr>Code</a>
 						<ul>
 							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
-								<a href="messagepublisheracknowledgemode.html#per_message" class="tsd-kind-icon">PER_<wbr>MESSAGE</a>
+								<a href="cachereturncode.html#fail" class="tsd-kind-icon">FAIL</a>
 							</li>
 							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
-								<a href="messagepublisheracknowledgemode.html#windowed" class="tsd-kind-icon">WINDOWED</a>
+								<a href="cachereturncode.html#incomplete" class="tsd-kind-icon">INCOMPLETE</a>
+							</li>
+							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
+								<a href="cachereturncode.html#ok" class="tsd-kind-icon">OK</a>
 							</li>
 						</ul>
 					</li>

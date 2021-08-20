@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>MessagePublisherAcknowledgeMode | Angular Solace Message Client - v11.0.1</title>
+	<title>SDTUnsupportedValueError | Angular Solace Message Client - v11.0.1</title>
 	<meta name="description" content="Documentation for Angular Solace Message Client - v11.0.1">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -54,10 +54,10 @@
 					<a href="../modules.html">Angular Solace Message Client - v11.0.1</a>
 				</li>
 				<li>
-					<a href="messagepublisheracknowledgemode.html">MessagePublisherAcknowledgeMode</a>
+					<a href="sdtunsupportedvalueerror.html">SDTUnsupportedValueError</a>
 				</li>
 			</ul>
-			<h1>Enumeration MessagePublisherAcknowledgeMode</h1>
+			<h1>Interface SDTUnsupportedValueError</h1>
 		</div>
 	</div>
 </header>
@@ -67,58 +67,99 @@
 			<section class="tsd-panel tsd-comment">
 				<div class="tsd-comment tsd-typography">
 					<div class="lead">
-						<p>Represents authentication scheme enumeration.</p>
+						<p>Represents a SDT unsupported value error.</p>
 					</div>
+					<p>An SDT field was assigned a value that is within the type range for the given SDT type,
+					but is not supported on this platform/runtime.</p>
+					<p>This occurs when a received {@link SDTContainerMap} or {@link SDTContainerStream}
+					contains a field with a value that can not represented in the local architecture.</p>
+					<p>Possible causes include:</p>
+					<ul>
+						<li>receive 64 bit integer that cannot be represented accurately in a javaScript number. JavaScript
+							numbers are floats and can only hold a 48 bit integer without loss of precission. Any integer
+						greater than 281474976710655 or less than -281474976710655 will cause this exception.</li>
+					</ul>
 					<dl class="tsd-comment-tags">
 						<dt>see</dt>
-						<dd><p>solace.MessagePublisherAcknowledgeMode</p>
+						<dd><p>solace.SDTUnsupportedValueError</p>
 						</dd>
 					</dl>
 				</div>
+			</section>
+			<section class="tsd-panel tsd-hierarchy">
+				<h3>Hierarchy</h3>
+				<ul class="tsd-hierarchy">
+					<li>
+						<a href="solaceerror.html" class="tsd-signature-type" data-tsd-kind="Interface">SolaceError</a>
+						<ul class="tsd-hierarchy">
+							<li>
+								<span class="target">SDTUnsupportedValueError</span>
+							</li>
+						</ul>
+					</li>
+				</ul>
 			</section>
 			<section class="tsd-panel-group tsd-index-group">
 				<h2>Index</h2>
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section ">
-							<h3>Enumeration members</h3>
+							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="messagepublisheracknowledgemode.html#per_message" class="tsd-kind-icon">PER_<wbr>MESSAGE</a></li>
-								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="messagepublisheracknowledgemode.html#windowed" class="tsd-kind-icon">WINDOWED</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="sdtunsupportedvalueerror.html#message" class="tsd-kind-icon">message</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="sdtunsupportedvalueerror.html#name" class="tsd-kind-icon">name</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="sdtunsupportedvalueerror.html#requesteventcode" class="tsd-kind-icon">request<wbr>Event<wbr>Code</a></li>
 							</ul>
 						</section>
 					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
-				<h2>Enumeration members</h2>
-				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
-					<a name="per_message" class="tsd-anchor"></a>
-					<h3>PER_<wbr>MESSAGE</h3>
-					<div class="tsd-signature tsd-kind-icon">PER_<wbr>MESSAGE<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;PER_MESSAGE&quot;</span></div>
+				<h2>Properties</h2>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
+					<a name="message" class="tsd-anchor"></a>
+					<h3>message</h3>
+					<div class="tsd-signature tsd-kind-icon">message<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
+						<p>Inherited from <a href="solaceerror.html">SolaceError</a>.<a href="solaceerror.html#message">message</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L378">lib/solace.model.ts:378</a></li>
+							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L3170">lib/solace.model.ts:3170</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
-							<p>Applications receive an acknowledgement for every message.</p>
+							<p>Error Message.</p>
 						</div>
 					</div>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
-					<a name="windowed" class="tsd-anchor"></a>
-					<h3>WINDOWED</h3>
-					<div class="tsd-signature tsd-kind-icon">WINDOWED<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;WINDOWED&quot;</span></div>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
+					<a name="name" class="tsd-anchor"></a>
+					<h3>name</h3>
+					<div class="tsd-signature tsd-kind-icon">name<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
+						<p>Inherited from <a href="solaceerror.html">SolaceError</a>.<a href="solaceerror.html#name">name</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L382">lib/solace.model.ts:382</a></li>
+							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L3175">lib/solace.model.ts:3175</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
-							<p>Applications receive a windowed acknowledgement that acknowledges the returned correlation identifier and every message sent prior.</p>
+							<p>The name of the error.</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="requesteventcode" class="tsd-anchor"></a>
+					<h3>request<wbr>Event<wbr>Code</h3>
+					<div class="tsd-signature tsd-kind-icon">request<wbr>Event<wbr>Code<span class="tsd-signature-symbol">:</span> <a href="../enums/sessioneventcode.html" class="tsd-signature-type" data-tsd-kind="Enumeration">SessionEventCode</a></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L3229">lib/solace.model.ts:3229</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>A code that provides more information about the error event.</p>
 						</div>
 					</div>
 				</section>
@@ -136,14 +177,17 @@
 				<ul class="before-current">
 				</ul>
 				<ul class="current">
-					<li class="current tsd-kind-enum">
-						<a href="messagepublisheracknowledgemode.html" class="tsd-kind-icon">Message<wbr>Publisher<wbr>Acknowledge<wbr>Mode</a>
+					<li class="current tsd-kind-interface">
+						<a href="sdtunsupportedvalueerror.html" class="tsd-kind-icon">SDTUnsupported<wbr>Value<wbr>Error</a>
 						<ul>
-							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
-								<a href="messagepublisheracknowledgemode.html#per_message" class="tsd-kind-icon">PER_<wbr>MESSAGE</a>
+							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
+								<a href="sdtunsupportedvalueerror.html#message" class="tsd-kind-icon">message</a>
 							</li>
-							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
-								<a href="messagepublisheracknowledgemode.html#windowed" class="tsd-kind-icon">WINDOWED</a>
+							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
+								<a href="sdtunsupportedvalueerror.html#name" class="tsd-kind-icon">name</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="sdtunsupportedvalueerror.html#requesteventcode" class="tsd-kind-icon">request<wbr>Event<wbr>Code</a>
 							</li>
 						</ul>
 					</li>

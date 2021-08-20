@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>MessagePublisherAcknowledgeMode | Angular Solace Message Client - v11.0.1</title>
+	<title>MessageUserCosType | Angular Solace Message Client - v11.0.1</title>
 	<meta name="description" content="Documentation for Angular Solace Message Client - v11.0.1">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -54,10 +54,10 @@
 					<a href="../modules.html">Angular Solace Message Client - v11.0.1</a>
 				</li>
 				<li>
-					<a href="messagepublisheracknowledgemode.html">MessagePublisherAcknowledgeMode</a>
+					<a href="messageusercostype.html">MessageUserCosType</a>
 				</li>
 			</ul>
-			<h1>Enumeration MessagePublisherAcknowledgeMode</h1>
+			<h1>Enumeration MessageUserCosType</h1>
 		</div>
 	</div>
 </header>
@@ -67,11 +67,19 @@
 			<section class="tsd-panel tsd-comment">
 				<div class="tsd-comment tsd-typography">
 					<div class="lead">
-						<p>Represents authentication scheme enumeration.</p>
+						<p>Represents an enumeration of user Class of Service (COS) levels. The COS is set on a Message with {@link Message#setUserCos}.</p>
 					</div>
+					<p>The Class of Service has different semantics for direct and guaranteed messages.</p>
+					<p>For messages published with <a href="messagedeliverymodetype.html#direct">MessageDeliveryModeType.DIRECT</a>, the class of service selects the weighted round-robin
+						delivery queue when the message is forwarded to a consumer.  <a href="messageusercostype.html#cos1">MessageUserCosType.COS1</a> are the lowest priority messages
+					and will use the Solace Message Router D-1 delivery queues.</p>
+					<p>For messages published as guaranteed messages (<a href="messagedeliverymodetype.html#persistent">MessageDeliveryModeType.PERSISTENT</a> or
+						<a href="messagedeliverymodetype.html#non_persistent">MessageDeliveryModeType.NON_PERSISTENT</a>), messages published with <a href="messageusercostype.html#cos1">MessageUserCosType.COS1</a> can be rejected by
+						the Solace Message Router if that message would cause any queue or topic-endpoint to exceed its configured
+					low-priority-max-msg-count.</p>
 					<dl class="tsd-comment-tags">
 						<dt>see</dt>
-						<dd><p>solace.MessagePublisherAcknowledgeMode</p>
+						<dd><p>solace.MessageUserCosType</p>
 						</dd>
 					</dl>
 				</div>
@@ -83,8 +91,9 @@
 						<section class="tsd-index-section ">
 							<h3>Enumeration members</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="messagepublisheracknowledgemode.html#per_message" class="tsd-kind-icon">PER_<wbr>MESSAGE</a></li>
-								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="messagepublisheracknowledgemode.html#windowed" class="tsd-kind-icon">WINDOWED</a></li>
+								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="messageusercostype.html#cos1" class="tsd-kind-icon">COS1</a></li>
+								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="messageusercostype.html#cos2" class="tsd-kind-icon">COS2</a></li>
+								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="messageusercostype.html#cos3" class="tsd-kind-icon">COS3</a></li>
 							</ul>
 						</section>
 					</div>
@@ -93,33 +102,53 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Enumeration members</h2>
 				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
-					<a name="per_message" class="tsd-anchor"></a>
-					<h3>PER_<wbr>MESSAGE</h3>
-					<div class="tsd-signature tsd-kind-icon">PER_<wbr>MESSAGE<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;PER_MESSAGE&quot;</span></div>
+					<a name="cos1" class="tsd-anchor"></a>
+					<h3>COS1</h3>
+					<div class="tsd-signature tsd-kind-icon">COS1<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = 0</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L378">lib/solace.model.ts:378</a></li>
+							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L1112">lib/solace.model.ts:1112</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
-							<p>Applications receive an acknowledgement for every message.</p>
+							<p>Direct Messages: Lowest priority, use Solace Message Router client D-1 queues for delivery.</p>
 						</div>
+						<p>Guaranteed Messages: Messages can be rejected if the message would cause any
+						queue or topic-endpoint to exceed its configured <i>low-priority-max-msg-count</i>.</p>
 					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
-					<a name="windowed" class="tsd-anchor"></a>
-					<h3>WINDOWED</h3>
-					<div class="tsd-signature tsd-kind-icon">WINDOWED<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;WINDOWED&quot;</span></div>
+					<a name="cos2" class="tsd-anchor"></a>
+					<h3>COS2</h3>
+					<div class="tsd-signature tsd-kind-icon">COS2<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = 1</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L382">lib/solace.model.ts:382</a></li>
+							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L1118">lib/solace.model.ts:1118</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
-							<p>Applications receive a windowed acknowledgement that acknowledges the returned correlation identifier and every message sent prior.</p>
+							<p>Direct Messages: Medium priority, use Solace Message Router client D-2 queues for delivery.</p>
 						</div>
+						<p>Guaranteed Messages: N/A (same as COS3)</p>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
+					<a name="cos3" class="tsd-anchor"></a>
+					<h3>COS3</h3>
+					<div class="tsd-signature tsd-kind-icon">COS3<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = 2</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L1125">lib/solace.model.ts:1125</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Direct Messages: Highest priority, use Solace Message Router client D-3 queues for delivery.</p>
+						</div>
+						<p>Guaranteed Messages: Messages are not rejected for exceeding <i>low-priority-max-msg-count</i>.
+						Messages may still be rejected for other reasons such as Queue &#39;Spool Over Quota&#39;.</p>
 					</div>
 				</section>
 			</section>
@@ -137,13 +166,16 @@
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-enum">
-						<a href="messagepublisheracknowledgemode.html" class="tsd-kind-icon">Message<wbr>Publisher<wbr>Acknowledge<wbr>Mode</a>
+						<a href="messageusercostype.html" class="tsd-kind-icon">Message<wbr>User<wbr>Cos<wbr>Type</a>
 						<ul>
 							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
-								<a href="messagepublisheracknowledgemode.html#per_message" class="tsd-kind-icon">PER_<wbr>MESSAGE</a>
+								<a href="messageusercostype.html#cos1" class="tsd-kind-icon">COS1</a>
 							</li>
 							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
-								<a href="messagepublisheracknowledgemode.html#windowed" class="tsd-kind-icon">WINDOWED</a>
+								<a href="messageusercostype.html#cos2" class="tsd-kind-icon">COS2</a>
+							</li>
+							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
+								<a href="messageusercostype.html#cos3" class="tsd-kind-icon">COS3</a>
 							</li>
 						</ul>
 					</li>

@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>MessagePublisherAcknowledgeMode | Angular Solace Message Client - v11.0.1</title>
+	<title>MessageCacheStatus | Angular Solace Message Client - v11.0.1</title>
 	<meta name="description" content="Documentation for Angular Solace Message Client - v11.0.1">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -54,10 +54,10 @@
 					<a href="../modules.html">Angular Solace Message Client - v11.0.1</a>
 				</li>
 				<li>
-					<a href="messagepublisheracknowledgemode.html">MessagePublisherAcknowledgeMode</a>
+					<a href="messagecachestatus.html">MessageCacheStatus</a>
 				</li>
 			</ul>
-			<h1>Enumeration MessagePublisherAcknowledgeMode</h1>
+			<h1>Enumeration MessageCacheStatus</h1>
 		</div>
 	</div>
 </header>
@@ -67,11 +67,18 @@
 			<section class="tsd-panel tsd-comment">
 				<div class="tsd-comment tsd-typography">
 					<div class="lead">
-						<p>Represents authentication scheme enumeration.</p>
+						<p>An attribue of a <a href="../interfaces/message.html">Message</a>.</p>
 					</div>
+					<p>Applications receive messages due to subscriptions on topics, or consumers connected to durable objects.
+					The MessageCacheStatus of such messages is: {@link MessageCacheStatus#LIVE}.</p>
+					<p>Message are also delivered to an application
+						as a result of a cache request (see {@link CacheSession#sendCacheRequest}) which
+						have a MessageCacheStatus that is {@link MessageCacheStatus#CACHED} or
+					{@link MessageCacheStatus#SUSPECT}.</p>
+					<p>The MessageCacheStatus is retrieved with {@link Message#getCacheStatus}.</p>
 					<dl class="tsd-comment-tags">
 						<dt>see</dt>
-						<dd><p>solace.MessagePublisherAcknowledgeMode</p>
+						<dd><p>solace.MessageCacheStatus</p>
 						</dd>
 					</dl>
 				</div>
@@ -83,8 +90,9 @@
 						<section class="tsd-index-section ">
 							<h3>Enumeration members</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="messagepublisheracknowledgemode.html#per_message" class="tsd-kind-icon">PER_<wbr>MESSAGE</a></li>
-								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="messagepublisheracknowledgemode.html#windowed" class="tsd-kind-icon">WINDOWED</a></li>
+								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="messagecachestatus.html#cached" class="tsd-kind-icon">CACHED</a></li>
+								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="messagecachestatus.html#live" class="tsd-kind-icon">LIVE</a></li>
+								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="messagecachestatus.html#suspect" class="tsd-kind-icon">SUSPECT</a></li>
 							</ul>
 						</section>
 					</div>
@@ -93,32 +101,47 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Enumeration members</h2>
 				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
-					<a name="per_message" class="tsd-anchor"></a>
-					<h3>PER_<wbr>MESSAGE</h3>
-					<div class="tsd-signature tsd-kind-icon">PER_<wbr>MESSAGE<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;PER_MESSAGE&quot;</span></div>
+					<a name="cached" class="tsd-anchor"></a>
+					<h3>CACHED</h3>
+					<div class="tsd-signature tsd-kind-icon">CACHED<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = 1</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L378">lib/solace.model.ts:378</a></li>
+							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L1082">lib/solace.model.ts:1082</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
-							<p>Applications receive an acknowledgement for every message.</p>
+							<p>The message was retrieveed from a solCache Instance.</p>
 						</div>
 					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
-					<a name="windowed" class="tsd-anchor"></a>
-					<h3>WINDOWED</h3>
-					<div class="tsd-signature tsd-kind-icon">WINDOWED<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;WINDOWED&quot;</span></div>
+					<a name="live" class="tsd-anchor"></a>
+					<h3>LIVE</h3>
+					<div class="tsd-signature tsd-kind-icon">LIVE<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = 0</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L382">lib/solace.model.ts:382</a></li>
+							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L1078">lib/solace.model.ts:1078</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
-							<p>Applications receive a windowed acknowledgement that acknowledges the returned correlation identifier and every message sent prior.</p>
+							<p>The message is live.</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
+					<a name="suspect" class="tsd-anchor"></a>
+					<h3>SUSPECT</h3>
+					<div class="tsd-signature tsd-kind-icon">SUSPECT<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = 2</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L1086">lib/solace.model.ts:1086</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>The message was retrieved from a suspect solCache Instance.</p>
 						</div>
 					</div>
 				</section>
@@ -137,13 +160,16 @@
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-enum">
-						<a href="messagepublisheracknowledgemode.html" class="tsd-kind-icon">Message<wbr>Publisher<wbr>Acknowledge<wbr>Mode</a>
+						<a href="messagecachestatus.html" class="tsd-kind-icon">Message<wbr>Cache<wbr>Status</a>
 						<ul>
 							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
-								<a href="messagepublisheracknowledgemode.html#per_message" class="tsd-kind-icon">PER_<wbr>MESSAGE</a>
+								<a href="messagecachestatus.html#cached" class="tsd-kind-icon">CACHED</a>
 							</li>
 							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
-								<a href="messagepublisheracknowledgemode.html#windowed" class="tsd-kind-icon">WINDOWED</a>
+								<a href="messagecachestatus.html#live" class="tsd-kind-icon">LIVE</a>
+							</li>
+							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
+								<a href="messagecachestatus.html#suspect" class="tsd-kind-icon">SUSPECT</a>
 							</li>
 						</ul>
 					</li>

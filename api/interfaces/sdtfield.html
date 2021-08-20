@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>ObserveOptions | Angular Solace Message Client - v11.0.1</title>
+	<title>SDTField | Angular Solace Message Client - v11.0.1</title>
 	<meta name="description" content="Documentation for Angular Solace Message Client - v11.0.1">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -54,10 +54,10 @@
 					<a href="../modules.html">Angular Solace Message Client - v11.0.1</a>
 				</li>
 				<li>
-					<a href="observeoptions.html">ObserveOptions</a>
+					<a href="sdtfield.html">SDTField</a>
 				</li>
 			</ul>
-			<h1>Interface ObserveOptions</h1>
+			<h1>Interface SDTField</h1>
 		</div>
 	</div>
 </header>
@@ -67,20 +67,24 @@
 			<section class="tsd-panel tsd-comment">
 				<div class="tsd-comment tsd-typography">
 					<div class="lead">
-						<p>Control how to observe a topic.</p>
+						<p>Represents a SDT (Structured Data Type) field.</p>
 					</div>
+					<p>SDTs are structured, language-independent, and architecture-independent data types.
+						SDTs can be used in messages to facilitate the exchange of binary data in a heterogeneous network
+					that has clients that use different hardware architectures and programming languages.</p>
+					<p>To create an instance of an <code>SDTField</code>, call <a href="../modules/solaceobjectfactory.html#createsdtfield">SolaceObjectFactory.createSDTField</a>.</p>
+					<dl class="tsd-comment-tags">
+						<dt>see</dt>
+						<dd><p>solace.SDTField</p>
+						</dd>
+					</dl>
 				</div>
 			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<a href="onsubscribed.html" class="tsd-signature-type" data-tsd-kind="Interface">OnSubscribed</a>
-						<ul class="tsd-hierarchy">
-							<li>
-								<span class="target">ObserveOptions</span>
-							</li>
-						</ul>
+						<span class="target">SDTField</span>
 					</li>
 				</ul>
 			</section>
@@ -89,74 +93,81 @@
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section ">
-							<h3>Properties</h3>
-							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="observeoptions.html#requesttimeout" class="tsd-kind-icon">request<wbr>Timeout</a></li>
-							</ul>
-						</section>
-						<section class="tsd-index-section tsd-is-inherited">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-inherited"><a href="observeoptions.html#onsubscribed" class="tsd-kind-icon">on<wbr>Subscribed</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="sdtfield.html#gettype" class="tsd-kind-icon">get<wbr>Type</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="sdtfield.html#getvalue" class="tsd-kind-icon">get<wbr>Value</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="sdtfield.html#tostring" class="tsd-kind-icon">to<wbr>String</a></li>
 							</ul>
 						</section>
 					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
-				<h2>Properties</h2>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="requesttimeout" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> request<wbr>Timeout</h3>
-					<div class="tsd-signature tsd-kind-icon">request<wbr>Timeout<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace-message-client.ts#L291">lib/solace-message-client.ts:291</a></li>
-						</ul>
-					</aside>
-					<div class="tsd-comment tsd-typography">
-						<div class="lead">
-							<p>The request timeout period (in milliseconds).
-							If specified, this value overwrites readTimeoutInMsecs property in <a href="sessionproperties.html">SessionProperties</a>.</p>
-						</div>
-					</div>
-				</section>
-			</section>
-			<section class="tsd-panel-group tsd-member-group tsd-is-inherited">
 				<h2>Methods</h2>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface tsd-is-inherited">
-					<a name="onsubscribed" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> on<wbr>Subscribed</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-is-inherited">
-						<li class="tsd-signature tsd-kind-icon">on<wbr>Subscribed<span class="tsd-signature-symbol">(</span>messageConsumer<span class="tsd-signature-symbol">?: </span><a href="messageconsumer.html" class="tsd-signature-type" data-tsd-kind="Interface">MessageConsumer</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="gettype" class="tsd-anchor"></a>
+					<h3>get<wbr>Type</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Type<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../enums/sdtfieldtype.html" class="tsd-signature-type" data-tsd-kind="Enumeration">SDTFieldType</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="onsubscribed.html">OnSubscribed</a>.<a href="onsubscribed.html#onsubscribed-1">onSubscribed</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace-message-client.ts#L311">lib/solace-message-client.ts:311</a></li>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L1144">lib/solace.model.ts:1144</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Callback invoked when subscribed to a destination.</p>
+									<p>Gets the type of field represented.</p>
 								</div>
 							</div>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5><span class="tsd-flag ts-flagOptional">Optional</span> messageConsumer: <a href="messageconsumer.html" class="tsd-signature-type" data-tsd-kind="Interface">MessageConsumer</a></h5>
-									<div class="tsd-comment tsd-typography">
-										<p>consumer object only passed if consuming messages from a topic endpoint or queue endpoint via {@link SolaceMessageClient#consume$},
-											but not if observing a topic destination via {@link SolaceMessageClient#observe$}.
-											* For non-durable endpoints, if not passing an endpoint name, Solace API generates a name which can be queried by calling {@link MessageConsumer#getDestination};
-											The generated descriptor can be queried by calling {@link MessageConsumer#getProperties#queueDescriptor};
-										* For durable endpoints, endpoint properties can be retrieved as configured on the broker by calling {@link MessageConsumer#getProperties#queueProperties};</p>
-									</div>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+							<h4 class="tsd-returns-title">Returns <a href="../enums/sdtfieldtype.html" class="tsd-signature-type" data-tsd-kind="Enumeration">SDTFieldType</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="getvalue" class="tsd-anchor"></a>
+					<h3>get<wbr>Value</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Value<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L1150">lib/solace.model.ts:1150</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Gets the field value.</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>throws</dt>
+									<dd><p>{SDTUnsupportedValueError} if value found in the field is not in range supported by the platform/runtime.</p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="tostring" class="tsd-anchor"></a>
+					<h3>to<wbr>String</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">to<wbr>String<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L1152">lib/solace.model.ts:1152</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -175,13 +186,16 @@
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-interface">
-						<a href="observeoptions.html" class="tsd-kind-icon">Observe<wbr>Options</a>
+						<a href="sdtfield.html" class="tsd-kind-icon">SDTField</a>
 						<ul>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="observeoptions.html#requesttimeout" class="tsd-kind-icon">request<wbr>Timeout</a>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="sdtfield.html#gettype" class="tsd-kind-icon">get<wbr>Type</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-is-inherited">
-								<a href="observeoptions.html#onsubscribed" class="tsd-kind-icon">on<wbr>Subscribed</a>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="sdtfield.html#getvalue" class="tsd-kind-icon">get<wbr>Value</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="sdtfield.html#tostring" class="tsd-kind-icon">to<wbr>String</a>
 							</li>
 						</ul>
 					</li>

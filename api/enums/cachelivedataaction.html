@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>MessagePublisherAcknowledgeMode | Angular Solace Message Client - v11.0.1</title>
+	<title>CacheLiveDataAction | Angular Solace Message Client - v11.0.1</title>
 	<meta name="description" content="Documentation for Angular Solace Message Client - v11.0.1">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -54,10 +54,10 @@
 					<a href="../modules.html">Angular Solace Message Client - v11.0.1</a>
 				</li>
 				<li>
-					<a href="messagepublisheracknowledgemode.html">MessagePublisherAcknowledgeMode</a>
+					<a href="cachelivedataaction.html">CacheLiveDataAction</a>
 				</li>
 			</ul>
-			<h1>Enumeration MessagePublisherAcknowledgeMode</h1>
+			<h1>Enumeration CacheLiveDataAction</h1>
 		</div>
 	</div>
 </header>
@@ -67,11 +67,11 @@
 			<section class="tsd-panel tsd-comment">
 				<div class="tsd-comment tsd-typography">
 					<div class="lead">
-						<p>Represents authentication scheme enumeration.</p>
+						<p>Enumeration of CacheLiveDataAction values, specifying how the CacheSession should handle live data associated with a cache request in progress.</p>
 					</div>
 					<dl class="tsd-comment-tags">
 						<dt>see</dt>
-						<dd><p>solace.MessagePublisherAcknowledgeMode</p>
+						<dd><p>solace.CacheLiveDataAction</p>
 						</dd>
 					</dl>
 				</div>
@@ -83,8 +83,9 @@
 						<section class="tsd-index-section ">
 							<h3>Enumeration members</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="messagepublisheracknowledgemode.html#per_message" class="tsd-kind-icon">PER_<wbr>MESSAGE</a></li>
-								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="messagepublisheracknowledgemode.html#windowed" class="tsd-kind-icon">WINDOWED</a></li>
+								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="cachelivedataaction.html#flow_thru" class="tsd-kind-icon">FLOW_<wbr>THRU</a></li>
+								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="cachelivedataaction.html#fulfill" class="tsd-kind-icon">FULFILL</a></li>
+								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="cachelivedataaction.html#queue" class="tsd-kind-icon">QUEUE</a></li>
 							</ul>
 						</section>
 					</div>
@@ -93,33 +94,52 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Enumeration members</h2>
 				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
-					<a name="per_message" class="tsd-anchor"></a>
-					<h3>PER_<wbr>MESSAGE</h3>
-					<div class="tsd-signature tsd-kind-icon">PER_<wbr>MESSAGE<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;PER_MESSAGE&quot;</span></div>
+					<a name="flow_thru" class="tsd-anchor"></a>
+					<h3>FLOW_<wbr>THRU</h3>
+					<div class="tsd-signature tsd-kind-icon">FLOW_<wbr>THRU<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = 3</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L378">lib/solace.model.ts:378</a></li>
+							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L3736">lib/solace.model.ts:3736</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
-							<p>Applications receive an acknowledgement for every message.</p>
+							<p>Continue the outstanding cache request while allowing live data to flow through to the application.</p>
 						</div>
+						<p>Note that wildcard cache requests must always be <a href="cachelivedataaction.html#flow_thru">CacheLiveDataAction.FLOW_THRU</a>.</p>
 					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
-					<a name="windowed" class="tsd-anchor"></a>
-					<h3>WINDOWED</h3>
-					<div class="tsd-signature tsd-kind-icon">WINDOWED<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = &quot;WINDOWED&quot;</span></div>
+					<a name="fulfill" class="tsd-anchor"></a>
+					<h3>FULFILL</h3>
+					<div class="tsd-signature tsd-kind-icon">FULFILL<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = 1</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L382">lib/solace.model.ts:382</a></li>
+							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L3723">lib/solace.model.ts:3723</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
-							<p>Applications receive a windowed acknowledgement that acknowledges the returned correlation identifier and every message sent prior.</p>
+							<p>End the cache request when live data arrives that matches the topic.</p>
 						</div>
+						<p>Note that wildcard cache requests must always be <a href="cachelivedataaction.html#flow_thru">CacheLiveDataAction.FLOW_THRU</a>.</p>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
+					<a name="queue" class="tsd-anchor"></a>
+					<h3>QUEUE</h3>
+					<div class="tsd-signature tsd-kind-icon">QUEUE<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = 2</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/da6ae38/projects/solace-message-client/src/lib/solace.model.ts#L3730">lib/solace.model.ts:3730</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Queue arriving live data that matches the topic, until the cache request
+							completes.</p>
+						</div>
+						<p>Note that wildcard cache requests must always be <a href="cachelivedataaction.html#flow_thru">CacheLiveDataAction.FLOW_THRU</a>.</p>
 					</div>
 				</section>
 			</section>
@@ -137,13 +157,16 @@
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-enum">
-						<a href="messagepublisheracknowledgemode.html" class="tsd-kind-icon">Message<wbr>Publisher<wbr>Acknowledge<wbr>Mode</a>
+						<a href="cachelivedataaction.html" class="tsd-kind-icon">Cache<wbr>Live<wbr>Data<wbr>Action</a>
 						<ul>
 							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
-								<a href="messagepublisheracknowledgemode.html#per_message" class="tsd-kind-icon">PER_<wbr>MESSAGE</a>
+								<a href="cachelivedataaction.html#flow_thru" class="tsd-kind-icon">FLOW_<wbr>THRU</a>
 							</li>
 							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
-								<a href="messagepublisheracknowledgemode.html#windowed" class="tsd-kind-icon">WINDOWED</a>
+								<a href="cachelivedataaction.html#fulfill" class="tsd-kind-icon">FULFILL</a>
+							</li>
+							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
+								<a href="cachelivedataaction.html#queue" class="tsd-kind-icon">QUEUE</a>
 							</li>
 						</ul>
 					</li>
