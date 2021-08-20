@@ -150,7 +150,7 @@ export abstract class SolaceMessageClient {
    *        you can also use a named wildcard segment starting with a colon (`:`), allowing you to retrieve substituted values of wildcard segments when receiving a message.
    * @return Observable that emits when receiving a message published to the given endpoint. The Observable never completes. If not connected to the broker yet, or if the connect attempt failed, the Observable errors.
    */
-  public abstract consume$(topicOrDescriptor: string | MessageConsumerProperties): Observable<MessageEnvelope>;
+  public abstract consume$(topicOrDescriptor: string | (MessageConsumerProperties & OnSubscribed)): Observable<MessageEnvelope>;
 
   /**
    * Browses messages in a queue, without removing/consuming the messages.
@@ -251,7 +251,7 @@ export class NullSolaceMessageClient implements SolaceMessageClient {
     return EMPTY;
   }
 
-  public consume$(topicOrDescriptor: string | MessageConsumerProperties): Observable<MessageEnvelope> {
+  public consume$(topicOrDescriptor: string | (MessageConsumerProperties & OnSubscribed)): Observable<MessageEnvelope> {
     return EMPTY;
   }
 
@@ -283,12 +283,25 @@ export class NullSolaceMessageClient implements SolaceMessageClient {
 /**
  * Control how to observe a topic.
  */
-export interface ObserveOptions {
+export interface ObserveOptions extends OnSubscribed {
   /**
    * The request timeout period (in milliseconds).
    * If specified, this value overwrites readTimeoutInMsecs property in {@link SessionProperties}.
    */
   requestTimeout?: number;
+}
+
+/**
+ * A lifecycle hook that is called when subscribed to a destination.
+ *
+ * Use if you need to wait until the destination is actually subscribed, e.g, when implementing the request/response message exchange pattern.
+ */
+export interface OnSubscribed {
+
+  /**
+   * Callback invoked when subscribed to a destination.
+   */
+  onSubscribed?(): void;
 }
 
 /**

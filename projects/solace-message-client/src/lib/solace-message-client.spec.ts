@@ -725,6 +725,67 @@ describe('SolaceMessageClient', () => {
       expect(receivedMessageInsideAngularZone).toBeTrue();
     });
 
+    it('should notify when subscribed to topic destination', async () => {
+      const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+
+      // Connect to the broker
+      solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
+      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+
+      const sessionSubscribeCaptor = installSessionSubscribeCaptor();
+
+      // Subscribe to topic
+      let onSubscribed1Called = false;
+      solaceMessageClient.observe$('topic', {
+        onSubscribed(): void {
+          onSubscribed1Called = true;
+        },
+      }).subscribe();
+      await drainMicrotaskQueue();
+
+      // Expect `onSubscribed` callback to be invoked after the receipt of `SUBSCRIPTION_OK` event
+      expect(onSubscribed1Called).toBeFalse();
+      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+      expect(onSubscribed1Called).toBeTrue();
+      sessionSubscribeCaptor.reset();
+
+      // Subscribe to topic anew
+      let onSubscribed2Called = false;
+      solaceMessageClient.observe$('topic', {
+        onSubscribed(): void {
+          onSubscribed2Called = true;
+        },
+      }).subscribe();
+      await drainMicrotaskQueue();
+
+      // Expect `onSubscribed` callback to be invoked immediately
+      expect(onSubscribed2Called).toBeTrue();
+    });
+
+    it('should not notify when subscription to topic destination failed', async () => {
+      const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+
+      // Connect to the broker
+      solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
+      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+
+      const sessionSubscribeCaptor = installSessionSubscribeCaptor();
+
+      // Subscribe to topic
+      let onSubscribedCalled = false;
+      solaceMessageClient.observe$('topic', {
+        onSubscribed(): void {
+          onSubscribedCalled = true;
+        },
+      }).subscribe();
+      await drainMicrotaskQueue();
+
+      // Expect `onSubscribedCalled` callback not to be invoked after the receipt of `SUBSCRIPTION_ERROR` event
+      expect(onSubscribedCalled).toBeFalse();
+      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_ERROR, sessionSubscribeCaptor.correlationKey);
+      expect(onSubscribedCalled).toBeFalse();
+    });
+
     it('should publish a message to a topic', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
       const sessionSendCaptor = installSessionSendCaptor();
@@ -1646,6 +1707,78 @@ describe('SolaceMessageClient', () => {
             .set('key2', true)
             .set('key3', 123),
         })]);
+      });
+
+      it('should notify when subscribed to an endpoint', async () => {
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+
+        // Connect to the broker
+        solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
+        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+
+        // Subscribe to endoint
+        const messageConsumerMock = installMessageConsumerMock();
+        let onSubscribed1Called = false;
+        solaceMessageClient.consume$({
+          queueDescriptor: {
+            type: QueueType.QUEUE,
+            name: 'queue',
+          },
+          onSubscribed(): void {
+            onSubscribed1Called = true;
+          },
+        }).subscribe();
+        await drainMicrotaskQueue();
+
+        // Simulate the message consumer to be connected to the broker
+        expect(onSubscribed1Called).toBeFalse();
+        await messageConsumerMock.simulateLifecycleEvent(MessageConsumerEventName.UP);
+        expect(onSubscribed1Called).toBeTrue();
+
+        // Subscribe to endpoint anew
+        let onSubscribed2Called = false;
+        solaceMessageClient.consume$({
+          queueDescriptor: {
+            type: QueueType.QUEUE,
+            name: 'queue',
+          },
+          onSubscribed(): void {
+            onSubscribed2Called = true;
+          },
+        }).subscribe();
+        await drainMicrotaskQueue();
+
+        // Simulate the message consumer to be connected to the broker
+        expect(onSubscribed2Called).toBeFalse();
+        await messageConsumerMock.simulateLifecycleEvent(MessageConsumerEventName.UP);
+        expect(onSubscribed2Called).toBeTrue();
+      });
+
+      it('should not notify when subscription to endpoint failed', async () => {
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+
+        // Connect to the broker
+        solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
+        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+
+        // Subscribe to endpoint
+        const messageConsumerMock = installMessageConsumerMock();
+        let onSubscribedCalled = false;
+        solaceMessageClient.consume$({
+          queueDescriptor: {
+            type: QueueType.QUEUE,
+            name: 'queue',
+          },
+          onSubscribed(): void {
+            onSubscribedCalled = true;
+          },
+        }).subscribe();
+        await drainMicrotaskQueue();
+
+        // Simulate the message consumer to be connected to the broker
+        expect(onSubscribedCalled).toBeFalse();
+        await messageConsumerMock.simulateLifecycleEvent(MessageConsumerEventName.CONNECT_FAILED_ERROR);
+        expect(onSubscribedCalled).toBeFalse();
       });
     });
 
