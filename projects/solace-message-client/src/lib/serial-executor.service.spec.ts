@@ -85,7 +85,7 @@ describe('SerialExecutor', () => {
 });
 
 async function sleep(millis: number): Promise<void> {
-  await new Promise(resolve => {
+  await new Promise<void>(resolve => {
     setTimeout(() => resolve(), millis);
   });
 }

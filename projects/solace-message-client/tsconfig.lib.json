@@ -2,16 +2,12 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "../../out-tsc/solace-message-client",
-    "declarationMap": true,
+    "target": "es2015",
     "declaration": true,
+    "declarationMap": true,
     "stripInternal": true,
     "inlineSources": true,
     "types": []
-  },
-  "angularCompilerOptions": {
-    "skipTemplateCodegen": true,
-    "strictMetadataEmit": true,
-    "enableResourceInlining": true
   },
   "exclude": [
     "src/test.ts",

@@ -1,5 +1,5 @@
+@use '~@angular/material' as mat;
 @use 'solace-client-theme' as app-theme;
-@use '~@angular/material/theming';
 
 :host {
   display: grid;
@@ -20,13 +20,13 @@
         margin-bottom: 2em;
 
         > span.title {
-          font-size: theming.mat-font-size(app-theme.$typography, title);
+          font-size: mat.font-size(app-theme.$typography, title);
           margin-bottom: .25em;
         }
 
         > span.sub-title {
-          font-size: theming.mat-font-size(app-theme.$typography, subheading-1);
-          color: theming.mat-color(app-theme.$foreground, secondary-text);
+          font-size: mat.font-size(app-theme.$typography, subheading-1);
+          color: mat.get-color-from-palette(app-theme.$foreground, secondary-text);
         }
       }
 

@@ -1,5 +1,5 @@
+@use '~@angular/material' as mat;
 @use 'solace-client-theme' as app-theme;
-@use '~@angular/material/theming';
 
 :host {
   display: grid;
@@ -8,17 +8,17 @@
 
   > header {
     grid-column: 1/-1;
-    font-size: theming.mat-font-size(app-theme.$typography, subheading-2);
+    font-size: mat.font-size(app-theme.$typography, subheading-2);
     font-weight: bold;
     margin-bottom: 1em;
   }
 
   > div.buttons {
-    border-top: 1px solid theming.mat-color(app-theme.$foreground, light-secondary-text);
+    border-top: 1px solid mat.get-color-from-palette(app-theme.$foreground, light-secondary-text);
     margin-top: 3em;
     padding-top: .75em;
     grid-column: 1/-1;
-    color: theming.mat-color(app-theme.$foreground, light-dividers);
+    color: mat.get-color-from-palette(app-theme.$foreground, light-dividers);
     display: flex;
     justify-content: space-between;
   }

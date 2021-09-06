@@ -1,5 +1,5 @@
+@use '~@angular/material' as mat;
 @use 'solace-client-theme' as app-theme;
-@use '~@angular/material/theming';
 
 :host {
   display: grid;
@@ -16,14 +16,14 @@
 
       > header {
         flex: none;
-        font-size: theming.mat-font-size(app-theme.$typography, title);
+        font-size: mat.font-size(app-theme.$typography, title);
         margin-bottom: .25em;
       }
 
       > span.sub-title {
         flex: none;
-        font-size: theming.mat-font-size(app-theme.$typography, subheading-1);
-        color: theming.mat-color(app-theme.$foreground, secondary-text);
+        font-size: mat.font-size(app-theme.$typography, subheading-1);
+        color: mat.get-color-from-palette(app-theme.$foreground, secondary-text);
       }
 
       > sci-viewport {
@@ -61,9 +61,9 @@
 
       > section.sending {
         margin: .75em;
-        color: theming.mat-color(app-theme.$foreground, secondary-text);
-        background-color: theming.mat-color(app-theme.$foreground, secondary-text, .0125);
-        border: 1px solid theming.mat-color(app-theme.$foreground, secondary-text, .12);
+        color: mat.get-color-from-palette(app-theme.$foreground, secondary-text);
+        background-color: mat.get-color-from-palette(app-theme.$foreground, secondary-text, .0125);
+        border: 1px solid mat.get-color-from-palette(app-theme.$foreground, secondary-text, .12);
         border-radius: 3px;
         padding: 1em;
         font-style: italic;
@@ -72,9 +72,9 @@
 
       > section.error {
         margin: .75em;
-        border: 1px solid theming.mat-color(app-theme.$warn);
+        border: 1px solid mat.get-color-from-palette(app-theme.$warn);
         border-radius: 3px;
-        background-color: theming.mat-color(app-theme.$warn, 100);
+        background-color: mat.get-color-from-palette(app-theme.$warn, 100);
         padding: 1em;
       }
     }
