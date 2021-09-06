@@ -2,7 +2,7 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "outDir": "../../../out-tsc/spec",
+    "outDir": "../../out-tsc/solace-message-client/spec",
     "types": [
       "jasmine"
     ]

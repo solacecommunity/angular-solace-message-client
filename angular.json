@@ -12,21 +12,25 @@
         "build": {
           "builder": "@angular-devkit/build-angular:ng-packagr",
           "options": {
-            "tsConfig": "projects/solace-message-client/tsconfig.lib.json",
             "project": "projects/solace-message-client/ng-package.json"
           },
           "configurations": {
             "production": {
               "tsConfig": "projects/solace-message-client/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/solace-message-client/tsconfig.lib.json"
             }
-          }
+          },
+          "defaultConfiguration": "production"
         },
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
             "main": "projects/solace-message-client/src/test.ts",
             "tsConfig": "projects/solace-message-client/tsconfig.spec.json",
-            "karmaConfig": "projects/solace-message-client/karma.conf.js"
+            "karmaConfig": "projects/solace-message-client/karma.conf.js",
+            "inlineStyleLanguage": "scss"
           }
         },
         "lint": {
@@ -51,14 +55,17 @@
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
             "protractorConfig": "projects/solace-message-client.e2e/protractor.conf.js",
-            "devServerTarget": "solace-message-client-testing-app:serve",
             "webdriverUpdate": false
           },
           "configurations": {
             "production": {
               "devServerTarget": "solace-message-client-testing-app:serve:production"
+            },
+            "development": {
+              "devServerTarget": "solace-message-client-testing-app:serve:development"
             }
-          }
+          },
+          "defaultConfiguration": "development"
         },
         "lint": {
           "builder": "@angular-devkit/build-angular:tslint",
@@ -73,6 +80,14 @@
     },
     "solace-message-client-testing-app": {
       "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        },
+        "@schematics/angular:application": {
+          "strict": true
+        }
+      },
       "root": "apps/solace-message-client-testing-app",
       "sourceRoot": "apps/solace-message-client-testing-app/src",
       "prefix": "app",
@@ -85,7 +100,7 @@
             "main": "apps/solace-message-client-testing-app/src/main.ts",
             "polyfills": "apps/solace-message-client-testing-app/src/polyfills.ts",
             "tsConfig": "apps/solace-message-client-testing-app/tsconfig.app.json",
-            "aot": true,
+            "inlineStyleLanguage": "scss",
             "assets": [
               "apps/solace-message-client-testing-app/src/assets",
               {
@@ -112,27 +127,31 @@
                   "with": "apps/solace-message-client-testing-app/src/environments/environment.prod.ts"
                 }
               ],
-              "optimization": true,
               "outputHashing": "all",
-              "sourceMap": false,
-              "namedChunks": false,
-              "extractLicenses": true,
-              "vendorChunk": false,
-              "buildOptimizer": true,
               "baseHref": "/angular-solace-message-client/tryme/"
+            },
+            "development": {
+              "buildOptimizer": false,
+              "optimization": false,
+              "vendorChunk": true,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "namedChunks": true
             }
-          }
+          },
+          "defaultConfiguration": "production"
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
-          "options": {
-            "browserTarget": "solace-message-client-testing-app:build"
-          },
           "configurations": {
             "production": {
               "browserTarget": "solace-message-client-testing-app:build:production"
+            },
+            "development": {
+              "browserTarget": "solace-message-client-testing-app:build:development"
             }
-          }
+          },
+          "defaultConfiguration": "development"
         },
         "lint": {
           "builder": "@angular-devkit/build-angular:tslint",
@@ -144,11 +163,6 @@
               "**/node_modules/**"
             ]
           }
-        }
-      },
-      "schematics": {
-        "@schematics/angular:component": {
-          "style": "scss"
         }
       }
     }

@@ -1,15 +1,15 @@
 {
   "extends": "./tsconfig.lib.prod.json",
   "typedocOptions": {
-    "out": "dist/solace-message-client-api",
+    "name": "Angular Solace Message Client",
+    "entryPoints": [
+      "src/public-api.ts"
+    ],
+    "out": "../../dist/solace-message-client-api",
     "includeVersion": true,
     "listInvalidSymbolLinks": false,
-    "entryPoints": ["projects/solace-message-client/src/public-api.ts"],
     "excludeProtected": false,
     "excludePrivate": true,
-    "excludeInternal": true,
-    "theme": "default",
-    "name": "Angular Solace Message Client",
     "excludeExternals": true,
     "exclude": "**/ɵ*.ts",
     "toc": [

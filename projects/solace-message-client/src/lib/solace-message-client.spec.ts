@@ -18,23 +18,26 @@ describe('SolaceMessageClient', () => {
 
   let session: SpyObj<Session>;
   let sessionProvider: SpyObj<SolaceSessionProvider>;
-  const sessionEventCallbacks = new Map<SessionEventCode, (event: SessionEvent | Message) => void>();
+  let sessionEventCallbacks: Map<SessionEventCode, (event: SessionEvent | Message) => void>;
 
   beforeEach(() => {
     const factoryProperties = new solace.SolclientFactoryProperties();
     factoryProperties.profile = solace.SolclientFactoryProfiles.version10;
     solace.SolclientFactory.init(factoryProperties);
-    // Mock the Solace Session
+
+    // Mock Solace Session and provide it via `SolaceSessionProvider`
     session = createSpyObj('sessionClient', ['on', 'connect', 'subscribe', 'unsubscribe', 'send', 'dispose', 'disconnect', 'createMessageConsumer', 'createQueueBrowser']);
-    // Capture Solace lifecycle hooks
+    sessionProvider = createSpyObj('SolaceSessionProvider', ['provide']);
+    sessionProvider.provide.and.returnValue(session);
+
+    // Capture session lifecycle hooks
+    sessionEventCallbacks = new Map();
     session.on.and.callFake((eventCode: SessionEventCode, callback: (event: SessionEvent | Message) => void) => {
       sessionEventCallbacks.set(eventCode, callback);
     });
+
     // Fire 'DISCONNECTED' event when invoking 'disconnect'.
     session.disconnect.and.callFake(() => simulateLifecycleEvent(SessionEventCode.DISCONNECTED));
-
-    sessionProvider = createSpyObj('SolaceSessionProvider', ['provide']);
-    sessionProvider.provide.and.returnValue(session);
   });
 
   describe('initialize library with broker config: SolaceMessageClientModule.forRoot({...})', () => {
@@ -88,7 +91,17 @@ describe('SolaceMessageClient', () => {
       expect(sessionProvider.provide).toHaveBeenCalledWith(jasmine.objectContaining({url: 'url:forRoot', vpnName: 'vpn:forRoot'}));
     });
 
-    describe('core functionality', () => testCoreFunctionality());
+    describe('core functionality', () => {
+
+      beforeEach(async () => {
+        // 1. Construct `SolaceMessageClient` via DI; the connection to the broker is automatically established by passing connect properties to `SolaceMessageClientModule.forRoot`.
+        TestBed.inject(SolaceMessageClient);
+        // 2. Simulate connected to the broker by receiving a 'UP_NOTICE' confirmation from the broker
+        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+      });
+
+      testCoreFunctionality();
+    });
   });
 
   describe('initialize library without broker config: SolaceMessageClientModule.forRoot()', () => {
@@ -150,8 +163,11 @@ describe('SolaceMessageClient', () => {
 
     describe('core functionality', () => {
 
-      beforeEach(() => {
+      beforeEach(async () => {
+        // 1. Construct `SolaceMessageClient` via DI and connect to the broker
         TestBed.inject(SolaceMessageClient).connect({url: 'some-url', vpnName: 'some-vpn'});
+        // 2. Simulate connected to the broker by receiving a 'UP_NOTICE' confirmation from the broker
+        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
       });
 
       testCoreFunctionality();
@@ -164,10 +180,6 @@ describe('SolaceMessageClient', () => {
   function testCoreFunctionality(): void {
     it('should clear pending subscriptions when the connection goes down', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-
-      // Connect to the broker
-      solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
-      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
       const sessionSubscribeCaptor = installSessionSubscribeCaptor();
 
@@ -198,7 +210,6 @@ describe('SolaceMessageClient', () => {
 
     it('should create a single subscription per topic on the Solace session', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
       // Subscribe to topic-1
       const sessionSubscribeCaptor = installSessionSubscribeCaptor();
@@ -273,7 +284,6 @@ describe('SolaceMessageClient', () => {
 
     it('should error when failing to subscribe to a topic on the Solace session', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
       const observeCaptor = new ObserveCaptor();
       const sessionSubscribeCaptor = installSessionSubscribeCaptor();
@@ -298,7 +308,6 @@ describe('SolaceMessageClient', () => {
 
     it('should subscribe to a topic on the Solace session even if a previous subscription for the same topic failed', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
       // Subscribe to a topic
       const sessionSubscribeCaptor = installSessionSubscribeCaptor();
@@ -348,7 +357,6 @@ describe('SolaceMessageClient', () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
       const sessionSubscribeCaptor = installSessionSubscribeCaptor();
       const sessionUnsubscribeCaptor = installSessionUnsubscribeCaptor();
-      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
       // Subscribe to topic 'myhome/*/temperature'
       const observeCaptor1 = new ObserveCaptor(extractMessage);
@@ -410,7 +418,6 @@ describe('SolaceMessageClient', () => {
 
     it('should receive messages sent to a topic', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
       // Subscribe to topic-1
       const observeCaptor1_topic1 = new ObserveCaptor(extractMessage);
@@ -569,7 +576,6 @@ describe('SolaceMessageClient', () => {
     it('should allow wildcard subscriptions', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
       const sessionSubscribeCaptor = installSessionSubscribeCaptor();
-      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
       const observeCaptor1 = new ObserveCaptor(extractMessage);
       solaceMessageClient.observe$('myhome/*/temperature').subscribe(observeCaptor1);
@@ -679,7 +685,6 @@ describe('SolaceMessageClient', () => {
     it('should provide substituted values of named wildcard segments', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
       const sessionSubscribeCaptor = installSessionSubscribeCaptor();
-      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
       const observeCaptor1 = new ObserveCaptor<MessageEnvelope>();
       solaceMessageClient.observe$('myhome/:room/temperature').subscribe(observeCaptor1);
@@ -709,7 +714,6 @@ describe('SolaceMessageClient', () => {
     it('should emit messages inside of the Angular zone', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
       const sessionSubscribeCaptor = installSessionSubscribeCaptor();
-      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
       // Subscribe to topic
       let receivedMessageInsideAngularZone;
@@ -728,10 +732,6 @@ describe('SolaceMessageClient', () => {
 
     it('should notify when subscribed to topic destination', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-
-      // Connect to the broker
-      solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
-      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
       const sessionSubscribeCaptor = installSessionSubscribeCaptor();
 
@@ -760,10 +760,6 @@ describe('SolaceMessageClient', () => {
     it('should not notify when subscription to topic destination failed', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
-      // Connect to the broker
-      solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
-      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
-
       const sessionSubscribeCaptor = installSessionSubscribeCaptor();
 
       // Subscribe to topic
@@ -780,7 +776,6 @@ describe('SolaceMessageClient', () => {
     it('should publish a message to a topic', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
       const sessionSendCaptor = installSessionSendCaptor();
-      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
       // publish the message to a topic
       await expectAsync(solaceMessageClient.publish('topic', 'payload')).toBeResolved();
@@ -793,7 +788,6 @@ describe('SolaceMessageClient', () => {
     it('should publish a message to a queue', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
       const sessionSendCaptor = installSessionSendCaptor();
-      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
       // publish the message to a queue
       await expectAsync(solaceMessageClient.enqueue('queue', 'payload')).toBeResolved();
@@ -806,7 +800,6 @@ describe('SolaceMessageClient', () => {
     it('should publish a message as binary message (by default)', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
       const sessionSendCaptor = installSessionSendCaptor();
-      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
       // publish the message
       await expectAsync(solaceMessageClient.publish('topic', 'payload')).toBeResolved();
@@ -820,7 +813,6 @@ describe('SolaceMessageClient', () => {
     it('should allow publishing a message as structured text message (SDT Structured Data Type)', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
       const sessionSendCaptor = installSessionSendCaptor();
-      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
       // publish the message
       await expectAsync(solaceMessageClient.publish('topic', SolaceObjectFactory.createSDTField(SDTFieldType.STRING, 'payload'))).toBeResolved();
@@ -834,7 +826,6 @@ describe('SolaceMessageClient', () => {
     it('should allow publishing a message as structured map message (SDT Structured Data Type)', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
       const sessionSendCaptor = installSessionSendCaptor();
-      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
       // publish the message
       const mapContainer = SolaceObjectFactory.createSDTMapContainer();
@@ -850,7 +841,6 @@ describe('SolaceMessageClient', () => {
     it('should allow publishing a message as given', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
       const sessionSendCaptor = installSessionSendCaptor();
-      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
       // publish the message
       const message = SolaceObjectFactory.createMessage();
@@ -867,7 +857,6 @@ describe('SolaceMessageClient', () => {
     it('should ignore the topic set on the message', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
       const sessionSendCaptor = installSessionSendCaptor();
-      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
       // publish the message
       const message = SolaceObjectFactory.createMessage();
@@ -883,7 +872,6 @@ describe('SolaceMessageClient', () => {
     it('should allow intercepting the message before sent over the network', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
       const sessionSendCaptor = installSessionSendCaptor();
-      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
       // publish the message
       await expectAsync(solaceMessageClient.publish('topic', 'payload', {
@@ -901,7 +889,6 @@ describe('SolaceMessageClient', () => {
     it('should publish a message as direct message (by default)', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
       const sessionSendCaptor = installSessionSendCaptor();
-      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
       // publish the message
       await expectAsync(solaceMessageClient.publish('topic')).toBeResolved();
@@ -912,7 +899,6 @@ describe('SolaceMessageClient', () => {
     it('should allow controlling publishing of the message by passing options', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
       const sessionSendCaptor = installSessionSendCaptor();
-      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
       const publishOptions: PublishOptions = {
         dmqEligible: true,
@@ -943,7 +929,6 @@ describe('SolaceMessageClient', () => {
 
     it('should map a structured text message into its textual representation', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
       // Subscribe to topic 'myhome/:room/temperature'
       const sessionSubscribeCaptor = installSessionSubscribeCaptor();
@@ -963,7 +948,6 @@ describe('SolaceMessageClient', () => {
 
     it('should map a binary message into its binary representation', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
       // Subscribe to topic 'myhome/:room/temperature'
       const sessionSubscribeCaptor = installSessionSubscribeCaptor();
@@ -983,7 +967,6 @@ describe('SolaceMessageClient', () => {
 
     it('should complete subscription Observables when disconnecting from the broker', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
       // Subscribe to a topic
       const sessionSubscribeCaptor = installSessionSubscribeCaptor();
@@ -999,7 +982,6 @@ describe('SolaceMessageClient', () => {
 
     it('should destroy the Solace session when disconnecting from the broker', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
       await solaceMessageClient.disconnect();
 
@@ -1009,7 +991,6 @@ describe('SolaceMessageClient', () => {
 
     it('should clear Solace subscription registry when disconnecting from the broker', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
       // Subscribe to 'topic'
       const sessionSubscribeCaptor = installSessionSubscribeCaptor();
@@ -1042,7 +1023,6 @@ describe('SolaceMessageClient', () => {
 
     it('should not cancel Solace subscriptions but complete Observables when the Solace session died (e.g. network interruption, with the max reconnect count exceeded)', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
       // Subscribe to a topic
       const observeCaptor = new ObserveCaptor(extractMessage);
@@ -1063,7 +1043,6 @@ describe('SolaceMessageClient', () => {
 
     it('should not cancel Solace subscriptions nor complete Observables in case of a connection lost while the retry mechanism is in progress', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
       // Subscribe to a topic
       const observeCaptor = new ObserveCaptor(extractMessage);
@@ -1092,7 +1071,6 @@ describe('SolaceMessageClient', () => {
 
     it('should not cancel Solace subscriptions but complete Observables when exceeding the maximal retry count limit upon a connection lost', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
       // Subscribe to a topic
       const observeCaptor = new ObserveCaptor(extractMessage);
@@ -1119,9 +1097,6 @@ describe('SolaceMessageClient', () => {
     });
 
     it(`should dispose the Solace session but not invoke 'solace.session.disconnect()' when the connection goes irreparably down`, async () => {
-      const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
-
       // Simulate the connection goes irreparably down
       await simulateLifecycleEvent(SessionEventCode.DOWN_ERROR);
 
@@ -1130,9 +1105,6 @@ describe('SolaceMessageClient', () => {
     });
 
     it(`should invoke 'solace.session.dispose()' but not 'solace.session.disconnect()' when receiving DISCONNECT confirmation event`, async () => {
-      const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
-
       // Simulate the session to be disconnected
       await simulateLifecycleEvent(SessionEventCode.DISCONNECTED);
 
@@ -1142,7 +1114,8 @@ describe('SolaceMessageClient', () => {
 
     it(`should invoke 'solace.session.dispose()' only when received DISCONNECT confirmation event from the broker`, async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+      // Disable the opinionated test behavior that when `session.disconnect` is called, an automatic `SessionEventCode.DISCONNECTED` event is fired.
+      session.disconnect.and.callFake(noop);
 
       // Disconnect
       let resolved = false;
@@ -1162,7 +1135,6 @@ describe('SolaceMessageClient', () => {
 
     it('should subscribe sequentially', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
       const sessionSubscribeCaptor = installSessionSubscribeCaptor();
 
@@ -1217,7 +1189,6 @@ describe('SolaceMessageClient', () => {
 
     it('should subscribe and unsubscribe sequentially on the same topic', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
       const sessionSubscribeCaptor = installSessionSubscribeCaptor();
       const sessionUnsubscribeCaptor = installSessionUnsubscribeCaptor();
@@ -1278,7 +1249,6 @@ describe('SolaceMessageClient', () => {
     describe('Guraranteed messaging', () => {
       it('should resolve the "Publish Promise" when the broker acknowledges the message', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
         const correlationKey = UUID.randomUUID();
         let resolved = false;
@@ -1293,7 +1263,6 @@ describe('SolaceMessageClient', () => {
 
       it('should reject the "Publish Promise" when the broker rejects the message', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
         const correlationKey = UUID.randomUUID();
         let resolved = false;
@@ -1310,7 +1279,6 @@ describe('SolaceMessageClient', () => {
     describe('Direct messaging', () => {
       it('should resolve the "Publish Promise" immediately', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
         const whenPublished = solaceMessageClient.publish('topic', 'payload', {deliveryMode: MessageDeliveryModeType.DIRECT});
         await drainMicrotaskQueue();
@@ -1323,7 +1291,6 @@ describe('SolaceMessageClient', () => {
       it('should publish message headers (user properties)', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
         const sessionSendCaptor = installSessionSendCaptor();
-        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
         // publish the message
         const headers = new Map()
@@ -1374,7 +1341,6 @@ describe('SolaceMessageClient', () => {
 
       it('should receive message headers (user properties)', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
         // Subscribe to topic 'topic'
         const sessionSubscribeCaptor = installSessionSubscribeCaptor();
@@ -1413,10 +1379,6 @@ describe('SolaceMessageClient', () => {
       it('should connect to a non-durable topic endpoint if passing a topic \'string\' literal', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
-        // Connect to the broker
-        solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
-        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
-
         // Subscribe to a non-durable topic endpoint
         const messageConsumerMock = installMessageConsumerMock();
         solaceMessageClient.consume$('topic').subscribe();
@@ -1440,10 +1402,6 @@ describe('SolaceMessageClient', () => {
       it('should allow connecting to a durable queue endpoint', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
-        // Connect to the broker
-        solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
-        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
-
         // Subscribe to a durable queue endpoint
         const messageConsumerMock = installMessageConsumerMock();
         const config: MessageConsumerProperties = {
@@ -1466,10 +1424,6 @@ describe('SolaceMessageClient', () => {
 
       it('should allow connecting to a durable topic endpoint', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-
-        // Connect to the broker
-        solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
-        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
         // Subscribe to a durable topic endpoint
         const messageConsumerMock = installMessageConsumerMock();
@@ -1495,10 +1449,6 @@ describe('SolaceMessageClient', () => {
 
       it('should receive messages', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-
-        // Connect to the broker
-        solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
-        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
         // Subscribe to a topic endpoint
         const messageConsumerMock = installMessageConsumerMock();
@@ -1528,10 +1478,6 @@ describe('SolaceMessageClient', () => {
       it('should receive messages inside the Angular zone', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
-        // Connect to the broker
-        solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
-        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
-
         // Subscribe to a topic endpoint
         const messageConsumerMock = installMessageConsumerMock();
         let receivedMessageInsideAngularZone;
@@ -1552,10 +1498,6 @@ describe('SolaceMessageClient', () => {
 
       it('should error on connection error (CONNECT_FAILED_ERROR)', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-
-        // Connect to the broker
-        solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
-        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
         // Subscribe to a non-durable topic endpoint
         const messageConsumerMock = installMessageConsumerMock();
@@ -1580,10 +1522,6 @@ describe('SolaceMessageClient', () => {
       it('should complete the Observable when the connection goes down (DOWN), e.g., after a successful session disconnect', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
-        // Connect to the broker
-        solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
-        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
-
         // Subscribe to a non-durable topic endpoint
         const messageConsumerMock = installMessageConsumerMock();
         const messageCaptor = new ObserveCaptor<MessageEnvelope>();
@@ -1607,10 +1545,6 @@ describe('SolaceMessageClient', () => {
 
       it('should gracefully disconnect from the broker when unsubscribing from the Observable', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-
-        // Connect to the broker
-        solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
-        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
         // Subscribe to a non-durable topic endpoint
         const messageConsumerMock = installMessageConsumerMock();
@@ -1640,10 +1574,6 @@ describe('SolaceMessageClient', () => {
       it('should provide substituted values of named wildcard segments', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
-        // Connect to the broker
-        solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
-        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
-
         // Subscribe to a topic endpoint
         const messageConsumerMock = installMessageConsumerMock();
         const messageCaptor = new ObserveCaptor<MessageEnvelope>();
@@ -1666,10 +1596,6 @@ describe('SolaceMessageClient', () => {
 
       it('should provide headers contained in the message', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-
-        // Connect to the broker
-        solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
-        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
         // Subscribe to a topic endpoint
         const messageConsumerMock = installMessageConsumerMock();
@@ -1702,10 +1628,6 @@ describe('SolaceMessageClient', () => {
 
       it('should notify when subscribed to an endpoint', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-
-        // Connect to the broker
-        solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
-        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
         // Subscribe to endoint
         const messageConsumerMock = installMessageConsumerMock();
@@ -1746,10 +1668,6 @@ describe('SolaceMessageClient', () => {
       it('should not notify when subscription to endpoint failed', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
-        // Connect to the broker
-        solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
-        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
-
         // Subscribe to endpoint
         const messageConsumerMock = installMessageConsumerMock();
         const onSubscribedCallback = createSpy('onSubscribed');
@@ -1774,10 +1692,6 @@ describe('SolaceMessageClient', () => {
       it('should connect to a queue if passing a queue \'string\' literal', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
-        // Connect to the broker
-        solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
-        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
-
         // Connect to the queue browser
         const queueBrowserMock = installQueueBrowserMock();
         solaceMessageClient.browse$('queue').subscribe();
@@ -1799,10 +1713,6 @@ describe('SolaceMessageClient', () => {
 
       it('should allow connecting to a queue endpoint passing a config', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-
-        // Connect to the broker
-        solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
-        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
         // Connect to the queue browser
         const queueBrowserMock = installQueueBrowserMock();
@@ -1826,10 +1736,6 @@ describe('SolaceMessageClient', () => {
 
       it('should allow browsing messages', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-
-        // Connect to the broker
-        solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
-        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
         // Connect to the queue browser
         const queueBrowserMock = installQueueBrowserMock();
@@ -1859,10 +1765,6 @@ describe('SolaceMessageClient', () => {
       it('should receive messages inside the Angular zone', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
-        // Connect to the broker
-        solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
-        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
-
         // Connect to the queue browser
         const queueBrowserMock = installQueueBrowserMock();
         let receivedMessageInsideAngularZone;
@@ -1884,10 +1786,6 @@ describe('SolaceMessageClient', () => {
       it('should start the queue browser when connected to the broker (UP)', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
-        // Connect to the broker
-        solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
-        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
-
         // Connect to the queue browser
         const queueBrowserMock = installQueueBrowserMock();
         solaceMessageClient.browse$('queue').subscribe();
@@ -1905,10 +1803,6 @@ describe('SolaceMessageClient', () => {
 
       it('should error on connection error (CONNECT_FAILED_ERROR)', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-
-        // Connect to the broker
-        solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
-        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
         // Connect to the queue browser
         const queueBrowserMock = installQueueBrowserMock();
@@ -1933,10 +1827,6 @@ describe('SolaceMessageClient', () => {
       it('should complete the Observable when the connection goes down (DOWN), e.g., after a successful session disconnect', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
-        // Connect to the broker
-        solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
-        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
-
         // Connect to the queue browser
         const queueBrowserMock = installQueueBrowserMock();
         const messageCaptor = new ObserveCaptor<MessageEnvelope>();
@@ -1958,10 +1848,6 @@ describe('SolaceMessageClient', () => {
 
       it('should provide headers contained in the message', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-
-        // Connect to the broker
-        solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
-        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
 
         // Connect to the queue browser
         const queueBrowserMock = installQueueBrowserMock();
@@ -2010,8 +1896,6 @@ describe('SolaceMessageClient', () => {
    * Simulates the Solace message broker to send a message to the Solace session.
    */
   async function simulateLifecycleEvent(eventCode: SessionEventCode, correlationKey?: string): Promise<void> {
-    await drainMicrotaskQueue();
-
     const callback = sessionEventCallbacks.get(eventCode);
     if (!callback) {
       throw Error(`[SpecError] No callback registered for event '${eventCode}'`);
