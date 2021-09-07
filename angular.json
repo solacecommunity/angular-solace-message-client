@@ -34,14 +34,11 @@
           }
         },
         "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
+          "builder": "@angular-eslint/builder:lint",
           "options": {
-            "tsConfig": [
-              "projects/solace-message-client/tsconfig.lib.json",
-              "projects/solace-message-client/tsconfig.spec.json"
-            ],
-            "exclude": [
-              "**/node_modules/**"
+            "lintFilePatterns": [
+              "projects/solace-message-client/**/*.ts",
+              "projects/solace-message-client/**/*.html"
             ]
           }
         }
@@ -68,11 +65,11 @@
           "defaultConfiguration": "development"
         },
         "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
+          "builder": "@angular-eslint/builder:lint",
           "options": {
-            "tsConfig": "projects/solace-message-client.e2e/tsconfig.json",
-            "exclude": [
-              "**/node_modules/**"
+            "lintFilePatterns": [
+              "projects/solace-message-client.e2e/**/*.ts",
+              "projects/solace-message-client.e2e/**/*.html"
             ]
           }
         }
@@ -154,17 +151,19 @@
           "defaultConfiguration": "development"
         },
         "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
+          "builder": "@angular-eslint/builder:lint",
           "options": {
-            "tsConfig": [
-              "apps/solace-message-client-testing-app/tsconfig.app.json"
-            ],
-            "exclude": [
-              "**/node_modules/**"
+            "lintFilePatterns": [
+              "apps/solace-message-client-testing-app/**/*.ts",
+              "apps/solace-message-client-testing-app/**/*.html"
             ]
           }
         }
       }
     }
+  },
+  "defaultProject": "solace-message-client",
+  "cli": {
+    "defaultCollection": "@angular-eslint/schematics"
   }
 }

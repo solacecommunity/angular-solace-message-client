@@ -1,4 +1,4 @@
-import { TopicSubscriptionCounter } from './topic-subscription-counter';
+import {TopicSubscriptionCounter} from './topic-subscription-counter';
 
 describe('TopicSubscriptionCounter', () => {
 

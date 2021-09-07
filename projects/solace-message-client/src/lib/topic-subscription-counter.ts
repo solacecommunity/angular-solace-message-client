@@ -1,7 +1,7 @@
 /**
  * Maintains the subscription count per topic.
  */
-import { Destination } from './solace.model';
+import {Destination} from './solace.model';
 
 export class TopicSubscriptionCounter {
 

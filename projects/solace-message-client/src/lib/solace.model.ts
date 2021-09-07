@@ -1,7 +1,3 @@
-// tslint:disable:no-redundant-jsdoc
-// tslint:disable:member-ordering
-// tslint:disable:no-empty-interface
-
 /**
  * NOTE: THE SOLACE TYPE DEFINITIONS CONTAINED IN THIS FILE ARE NOT GENERATED BUT CREATED MANUALLY BASED ON THE API OF SOLCLIENTJS:10.5.1
  */

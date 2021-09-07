@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { Arrays } from '@scion/toolkit/util';
+import {Component} from '@angular/core';
+import {Arrays} from '@scion/toolkit/util';
 
 @Component({
   selector: 'app-subscribers',

@@ -1,21 +1,22 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import * as solace from 'solclientjs/lib-browser/solclient';
-import { Injectable, NgZone, OnDestroy, Optional } from '@angular/core';
-import { ConnectableObservable, EMPTY, merge, MonoTypeOperatorFunction, noop, Observable, Observer, of, OperatorFunction, Subject, TeardownLogic, throwError } from 'rxjs';
-import { distinctUntilChanged, filter, finalize, map, mergeMap, publishReplay, take, takeUntil, tap } from 'rxjs/operators';
-import { UUID } from '@scion/toolkit/uuid';
-import { Data, MessageEnvelope, ObserveOptions, OnSubscribed, PublishOptions, SolaceMessageClient } from './solace-message-client';
-import { TopicMatcher } from './topic-matcher';
-import { observeInside } from '@scion/toolkit/operators';
-import { SolaceSessionProvider } from './solace-session-provider';
-import { SolaceMessageClientConfig } from './solace-message-client.config';
-import { Destination, Message, MessageConsumer, MessageConsumerEventName, MessageConsumerProperties, MessageDeliveryModeType, OperationError, QueueBrowser, QueueBrowserEventName, QueueBrowserProperties, QueueType, SDTField, SDTFieldType, Session, SessionEvent, SessionEventCode, SessionProperties } from './solace.model';
-import { TopicSubscriptionCounter } from './topic-subscription-counter';
-import { SerialExecutor } from './serial-executor.service';
-import { SolaceObjectFactory } from './solace-object-factory';
+import {Injectable, NgZone, OnDestroy, Optional} from '@angular/core';
+import {ConnectableObservable, EMPTY, merge, MonoTypeOperatorFunction, noop, Observable, Observer, of, OperatorFunction, Subject, TeardownLogic, throwError} from 'rxjs';
+import {distinctUntilChanged, filter, finalize, map, mergeMap, publishReplay, take, takeUntil, tap} from 'rxjs/operators';
+import {UUID} from '@scion/toolkit/uuid';
+import {Data, MessageEnvelope, ObserveOptions, OnSubscribed, PublishOptions, SolaceMessageClient} from './solace-message-client';
+import {TopicMatcher} from './topic-matcher';
+import {observeInside} from '@scion/toolkit/operators';
+import {SolaceSessionProvider} from './solace-session-provider';
+import {SolaceMessageClientConfig} from './solace-message-client.config';
+import {Destination, Message, MessageConsumer, MessageConsumerEventName, MessageConsumerProperties, MessageDeliveryModeType, OperationError, QueueBrowser, QueueBrowserEventName, QueueBrowserProperties, QueueType, SDTField, SDTFieldType, Session, SessionEvent, SessionEventCode, SessionProperties} from './solace.model';
+import {TopicSubscriptionCounter} from './topic-subscription-counter';
+import {SerialExecutor} from './serial-executor.service';
+import {SolaceObjectFactory} from './solace-object-factory';
 
 @Injectable()
-export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { // tslint:disable-line:class-name
+export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
 
   private _message$ = new Subject<Message>();
   private _event$ = new Subject<SessionEvent>();
@@ -233,7 +234,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
         const whenSubscribed = this.whenEvent(SessionEventCode.SUBSCRIPTION_OK, {rejectOnEvent: SessionEventCode.SUBSCRIPTION_ERROR, correlationKey: subscribeCorrelationKey})
           .then(() => true)
           .catch(event => {
-            console.warn(`[SolaceMessageClient] Solace event broker rejected subscription on topic ${topic.getName()}.`, event); // tslint:disable-line:no-console
+            console.warn(`[SolaceMessageClient] Solace event broker rejected subscription on topic ${topic.getName()}.`, event);
             return false;
           });
 
@@ -270,7 +271,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
         const whenUnsubscribed = this.whenEvent(SessionEventCode.SUBSCRIPTION_OK, {rejectOnEvent: SessionEventCode.SUBSCRIPTION_ERROR, correlationKey: unsubscribeCorrelationKey})
           .then(() => true)
           .catch(event => {
-            console.warn(`[SolaceMessageClient] Solace event broker rejected unsubscription on topic ${topic.getName()}.`, event); // tslint:disable-line:no-console
+            console.warn(`[SolaceMessageClient] Solace event broker rejected unsubscription on topic ${topic.getName()}.`, event);
             return false;
           });
 
@@ -318,26 +319,26 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
 
           // Define message consumer event listeners
           messageConsumer.on(MessageConsumerEventName.UP, () => {
-            console.debug(`[SolaceMessageClient] solclientjs message consumer event: MessageConsumerEventName.UP`); // tslint:disable-line:no-console
+            console.debug(`[SolaceMessageClient] solclientjs message consumer event: MessageConsumerEventName.UP`);
             consumerProperties?.onSubscribed?.(messageConsumer);
           });
           messageConsumer.on(MessageConsumerEventName.CONNECT_FAILED_ERROR, (error: OperationError) => {
-            console.debug(`[SolaceMessageClient] solclientjs message consumer event: MessageConsumerEventName.CONNECT_FAILED_ERROR`, error); // tslint:disable-line:no-console
+            console.debug(`[SolaceMessageClient] solclientjs message consumer event: MessageConsumerEventName.CONNECT_FAILED_ERROR`, error);
             observer.error(error);
           });
           messageConsumer.on(MessageConsumerEventName.DOWN_ERROR, (error: OperationError) => {
-            console.debug(`[SolaceMessageClient] solclientjs message consumer event: MessageConsumerEventName.DOWN_ERROR`, error); // tslint:disable-line:no-console
+            console.debug(`[SolaceMessageClient] solclientjs message consumer event: MessageConsumerEventName.DOWN_ERROR`, error);
             observer.error(error);
           });
           messageConsumer.on(MessageConsumerEventName.DOWN, (error: OperationError) => { // event emitted after successful disconnect request
-            console.debug(`[SolaceMessageClient] solclientjs message consumer event: MessageConsumerEventName.DOWN`, error); // tslint:disable-line:no-console
+            console.debug(`[SolaceMessageClient] solclientjs message consumer event: MessageConsumerEventName.DOWN`, error);
             messageConsumer?.dispose();
             observer.complete();
           });
 
           // Define message event listener
           messageConsumer.on(MessageConsumerEventName.MESSAGE, (message: Message) => {
-            console.debug(`[SolaceMessageClient] solclientjs message consumer event: MessageConsumerEventName.MESSAGE`, message); // tslint:disable-line:no-console
+            console.debug(`[SolaceMessageClient] solclientjs message consumer event: MessageConsumerEventName.MESSAGE`, message);
             NgZone.assertNotInAngularZone();
             observer.next(message);
           });
@@ -388,30 +389,30 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
 
           // Define browser event listeners
           queueBrowser.on(QueueBrowserEventName.UP, () => {
-            console.debug(`[SolaceMessageClient] solclientjs queue browser event: QueueBrowserEventName.UP`); // tslint:disable-line:no-console
+            console.debug(`[SolaceMessageClient] solclientjs queue browser event: QueueBrowserEventName.UP`);
             queueBrowser!.start();
           });
           queueBrowser.on(QueueBrowserEventName.CONNECT_FAILED_ERROR, (error: OperationError) => {
-            console.debug(`[SolaceMessageClient] solclientjs queue browser event: QueueBrowserEventName.CONNECT_FAILED_ERROR`, error); // tslint:disable-line:no-console
+            console.debug(`[SolaceMessageClient] solclientjs queue browser event: QueueBrowserEventName.CONNECT_FAILED_ERROR`, error);
             observer.error(error);
           });
           queueBrowser.on(QueueBrowserEventName.DOWN_ERROR, (error: OperationError) => {
-            console.debug(`[SolaceMessageClient] solclientjs queue browser event: QueueBrowserEventName.DOWN_ERROR`, error); // tslint:disable-line:no-console
+            console.debug(`[SolaceMessageClient] solclientjs queue browser event: QueueBrowserEventName.DOWN_ERROR`, error);
             observer.error(error);
           });
           queueBrowser.on(QueueBrowserEventName.DOWN, (error: OperationError) => { // event emitted after successful disconnect request
-            console.debug(`[SolaceMessageClient] solclientjs queue browser event: QueueBrowserEventName.DOWN`, error); // tslint:disable-line:no-console
+            console.debug(`[SolaceMessageClient] solclientjs queue browser event: QueueBrowserEventName.DOWN`, error);
             observer.complete();
           });
           queueBrowser.on(QueueBrowserEventName.DISPOSED, (error: OperationError) => { // event emitted after successful disconnect request
-            console.debug(`[SolaceMessageClient] solclientjs queue browser event: QueueBrowserEventName.DOWN`, error); // tslint:disable-line:no-console
+            console.debug(`[SolaceMessageClient] solclientjs queue browser event: QueueBrowserEventName.DOWN`, error);
             disposed = true;
             observer.complete();
           });
 
           // Define browser event listener
           queueBrowser.on(QueueBrowserEventName.MESSAGE, (message: Message) => {
-            console.debug(`[SolaceMessageClient] solclientjs queue browser event: QueueBrowserEventName.MESSAGE`, message); // tslint:disable-line:no-console
+            console.debug(`[SolaceMessageClient] solclientjs queue browser event: QueueBrowserEventName.MESSAGE`, message);
             NgZone.assertNotInAngularZone();
             observer.next(message);
           });
@@ -578,13 +579,13 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
   }
 
   private logSolaceSessionEvents(): void {
-    console.debug && this._event$ // tslint:disable-line:no-console
+    console.debug && this._event$
       .pipe(
         assertNotInAngularZone(),
         takeUntil(this._destroy$),
       )
       .subscribe((event: SessionEvent) => {
-        console.debug(`[SolaceMessageClient] solclientjs session event:  ${solace.SessionEventCode.nameOf(event.sessionEventCode)}`, event); // tslint:disable-line:no-console
+        console.debug(`[SolaceMessageClient] solclientjs session event:  ${solace.SessionEventCode.nameOf(event.sessionEventCode)}`, event);
       });
   }
 

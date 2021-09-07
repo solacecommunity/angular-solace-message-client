@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
-import { Router } from '@angular/router';
-import { SOLACE_CONNECT_PROPERTIES_SESSION_KEY } from './constants';
+import {Injectable} from '@angular/core';
+import {Router} from '@angular/router';
+import {SOLACE_CONNECT_PROPERTIES_SESSION_KEY} from './constants';
 
 @Injectable({providedIn: 'root'})
 export class LocationService {

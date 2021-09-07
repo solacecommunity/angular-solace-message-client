@@ -1,5 +1,5 @@
-import { TestBed } from '@angular/core/testing';
-import { TopicMatcher } from './topic-matcher';
+import {TestBed} from '@angular/core/testing';
+import {TopicMatcher} from './topic-matcher';
 
 describe('SolaceMessageClient', () => {
 

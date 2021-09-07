@@ -1,9 +1,8 @@
-// tslint:disable:no-redundant-jsdoc
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, EMPTY, noop, Observable, OperatorFunction } from 'rxjs';
-import { Message, MessageConsumer, MessageConsumerProperties, MessageDeliveryModeType, MessageType, QueueBrowserProperties, SDTField, Session } from './solace.model';
-import { map } from 'rxjs/operators';
-import { SolaceMessageClientConfig } from './solace-message-client.config';
+import {Injectable} from '@angular/core';
+import {BehaviorSubject, EMPTY, noop, Observable, OperatorFunction} from 'rxjs';
+import {Message, MessageConsumer, MessageConsumerProperties, MessageDeliveryModeType, MessageType, QueueBrowserProperties, SDTField, Session} from './solace.model';
+import {map} from 'rxjs/operators';
+import {SolaceMessageClientConfig} from './solace-message-client.config';
 
 /**
  * Allows clients to communicate with a Solace messaging broker for sending and receiving messages using the native SMF protocol (Solace Message Format).

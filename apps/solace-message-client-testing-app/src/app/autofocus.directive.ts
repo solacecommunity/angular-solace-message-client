@@ -1,5 +1,5 @@
-import { Directive, ElementRef } from '@angular/core';
-import { asyncScheduler } from 'rxjs';
+import {Directive, ElementRef} from '@angular/core';
+import {asyncScheduler} from 'rxjs';
 
 /**
  * Use this directive to set the focus to the host element.

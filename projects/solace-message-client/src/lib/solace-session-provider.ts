@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
-import { Session, SessionProperties } from './solace.model';
-import { SolaceObjectFactory } from './solace-object-factory';
+import {Injectable} from '@angular/core';
+import {Session, SessionProperties} from './solace.model';
+import {SolaceObjectFactory} from './solace-object-factory';
 
 /**
  * Creates a {@link Session} from a given config to connect to the Solace message broker.
@@ -23,7 +23,7 @@ export abstract class SolaceSessionProvider {
  * @docs-private
  */
 @Injectable()
-export class ɵSolaceSessionProvider implements SolaceSessionProvider { // tslint:disable-line:class-name
+export class ɵSolaceSessionProvider implements SolaceSessionProvider {
   public provide(sessionProperties: SessionProperties): Session {
     return SolaceObjectFactory.createSession(sessionProperties);
   }

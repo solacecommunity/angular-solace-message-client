@@ -1,6 +1,7 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import * as solace from 'solclientjs/lib-browser/solclient';
-import { Destination, Message, ReplayStartLocation, SDTField, SDTFieldType, SDTMapContainer, SDTStreamContainer, Session, SessionProperties } from './solace.model';
+import {Destination, Message, ReplayStartLocation, SDTField, SDTFieldType, SDTMapContainer, SDTStreamContainer, Session, SessionProperties} from './solace.model';
 
 /**
  * Facilitates the creation of objects of the Solace namespace.
