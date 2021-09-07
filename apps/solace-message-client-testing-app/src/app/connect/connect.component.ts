@@ -1,8 +1,8 @@
-import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { SessionProperties } from '@solace-community/angular-solace-message-client';
-import { SOLACE_CONNECT_PROPERTIES_SESSION_KEY } from '../constants';
-import { LocationService } from '../location.service';
+import {Component} from '@angular/core';
+import {FormBuilder, FormGroup, Validators} from '@angular/forms';
+import {SessionProperties} from '@solace-community/angular-solace-message-client';
+import {SOLACE_CONNECT_PROPERTIES_SESSION_KEY} from '../constants';
+import {LocationService} from '../location.service';
 
 export const URL = 'url';
 export const VPN_NAME = 'vpnName';

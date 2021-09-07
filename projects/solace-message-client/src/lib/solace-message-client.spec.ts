@@ -1,20 +1,20 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import * as solace from 'solclientjs/lib-browser/solclient';
-import { SolaceMessageClientModule } from './solace-message-client.module';
-import { mapToBinary, mapToText, MessageEnvelope, Params, PublishOptions, SolaceMessageClient } from './solace-message-client';
-import { SolaceSessionProvider } from './solace-session-provider';
-import { ObserveCaptor } from '@scion/toolkit/testing';
-import { TestBed } from '@angular/core/testing';
-import { NgZone } from '@angular/core';
-import { Destination, DestinationType, Message, MessageConsumer, MessageConsumerEventName, MessageConsumerProperties, MessageDeliveryModeType, MessageType, QueueBrowser, QueueBrowserEventName, QueueBrowserProperties, QueueType, SDTFieldType, Session, SessionEvent, SessionEventCode, SolaceError } from './solace.model';
-import { SolaceObjectFactory } from './solace-object-factory';
-import { asyncScheduler, noop } from 'rxjs';
-import { UUID } from '@scion/toolkit/uuid';
+import {SolaceMessageClientModule} from './solace-message-client.module';
+import {mapToBinary, mapToText, MessageEnvelope, Params, PublishOptions, SolaceMessageClient} from './solace-message-client';
+import {SolaceSessionProvider} from './solace-session-provider';
+import {ObserveCaptor} from '@scion/toolkit/testing';
+import {TestBed} from '@angular/core/testing';
+import {NgZone} from '@angular/core';
+import {Destination, DestinationType, Message, MessageConsumer, MessageConsumerEventName, MessageConsumerProperties, MessageDeliveryModeType, MessageType, QueueBrowser, QueueBrowserEventName, QueueBrowserProperties, QueueType, SDTFieldType, Session, SessionEvent, SessionEventCode, SolaceError} from './solace.model';
+import {SolaceObjectFactory} from './solace-object-factory';
+import {asyncScheduler, noop} from 'rxjs';
+import {UUID} from '@scion/toolkit/uuid';
 import createSpyObj = jasmine.createSpyObj;
 import SpyObj = jasmine.SpyObj;
 import createSpy = jasmine.createSpy;
 
-// tslint:disable:variable-name
 describe('SolaceMessageClient', () => {
 
   let session: SpyObj<Session>;

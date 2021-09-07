@@ -1,5 +1,5 @@
-import { SerialExecutor } from './serial-executor.service';
-import { noop } from 'rxjs';
+import {SerialExecutor} from './serial-executor.service';
+import {noop} from 'rxjs';
 
 describe('SerialExecutor', () => {
 

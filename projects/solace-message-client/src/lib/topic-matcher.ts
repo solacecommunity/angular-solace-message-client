@@ -1,5 +1,5 @@
-import { Injectable } from '@angular/core';
-import { Destination } from './solace.model';
+import {Injectable} from '@angular/core';
+import {Destination} from './solace.model';
 
 /**
  * Matches exact topics as used when publishing messages against subscription topics.

@@ -1,9 +1,9 @@
-import { Inject, Injectable, InjectionToken, ModuleWithProviders, NgModule, Optional, SkipSelf } from '@angular/core';
-import { NullSolaceMessageClient, SolaceMessageClient } from './solace-message-client';
-import { ɵSolaceMessageClient } from './ɵsolace-message-client';
-import { TopicMatcher } from './topic-matcher';
-import { SolaceSessionProvider, ɵSolaceSessionProvider } from './solace-session-provider';
-import { SolaceMessageClientConfig } from './solace-message-client.config';
+import {Inject, Injectable, InjectionToken, ModuleWithProviders, NgModule, Optional, SkipSelf} from '@angular/core';
+import {NullSolaceMessageClient, SolaceMessageClient} from './solace-message-client';
+import {ɵSolaceMessageClient} from './ɵsolace-message-client';
+import {TopicMatcher} from './topic-matcher';
+import {SolaceSessionProvider, ɵSolaceSessionProvider} from './solace-session-provider';
+import {SolaceMessageClientConfig} from './solace-message-client.config';
 
 /**
  * Allows clients to communicate with a Solace messaging broker for sending and receiving messages using the native SMF protocol (Solace Message Format).
@@ -64,7 +64,7 @@ import { SolaceMessageClientConfig } from './solace-message-client.config';
 @NgModule({})
 export class SolaceMessageClientModule {
 
-  constructor(@Inject(FORROOT_GUARD) _guard: any, _solaceMessageClient: SolaceMessageClient /** eager construction */) {
+  constructor(@Inject(FORROOT_GUARD) _guard: any, _solaceMessageClient: SolaceMessageClient /** eager construction */) { // eslint-disable-line @typescript-eslint/no-empty-function
   }
 
   /**

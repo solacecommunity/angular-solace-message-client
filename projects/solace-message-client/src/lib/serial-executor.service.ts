@@ -1,5 +1,5 @@
-import { Subject } from 'rxjs';
-import { catchError, mergeMap, takeUntil } from 'rxjs/operators';
+import {Subject} from 'rxjs';
+import {catchError, mergeMap, takeUntil} from 'rxjs/operators';
 
 export type Task<T> = () => Promise<T>;
 

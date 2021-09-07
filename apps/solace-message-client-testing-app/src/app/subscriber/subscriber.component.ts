@@ -1,9 +1,9 @@
-import { ChangeDetectorRef, Component, OnDestroy, ViewChild } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { MessageEnvelope, QueueType, SolaceMessageClient } from '@solace-community/angular-solace-message-client';
-import { Observable, Subject, Subscription } from 'rxjs';
-import { filter, finalize, takeUntil } from 'rxjs/operators';
-import { SciViewportComponent } from '@scion/toolkit/viewport';
+import {ChangeDetectorRef, Component, OnDestroy, ViewChild} from '@angular/core';
+import {FormControl, FormGroup, Validators} from '@angular/forms';
+import {MessageEnvelope, QueueType, SolaceMessageClient} from '@solace-community/angular-solace-message-client';
+import {Observable, Subject, Subscription} from 'rxjs';
+import {filter, finalize, takeUntil} from 'rxjs/operators';
+import {SciViewportComponent} from '@scion/toolkit/viewport';
 
 export const DESTINATION = 'destination';
 export const DESTINATION_TYPE = 'destinationType';
@@ -25,6 +25,16 @@ export class SubscriberComponent implements OnDestroy {
   public form: FormGroup;
   public subscribeError: string | null = null;
   public envelopes: MessageEnvelope[] = [];
+  public tooltips = {
+    topic: 'Subscribes to messages published to the given topic.',
+    queue: 'Subscribes for messages sent to the given durable queue. The queue needs to be administratively configured on the broker.',
+    topicEndpoint: `Subscribes to a non-durable topic endpoint (similar to a queue) that subscribes to the given topic destination. The topic endpoint needs NOT to be configured on the broker.
+
+                    Unlike a durable endpoint, the lifecycle of a non-durable endpoint (also known as a private, temporary endpoint) is bound to the client that created it, with an additional 60s in case of unexpected disconnect.
+
+                    Topic endpoints in particular are useful for not losing messages in the event of short connection interruptions as messages are retained on the broker until they are consumed.`,
+    queueBrowser: `Browses messages in a queue, without removing/consuming the messages.`,
+  };
 
   private _subscription: Subscription | null = null;
   private _destroy$ = new Subject<void>();
@@ -133,17 +143,6 @@ export class SubscriberComponent implements OnDestroy {
   public ngOnDestroy(): void {
     this._destroy$.next();
   }
-
-  public tooltips = { // tslint:disable-line:member-ordering
-    topic: 'Subscribes to messages published to the given topic.',
-    queue: 'Subscribes for messages sent to the given durable queue. The queue needs to be administratively configured on the broker.',
-    topicEndpoint: `Subscribes to a non-durable topic endpoint (similar to a queue) that subscribes to the given topic destination. The topic endpoint needs NOT to be configured on the broker.
-
-                    Unlike a durable endpoint, the lifecycle of a non-durable endpoint (also known as a private, temporary endpoint) is bound to the client that created it, with an additional 60s in case of unexpected disconnect.
-
-                    Topic endpoints in particular are useful for not losing messages in the event of short connection interruptions as messages are retained on the broker until they are consumed.`,
-    queueBrowser: `Browses messages in a queue, without removing/consuming the messages.`,
-  };
 }
 
 export enum SubscriptionDestinationType {
