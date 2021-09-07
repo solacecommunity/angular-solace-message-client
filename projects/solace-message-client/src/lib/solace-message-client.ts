@@ -440,7 +440,7 @@ export function mapToText(): OperatorFunction<MessageEnvelope, [string, Params, 
     if (message.getType() !== MessageType.TEXT) {
       throw Error(`[IllegalMessageTypeError] Expected message type to be ${formatMessageType(MessageType.TEXT)}, but was ${formatMessageType(message.getType())}. Be sure to use a compatible map operator.`);
     }
-    return [message.getSdtContainer().getValue(), envelope.params, message];
+    return [message.getSdtContainer()!.getValue(), envelope.params, message];
   });
 }
 
@@ -455,13 +455,13 @@ export function mapToText(): OperatorFunction<MessageEnvelope, [string, Params, 
  *
  * Note: Messages must be published as {@link MessageType.BINARY} messages, otherwise an error is thrown.
  */
-export function mapToBinary(): OperatorFunction<MessageEnvelope, [Uint8Array | string, Params, Message]> {
+export function mapToBinary<T extends Uint8Array | string = Uint8Array>(): OperatorFunction<MessageEnvelope, [T | string, Params, Message]> {
   return map((envelope: MessageEnvelope) => {
     const message: Message = envelope.message;
     if (message.getType() !== MessageType.BINARY) {
       throw Error(`[IllegalMessageTypeError] Expected message type to be ${formatMessageType(MessageType.BINARY)}, but was ${formatMessageType(message.getType())}. Be sure to use a compatible map operator.`);
     }
-    return [message.getBinaryAttachment(), envelope.params, message];
+    return [message.getBinaryAttachment() as T, envelope.params, message];
   });
 }
 

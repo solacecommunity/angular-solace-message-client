@@ -32,6 +32,8 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AutofocusDirective } from './autofocus.directive';
 
+const connectProperties = localStorage.getItem(SOLACE_CONNECT_PROPERTIES_SESSION_KEY);
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -52,9 +54,7 @@ import { AutofocusDirective } from './autofocus.directive';
     AppRoutingModule,
     ReactiveFormsModule,
     FormsModule,
-    SolaceMessageClientModule.forRoot(
-      JSON.parse(localStorage.getItem(SOLACE_CONNECT_PROPERTIES_SESSION_KEY)),
-    ),
+    SolaceMessageClientModule.forRoot(connectProperties && JSON.parse(connectProperties)),
     ClipboardModule,
     MatButtonModule,
     MatCheckboxModule,

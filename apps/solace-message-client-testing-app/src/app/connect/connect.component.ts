@@ -41,13 +41,13 @@ export class ConnectComponent {
 
   public onConnect(): void {
     const solaceConnectProperties: SessionProperties = {
-      url: this.form.get(URL).value ?? undefined,
-      vpnName: this.form.get(VPN_NAME).value ?? undefined,
-      userName: this.form.get(USER_NAME).value ?? undefined,
-      password: this.form.get(PASSWORD).value ?? undefined,
-      reapplySubscriptions: this.form.get(REAPPLY_SUBSCRIPTIONS).value ?? undefined,
-      reconnectRetries: this.form.get(RECONNECT_RETRIES).value ?? undefined,
-      connectRetries: this.form.get(RECONNECT_RETRIES).value ?? undefined,
+      url: this.form.get(URL)!.value ?? undefined,
+      vpnName: this.form.get(VPN_NAME)!.value ?? undefined,
+      userName: this.form.get(USER_NAME)!.value ?? undefined,
+      password: this.form.get(PASSWORD)!.value ?? undefined,
+      reapplySubscriptions: this.form.get(REAPPLY_SUBSCRIPTIONS)!.value ?? undefined,
+      reconnectRetries: this.form.get(RECONNECT_RETRIES)!.value ?? undefined,
+      connectRetries: this.form.get(RECONNECT_RETRIES)!.value ?? undefined,
       generateReceiveTimestamps: true,
     };
 

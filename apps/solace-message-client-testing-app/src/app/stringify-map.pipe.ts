@@ -3,7 +3,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 @Pipe({name: 'appStringifyMap'})
 export class StringifyMapPipe implements PipeTransform {
 
-  public transform(object: Map<string, any>): string | null {
+  public transform(object: Map<string, any> | undefined | null): string | null {
     if (!object) {
       return null;
     }

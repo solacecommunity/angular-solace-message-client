@@ -1,4 +1,5 @@
-import * as solace from 'solclientjs/lib-browser/solclient-full.js';
+// @ts-ignore
+import * as solace from 'solclientjs/lib-browser/solclient';
 import { SolaceMessageClientModule } from './solace-message-client.module';
 import { mapToBinary, mapToText, MessageEnvelope, Params, PublishOptions, SolaceMessageClient } from './solace-message-client';
 import { SolaceSessionProvider } from './solace-session-provider';
@@ -18,7 +19,7 @@ describe('SolaceMessageClient', () => {
 
   let session: SpyObj<Session>;
   let sessionProvider: SpyObj<SolaceSessionProvider>;
-  let sessionEventCallbacks: Map<SessionEventCode, (event: SessionEvent | Message) => void>;
+  let sessionEventCallbacks: Map<SessionEventCode, (event: SessionEvent | Message | SolaceError | void) => void>;
 
   beforeEach(() => {
     const factoryProperties = new solace.SolclientFactoryProperties();
@@ -32,7 +33,7 @@ describe('SolaceMessageClient', () => {
 
     // Capture session lifecycle hooks
     sessionEventCallbacks = new Map();
-    session.on.and.callFake((eventCode: SessionEventCode, callback: (event: SessionEvent | Message) => void) => {
+    session.on.and.callFake((eventCode: SessionEventCode, callback: (event: any) => void) => {
       sessionEventCallbacks.set(eventCode, callback);
     });
 
@@ -781,8 +782,8 @@ describe('SolaceMessageClient', () => {
       await expectAsync(solaceMessageClient.publish('topic', 'payload')).toBeResolved();
 
       expect(session.send).toHaveBeenCalledTimes(1);
-      expect(sessionSendCaptor.destination.getName()).toEqual('topic');
-      expect(sessionSendCaptor.destination.getType()).toEqual(DestinationType.TOPIC);
+      expect(sessionSendCaptor.destination!.getName()).toEqual('topic');
+      expect(sessionSendCaptor.destination!.getType()).toEqual(DestinationType.TOPIC);
     });
 
     it('should publish a message to a queue', async () => {
@@ -793,8 +794,8 @@ describe('SolaceMessageClient', () => {
       await expectAsync(solaceMessageClient.enqueue('queue', 'payload')).toBeResolved();
 
       expect(session.send).toHaveBeenCalledTimes(1);
-      expect(sessionSendCaptor.destination.getName()).toEqual('queue');
-      expect(sessionSendCaptor.destination.getType()).toEqual(DestinationType.QUEUE);
+      expect(sessionSendCaptor.destination!.getName()).toEqual('queue');
+      expect(sessionSendCaptor.destination!.getType()).toEqual(DestinationType.QUEUE);
     });
 
     it('should publish a message as binary message (by default)', async () => {
@@ -805,9 +806,9 @@ describe('SolaceMessageClient', () => {
       await expectAsync(solaceMessageClient.publish('topic', 'payload')).toBeResolved();
 
       expect(session.send).toHaveBeenCalledTimes(1);
-      expect(sessionSendCaptor.destination.getName()).toEqual('topic');
+      expect(sessionSendCaptor.destination!.getName()).toEqual('topic');
       expect(sessionSendCaptor.type).toEqual(MessageType.BINARY);
-      expect(sessionSendCaptor.message.getBinaryAttachment()).toEqual('payload');
+      expect(sessionSendCaptor.message!.getBinaryAttachment()).toEqual('payload');
     });
 
     it('should allow publishing a message as structured text message (SDT Structured Data Type)', async () => {
@@ -818,9 +819,9 @@ describe('SolaceMessageClient', () => {
       await expectAsync(solaceMessageClient.publish('topic', SolaceObjectFactory.createSDTField(SDTFieldType.STRING, 'payload'))).toBeResolved();
 
       expect(session.send).toHaveBeenCalledTimes(1);
-      expect(sessionSendCaptor.destination.getName()).toEqual('topic');
+      expect(sessionSendCaptor.destination!.getName()).toEqual('topic');
       expect(sessionSendCaptor.type).toEqual(MessageType.TEXT);
-      expect(sessionSendCaptor.message.getSdtContainer().getValue()).toEqual('payload');
+      expect(sessionSendCaptor.message!.getSdtContainer()!.getValue()).toEqual('payload');
     });
 
     it('should allow publishing a message as structured map message (SDT Structured Data Type)', async () => {
@@ -833,9 +834,9 @@ describe('SolaceMessageClient', () => {
       await expectAsync(solaceMessageClient.publish('topic', SolaceObjectFactory.createSDTField(SDTFieldType.MAP, mapContainer))).toBeResolved();
 
       expect(session.send).toHaveBeenCalledTimes(1);
-      expect(sessionSendCaptor.destination.getName()).toEqual('topic');
+      expect(sessionSendCaptor.destination!.getName()).toEqual('topic');
       expect(sessionSendCaptor.type).toEqual(MessageType.MAP);
-      expect(sessionSendCaptor.message.getSdtContainer().getValue()).toEqual(mapContainer);
+      expect(sessionSendCaptor.message!.getSdtContainer()!.getValue()).toEqual(mapContainer);
     });
 
     it('should allow publishing a message as given', async () => {
@@ -848,10 +849,10 @@ describe('SolaceMessageClient', () => {
       await expectAsync(solaceMessageClient.publish('topic', message)).toBeResolved();
 
       expect(session.send).toHaveBeenCalledTimes(1);
-      expect(sessionSendCaptor.destination.getName()).toEqual('topic');
+      expect(sessionSendCaptor.destination!.getName()).toEqual('topic');
       expect(sessionSendCaptor.type).toEqual(MessageType.BINARY);
       expect(sessionSendCaptor.message).toBe(message);
-      expect(sessionSendCaptor.message.getCorrelationId()).toEqual('123');
+      expect(sessionSendCaptor.message!.getCorrelationId()).toEqual('123');
     });
 
     it('should ignore the topic set on the message', async () => {
@@ -864,7 +865,7 @@ describe('SolaceMessageClient', () => {
       await expectAsync(solaceMessageClient.publish('publish-topic', message)).toBeResolved();
 
       expect(session.send).toHaveBeenCalledTimes(1);
-      expect(sessionSendCaptor.destination.getName()).toEqual('publish-topic');
+      expect(sessionSendCaptor.destination!.getName()).toEqual('publish-topic');
       expect(sessionSendCaptor.type).toEqual(MessageType.BINARY);
       expect(sessionSendCaptor.message).toBe(message);
     });
@@ -881,9 +882,9 @@ describe('SolaceMessageClient', () => {
       })).toBeResolved();
 
       expect(session.send).toHaveBeenCalledTimes(1);
-      expect(sessionSendCaptor.destination.getName()).toEqual('topic');
+      expect(sessionSendCaptor.destination!.getName()).toEqual('topic');
       expect(sessionSendCaptor.type).toEqual(MessageType.BINARY);
-      expect(sessionSendCaptor.message.getPriority()).toEqual(123);
+      expect(sessionSendCaptor.message!.getPriority()).toEqual(123);
     });
 
     it('should publish a message as direct message (by default)', async () => {
@@ -893,7 +894,7 @@ describe('SolaceMessageClient', () => {
       // publish the message
       await expectAsync(solaceMessageClient.publish('topic')).toBeResolved();
       expect(session.send).toHaveBeenCalledTimes(1);
-      expect(sessionSendCaptor.message.getDeliveryMode()).toEqual(MessageDeliveryModeType.DIRECT);
+      expect(sessionSendCaptor.message!.getDeliveryMode()).toEqual(MessageDeliveryModeType.DIRECT);
     });
 
     it('should allow controlling publishing of the message by passing options', async () => {
@@ -910,21 +911,21 @@ describe('SolaceMessageClient', () => {
       // publish binary message
       await expectAsync(solaceMessageClient.publish('topic', 'blubber', publishOptions)).toBeResolved();
       expect(session.send).toHaveBeenCalledTimes(1);
-      expect(sessionSendCaptor.message.getDeliveryMode()).toEqual(MessageDeliveryModeType.DIRECT);
-      expect(sessionSendCaptor.message.isDMQEligible()).toBeTrue();
-      expect(sessionSendCaptor.message.getCorrelationId()).toEqual('123');
-      expect(sessionSendCaptor.message.getPriority()).toEqual(123);
-      expect(sessionSendCaptor.message.getTimeToLive()).toEqual(123);
+      expect(sessionSendCaptor.message!.getDeliveryMode()).toEqual(MessageDeliveryModeType.DIRECT);
+      expect(sessionSendCaptor.message!.isDMQEligible()).toBeTrue();
+      expect(sessionSendCaptor.message!.getCorrelationId()).toEqual('123');
+      expect(sessionSendCaptor.message!.getPriority()).toEqual(123);
+      expect(sessionSendCaptor.message!.getTimeToLive()).toEqual(123);
 
       // publish a Solace message
       session.send.calls.reset();
       await expectAsync(solaceMessageClient.publish('topic', SolaceObjectFactory.createMessage(), publishOptions)).toBeResolved();
       expect(session.send).toHaveBeenCalledTimes(1);
-      expect(sessionSendCaptor.message.getDeliveryMode()).toEqual(MessageDeliveryModeType.DIRECT);
-      expect(sessionSendCaptor.message.isDMQEligible()).toBeTrue();
-      expect(sessionSendCaptor.message.getCorrelationId()).toEqual('123');
-      expect(sessionSendCaptor.message.getPriority()).toEqual(123);
-      expect(sessionSendCaptor.message.getTimeToLive()).toEqual(123);
+      expect(sessionSendCaptor.message!.getDeliveryMode()).toEqual(MessageDeliveryModeType.DIRECT);
+      expect(sessionSendCaptor.message!.isDMQEligible()).toBeTrue();
+      expect(sessionSendCaptor.message!.getCorrelationId()).toEqual('123');
+      expect(sessionSendCaptor.message!.getPriority()).toEqual(123);
+      expect(sessionSendCaptor.message!.getTimeToLive()).toEqual(123);
     });
 
     it('should map a structured text message into its textual representation', async () => {
@@ -953,7 +954,7 @@ describe('SolaceMessageClient', () => {
       const sessionSubscribeCaptor = installSessionSubscribeCaptor();
       const observeCaptor = new ObserveCaptor<[string, Params, Message]>();
 
-      solaceMessageClient.observe$('myhome/:room/temperature').pipe(mapToBinary()).subscribe(observeCaptor);
+      solaceMessageClient.observe$('myhome/:room/temperature').pipe(mapToBinary<string>()).subscribe(observeCaptor);
       await drainMicrotaskQueue();
       await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
 
@@ -1308,35 +1309,35 @@ describe('SolaceMessageClient', () => {
 
         await expectAsync(solaceMessageClient.publish('topic', 'payload', {headers})).toBeResolved();
 
-        const userPropertyMap = sessionSendCaptor.message.getUserPropertyMap();
+        const userPropertyMap = sessionSendCaptor.message!.getUserPropertyMap()!;
         expect(userPropertyMap.getKeys()).toEqual(['key1', 'key2', 'key3', 'key4', 'key5', 'key6', 'key7', 'key8', 'key9']);
 
-        expect(userPropertyMap.getField('key1').getType()).toEqual(SDTFieldType.STRING);
-        expect(userPropertyMap.getField('key1').getValue()).toEqual('value');
+        expect(userPropertyMap.getField('key1')!.getType()).toEqual(SDTFieldType.STRING);
+        expect(userPropertyMap.getField('key1')!.getValue()).toEqual('value');
 
-        expect(userPropertyMap.getField('key2').getType()).toEqual(SDTFieldType.BOOL);
-        expect(userPropertyMap.getField('key2').getValue()).toEqual(true);
+        expect(userPropertyMap.getField('key2')!.getType()).toEqual(SDTFieldType.BOOL);
+        expect(userPropertyMap.getField('key2')!.getValue()).toEqual(true);
 
-        expect(userPropertyMap.getField('key3').getType()).toEqual(SDTFieldType.BOOL);
-        expect(userPropertyMap.getField('key3').getValue()).toEqual(false);
+        expect(userPropertyMap.getField('key3')!.getType()).toEqual(SDTFieldType.BOOL);
+        expect(userPropertyMap.getField('key3')!.getValue()).toEqual(false);
 
-        expect(userPropertyMap.getField('key4').getType()).toEqual(SDTFieldType.INT32);
-        expect(userPropertyMap.getField('key4').getValue()).toEqual(123);
+        expect(userPropertyMap.getField('key4')!.getType()).toEqual(SDTFieldType.INT32);
+        expect(userPropertyMap.getField('key4')!.getValue()).toEqual(123);
 
-        expect(userPropertyMap.getField('key5').getType()).toEqual(SDTFieldType.INT32);
-        expect(userPropertyMap.getField('key5').getValue()).toEqual(0);
+        expect(userPropertyMap.getField('key5')!.getType()).toEqual(SDTFieldType.INT32);
+        expect(userPropertyMap.getField('key5')!.getValue()).toEqual(0);
 
-        expect(userPropertyMap.getField('key6').getType()).toEqual(SDTFieldType.INT16);
-        expect(userPropertyMap.getField('key6').getValue()).toEqual(16);
+        expect(userPropertyMap.getField('key6')!.getType()).toEqual(SDTFieldType.INT16);
+        expect(userPropertyMap.getField('key6')!.getValue()).toEqual(16);
 
-        expect(userPropertyMap.getField('key7').getType()).toEqual(SDTFieldType.INT32);
-        expect(userPropertyMap.getField('key7').getValue()).toEqual(32);
+        expect(userPropertyMap.getField('key7')!.getType()).toEqual(SDTFieldType.INT32);
+        expect(userPropertyMap.getField('key7')!.getValue()).toEqual(32);
 
-        expect(userPropertyMap.getField('key8').getType()).toEqual(SDTFieldType.INT64);
-        expect(userPropertyMap.getField('key8').getValue()).toEqual(64);
+        expect(userPropertyMap.getField('key8')!.getType()).toEqual(SDTFieldType.INT64);
+        expect(userPropertyMap.getField('key8')!.getValue()).toEqual(64);
 
-        expect(userPropertyMap.getField('key9').getType()).toEqual(SDTFieldType.UNKNOWN);
-        expect(userPropertyMap.getField('key9').getValue()).toEqual('!UNKNOWN!');
+        expect(userPropertyMap.getField('key9')!.getType()).toEqual(SDTFieldType.UNKNOWN);
+        expect(userPropertyMap.getField('key9')!.getValue()).toEqual('!UNKNOWN!');
       });
 
       it('should receive message headers (user properties)', async () => {
@@ -1978,8 +1979,8 @@ describe('SolaceMessageClient', () => {
 
 class SessionSubscribeCaptor {
 
-  public topic: string;
-  public correlationKey: string;
+  public topic: string | undefined;
+  public correlationKey: string | undefined;
 
   public reset(): void {
     this.topic = undefined;
@@ -1989,9 +1990,9 @@ class SessionSubscribeCaptor {
 
 class SessionSendCaptor {
 
-  public message: Message;
-  public destination: Destination;
-  public type: MessageType;
+  public message: Message | undefined;
+  public destination: Destination | undefined;
+  public type: MessageType | undefined;
 
   public resset(): void {
     this.message = undefined;
@@ -2017,7 +2018,7 @@ class MessageConsumerMock {
   private _callbacks = new Map<MessageConsumerEventName, (event: Message | SolaceError | void) => void>();
 
   public messageConsumer: SpyObj<MessageConsumer>;
-  public messageConsumerProperties: MessageConsumerProperties;
+  public messageConsumerProperties: MessageConsumerProperties | undefined;
 
   constructor(session: SpyObj<Session>) {
     this.messageConsumer = createSpyObj('messageConsumer', ['on', 'connect', 'disconnect', 'dispose']);
@@ -2030,7 +2031,7 @@ class MessageConsumerMock {
     });
 
     // Capture Solace lifecycle hooks
-    this.messageConsumer.on.and.callFake((eventName: MessageConsumerEventName, callback: (event: Message | SolaceError | void) => void) => {
+    this.messageConsumer.on.and.callFake((eventName: MessageConsumerEventName, callback: (event: any) => void) => {
       this._callbacks.set(eventName, callback);
     });
 
@@ -2086,7 +2087,7 @@ class QueueBrowserMock {
   private _callbacks = new Map<QueueBrowserEventName, (event: Message | SolaceError | void) => void>();
 
   public queueBrowser: SpyObj<QueueBrowser>;
-  public queueBrowserProperties: QueueBrowserProperties;
+  public queueBrowserProperties: QueueBrowserProperties | undefined;
 
   constructor(session: SpyObj<Session>) {
     this.queueBrowser = createSpyObj('queueBrowser', ['on', 'connect', 'disconnect', 'start', 'stop']);
@@ -2098,7 +2099,7 @@ class QueueBrowserMock {
     });
 
     // Capture Solace lifecycle hooks
-    this.queueBrowser.on.and.callFake((eventName: QueueBrowserEventName, callback: (event: Message | SolaceError | void) => void) => {
+    this.queueBrowser.on.and.callFake((eventName: QueueBrowserEventName, callback: (event: any) => void) => {
       this._callbacks.set(eventName, callback);
     });
 
