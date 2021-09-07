@@ -9,7 +9,7 @@ import { Arrays } from '@scion/toolkit/util';
 export class SubscribersComponent {
 
   public subscriptions: Subscription[] = [];
-  public selectedTabIndex: number;
+  public selectedTabIndex: number | undefined;
 
   public onSubscriptionAdd(): void {
     const defaultNameCount = this.subscriptions.filter(subscriber => subscriber.name.startsWith('Subscription')).length;

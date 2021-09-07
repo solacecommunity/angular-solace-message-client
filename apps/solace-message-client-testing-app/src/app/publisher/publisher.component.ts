@@ -24,7 +24,7 @@ export class PublisherComponent {
   public readonly HEADERS = HEADERS;
 
   public form: FormGroup;
-  public publishError: string;
+  public publishError: string | null = null;
   public MessageType = MessageType;
   public DestinationType = DestinationType;
   public MessageDeliveryModeType = MessageDeliveryModeType;
@@ -42,12 +42,12 @@ export class PublisherComponent {
   }
 
   public async onPublish(): Promise<void> {
-    const destination = this.form.get(DESTINATION).value;
+    const destination = this.form.get(DESTINATION)!.value;
 
     this.form.disable();
     this.publishError = null;
     try {
-      switch (this.form.get(DESTINATION_TYPE).value) {
+      switch (this.form.get(DESTINATION_TYPE)!.value) {
         case DestinationType.TOPIC: {
           await this.solaceMessageClient.publish(destination, this.readMessageFromUI(), this.readPublishOptionsFromUI());
           return;
@@ -69,17 +69,17 @@ export class PublisherComponent {
   private readPublishOptionsFromUI(): PublishOptions {
     return {
       headers: this.readHeadersFromUI(),
-      deliveryMode: this.form.get(DELIVERY_MODE).value,
+      deliveryMode: this.form.get(DELIVERY_MODE)!.value,
     };
   }
 
   private readMessageFromUI(): Data | undefined {
-    const message = this.form.get(MESSAGE).value;
+    const message = this.form.get(MESSAGE)!.value;
     if (!message) {
       return undefined;
     }
 
-    if (this.form.get(MESSAGE_TYPE).value === MessageType.TEXT) {
+    if (this.form.get(MESSAGE_TYPE)!.value === MessageType.TEXT) {
       return SolaceObjectFactory.createSDTField(SDTFieldType.STRING, message); // structuredTextMessage
     }
     else {
@@ -88,7 +88,7 @@ export class PublisherComponent {
   }
 
   private readHeadersFromUI(): Map<string, any> | undefined {
-    const headers: string = this.form.get(HEADERS).value;
+    const headers: string = this.form.get(HEADERS)!.value;
     if (!headers.length) {
       return undefined;
     }

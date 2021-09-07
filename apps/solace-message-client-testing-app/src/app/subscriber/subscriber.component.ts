@@ -23,14 +23,14 @@ export class SubscriberComponent implements OnDestroy {
   public readonly FOLLOW_TAIL = FOLLOW_TAIL;
 
   public form: FormGroup;
-  public subscribeError: string;
+  public subscribeError: string | null = null;
   public envelopes: MessageEnvelope[] = [];
 
-  private _subscription: Subscription;
+  private _subscription: Subscription | null = null;
   private _destroy$ = new Subject<void>();
 
-  @ViewChild(SciViewportComponent)
-  private _viewport: SciViewportComponent;
+  @ViewChild(SciViewportComponent, {static: true})
+  private _viewport!: SciViewportComponent;
 
   public SubscriptionDestinationType = SubscriptionDestinationType;
 
@@ -47,11 +47,11 @@ export class SubscriberComponent implements OnDestroy {
   }
 
   public onSubscribe(): void {
-    this.form.get(SUBSCRIPTION).disable();
+    this.form.get(SUBSCRIPTION)!.disable();
     this.subscribeError = null;
 
-    const destination: string = this.form.get([SUBSCRIPTION, DESTINATION]).value;
-    const destinationType: SubscriptionDestinationType = this.form.get([SUBSCRIPTION, DESTINATION_TYPE]).value;
+    const destination: string = this.form.get([SUBSCRIPTION, DESTINATION])!.value;
+    const destinationType: SubscriptionDestinationType = this.form.get([SUBSCRIPTION, DESTINATION_TYPE])!.value;
     const message$: Observable<MessageEnvelope> = (() => {
       switch (destinationType) {
         case SubscriptionDestinationType.TOPIC: {
@@ -77,14 +77,14 @@ export class SubscriberComponent implements OnDestroy {
     try {
       this._subscription = message$
         .pipe(
-          finalize(() => this.form.get(SUBSCRIPTION).enable()),
+          finalize(() => this.form.get(SUBSCRIPTION)!.enable()),
           takeUntil(this._destroy$),
         )
         .subscribe(
           (envelope: MessageEnvelope) => {
             this.envelopes = this.envelopes.concat(envelope);
 
-            if (this.form.get(FOLLOW_TAIL).value) {
+            if (this.form.get(FOLLOW_TAIL)!.value) {
               this._cd.detectChanges();
               this.scrollToEnd();
             }
@@ -93,13 +93,13 @@ export class SubscriberComponent implements OnDestroy {
         );
     }
     catch (error) {
-      this.form.get(SUBSCRIPTION).enable();
+      this.form.get(SUBSCRIPTION)!.enable();
       this.subscribeError = error;
     }
   }
 
   public onUnsubscribe(): void {
-    this._subscription && this._subscription.unsubscribe();
+    this._subscription?.unsubscribe();
     this._subscription = null;
   }
 
@@ -112,7 +112,7 @@ export class SubscriberComponent implements OnDestroy {
   }
 
   public get isSubscribed(): boolean {
-    return this._subscription && !this._subscription.closed;
+    return (this._subscription && !this._subscription.closed) ?? false;
   }
 
   private scrollToEnd(): void {
@@ -120,7 +120,7 @@ export class SubscriberComponent implements OnDestroy {
   }
 
   private installFollowTailListener(): void {
-    this.form.get(FOLLOW_TAIL).valueChanges
+    this.form.get(FOLLOW_TAIL)!.valueChanges
       .pipe(
         filter(Boolean),
         takeUntil(this._destroy$),

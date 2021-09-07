@@ -17,7 +17,7 @@ export class TryMeComponent {
   constructor(public solaceMessageClient: SolaceMessageClient,
               private _snackBar: MatSnackBar,
               private _locationService: LocationService) {
-    this.sessionProperties = JSON.parse(localStorage.getItem(SOLACE_CONNECT_PROPERTIES_SESSION_KEY));
+    this.sessionProperties = JSON.parse(localStorage.getItem(SOLACE_CONNECT_PROPERTIES_SESSION_KEY)!);
   }
 
   public onLogout(): void {

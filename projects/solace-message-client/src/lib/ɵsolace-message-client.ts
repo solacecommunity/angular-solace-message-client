@@ -1,4 +1,5 @@
-import * as solace from 'solclientjs/lib-browser/solclient-full';
+// @ts-ignore
+import * as solace from 'solclientjs/lib-browser/solclient';
 import { Injectable, NgZone, OnDestroy, Optional } from '@angular/core';
 import { ConnectableObservable, EMPTY, merge, MonoTypeOperatorFunction, noop, Observable, Observer, of, OperatorFunction, Subject, TeardownLogic, throwError } from 'rxjs';
 import { distinctUntilChanged, filter, finalize, map, mergeMap, publishReplay, take, takeUntil, tap } from 'rxjs/operators';
@@ -19,13 +20,13 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
   private _message$ = new Subject<Message>();
   private _event$ = new Subject<SessionEvent>();
 
-  private _session: Promise<Session>;
+  private _session: Promise<Session> | null = null;
   private _destroy$ = new Subject<void>();
   private _sessionDisposed$ = new Subject<void>();
   private _whenDestroy = this._destroy$.pipe(take(1)).toPromise();
 
-  private _subscriptionExecutor: SerialExecutor;
-  private _subscriptionCounter: TopicSubscriptionCounter;
+  private _subscriptionExecutor!: SerialExecutor;
+  private _subscriptionCounter!: TopicSubscriptionCounter;
 
   public connected$: ConnectableObservable<boolean> = this._event$
     .pipe(
@@ -168,7 +169,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
         .then(() => {
           // Create Observable that errors when failed to subscribe to the topic
           let subscriptionErrored = false;
-          const subscriptionError$ = new Subject<void>();
+          const subscriptionError$ = new Subject<never>();
 
           // Filter messages sent to the given topic.
           merge<Message>(this._message$, subscriptionError$)
@@ -216,7 +217,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
   /**
    * Subscribes to the given topic on the Solace session.
    */
-  private subscribeToTopic(topic: Destination, subscribeOptions: ObserveOptions): Promise<boolean> {
+  private subscribeToTopic(topic: Destination, observeOptions?: ObserveOptions): Promise<boolean> {
     // Calls to `solace.Session.subscribe` and `solace.Session.unsubscribe` must be executed one after the other until the Solace Broker confirms
     // the operation. Otherwise a previous unsubscribe may cancel a later subscribe on the same topic.
     return this._subscriptionExecutor.scheduleSerial(async () => {
@@ -240,7 +241,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
           topic,
           true,
           subscribeCorrelationKey,
-          subscribeOptions && subscribeOptions.requestTimeout,
+          observeOptions?.requestTimeout,
         );
         return whenSubscribed;
       }
@@ -306,11 +307,11 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
   private createMessageConsumer$(consumerProperties: MessageConsumerProperties & OnSubscribed): Observable<MessageEnvelope> {
     const topicEndpointSubscription = consumerProperties.topicEndpointSubscription?.getName();
     if (topicEndpointSubscription) {
-      consumerProperties.topicEndpointSubscription = createSubscriptionTopicDestination(consumerProperties.topicEndpointSubscription.getName());
+      consumerProperties.topicEndpointSubscription = createSubscriptionTopicDestination(consumerProperties.topicEndpointSubscription!.getName());
     }
 
     return new Observable((observer: Observer<Message>): TeardownLogic => {
-      let messageConsumer: MessageConsumer = undefined;
+      let messageConsumer: MessageConsumer | undefined;
       this.session
         .then(session => {
           messageConsumer = session.createMessageConsumer(consumerProperties);
@@ -379,7 +380,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
 
   private createQueueBrowser$(queueBrowserProperties: QueueBrowserProperties): Observable<MessageEnvelope> {
     return new Observable((observer: Observer<Message>): TeardownLogic => {
-      let queueBrowser: QueueBrowser = undefined;
+      let queueBrowser: QueueBrowser | undefined;
       let disposed = false;
       this.session
         .then(session => {
@@ -388,7 +389,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
           // Define browser event listeners
           queueBrowser.on(QueueBrowserEventName.UP, () => {
             console.debug(`[SolaceMessageClient] solclientjs queue browser event: QueueBrowserEventName.UP`); // tslint:disable-line:no-console
-            queueBrowser.start();
+            queueBrowser!.start();
           });
           queueBrowser.on(QueueBrowserEventName.CONNECT_FAILED_ERROR, (error: OperationError) => {
             console.debug(`[SolaceMessageClient] solclientjs queue browser event: QueueBrowserEventName.CONNECT_FAILED_ERROR`, error); // tslint:disable-line:no-console
@@ -473,28 +474,29 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy { /
 
     // Add headers.
     if (options?.headers?.size) {
-      message.setUserPropertyMap(message.getUserPropertyMap() || SolaceObjectFactory.createSDTMapContainer());
+      const userPropertyMap = message.getUserPropertyMap() || SolaceObjectFactory.createSDTMapContainer();
       options.headers.forEach((value, key) => {
         if (value === undefined || value === null) {
           return;
         }
         if (value instanceof solace.SDTField) {
           const sdtField = value as SDTField;
-          message.getUserPropertyMap().addField(key, sdtField.getType(), sdtField.getValue());
+          userPropertyMap.addField(key, sdtField.getType(), sdtField.getValue());
         }
         else if (typeof value === 'string') {
-          message.getUserPropertyMap().addField(key, SDTFieldType.STRING, value);
+          userPropertyMap.addField(key, SDTFieldType.STRING, value);
         }
         else if (typeof value === 'boolean') {
-          message.getUserPropertyMap().addField(key, SDTFieldType.BOOL, value);
+          userPropertyMap.addField(key, SDTFieldType.BOOL, value);
         }
         else if (typeof value === 'number') {
-          message.getUserPropertyMap().addField(key, SDTFieldType.INT32, value);
+          userPropertyMap.addField(key, SDTFieldType.INT32, value);
         }
         else {
-          message.getUserPropertyMap().addField(key, SDTFieldType.UNKNOWN, value);
+          userPropertyMap.addField(key, SDTFieldType.UNKNOWN, value);
         }
       });
+      message.setUserPropertyMap(userPropertyMap);
     }
 
     // Allow intercepting the message before sending it to the broker.
@@ -611,7 +613,7 @@ function mapToMessageEnvelope(subscriptionTopic?: string): OperatorFunction<Mess
 function collectHeaders(message: Message): Map<string, any> {
   const userPropertyMap = message.getUserPropertyMap();
   return userPropertyMap?.getKeys().reduce((acc, key) => {
-    return acc.set(key, userPropertyMap.getField(key).getValue());
+    return acc.set(key, userPropertyMap.getField(key)!.getValue());
   }, new Map()) || new Map();
 }
 

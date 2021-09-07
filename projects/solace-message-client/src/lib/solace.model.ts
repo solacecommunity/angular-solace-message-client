@@ -522,7 +522,7 @@ export interface Message {
    * the Solace Message Router. This field may be used for peer-to-peer message synchronization and
    * is commonly used for correlating a request to a reply. See {@link Session#sendRequest}.
    */
-  setCorrelationId(value: string): void;
+  setCorrelationId(value: string | undefined): void;
 
   /**
    * Gets the correlation Key.
@@ -2054,7 +2054,7 @@ export interface Session {
    *   Subscriptions.
    *   Subcode: {@link ErrorSubcode.SHARED_SUBSCRIPTIONS_NOT_ALLOWED}.
    */
-  subscribe(topic: Destination, requestConfirmation: boolean, correlationKey: any, requestTimeout: number): void;
+  subscribe(topic: Destination, requestConfirmation: boolean, correlationKey: any, requestTimeout?: number): void;
 
   /**
    * Unsubscribe from a topic, and optionally request a confirmation from the router.
@@ -2100,7 +2100,7 @@ export interface Session {
    *   Subscriptions.
    *   Subcode: {@link ErrorSubcode.SHARED_SUBSCRIPTIONS_NOT_ALLOWED}.
    */
-  unsubscribe(topic: Destination, requestConfirmation: boolean, correlationKey: any, requestTimeout: number): void;
+  unsubscribe(topic: Destination, requestConfirmation: boolean, correlationKey: any, requestTimeout?: number): void;
 
   /**
    * Request that a Durable Topic Endpoint stop receiving data on a topic. Unsubscribe
@@ -2385,12 +2385,12 @@ export interface Session {
   /**
    * Registers a callback which is called when given event occurs.
    */
-  on(eventName: SessionEventCode, listener: (event: SessionEvent | Message | SolaceError | void) => void): void;
+  on<T extends SessionEvent | Message | SolaceError | void = any>(eventName: SessionEventCode, listener: (event: T) => void): void;
 
   /**
    * Registers a callback which is called when given event occurs. The callback is unregistered after received the first event.
    */
-  once(eventName: SessionEventCode, listener: (event: SessionEvent | Message | SolaceError | void) => void): void;
+  once<T extends SessionEvent | Message | SolaceError | void = any>(eventName: SessionEventCode, listener: (event: T) => void): void;
 
   /**
    * Allow additional properties, e.g., properties of new `solclientjs` versions.
@@ -4043,12 +4043,12 @@ export interface MessageConsumer {
   /**
    * Registers a callback which is called when given event occurs.
    */
-  on(eventName: MessageConsumerEventName, listener: (event: SessionEvent | Message | SolaceError | void) => void): void;
+  on<T extends SessionEvent | Message | SolaceError | void = any>(eventName: MessageConsumerEventName, listener: (event: T) => void): void;
 
   /**
    * Registers a callback which is called when given event occurs. The callback is unregistered after received the first event.
    */
-  once(eventName: MessageConsumerEventName, listener: (event: SessionEvent | Message | SolaceError | void) => void): void;
+  once<T extends SessionEvent | Message | SolaceError | void = any>(eventName: MessageConsumerEventName, listener: (event: T) => void): void;
 }
 
 /**
@@ -4334,12 +4334,12 @@ export interface QueueBrowser {
   /**
    * Registers a callback which is called when given event occurs.
    */
-  on(eventName: QueueBrowserEventName, listener: (event: SessionEvent | Message | SolaceError | void) => void): void;
+  on<T extends SessionEvent | Message | SolaceError | void = any>(eventName: QueueBrowserEventName, listener: (event: T) => void): void;
 
   /**
    * Registers a callback which is called when given event occurs. The callback is unregistered after received the first event.
    */
-  once(eventName: QueueBrowserEventName, listener: (event: SessionEvent | Message | SolaceError | void) => void): void;
+  once<T extends SessionEvent | Message | SolaceError | void = any>(eventName: QueueBrowserEventName, listener: (event: T) => void): void;
 
   /**
    * Allow additional properties, e.g., properties of new `solclientjs` versions.

@@ -10,13 +10,13 @@ import { ungzip } from 'pako';
 })
 export class MessageListItemComponent implements OnChanges {
 
-  public message: Message;
-  public details: string;
-  public type: string;
-  public content: string;
+  public message!: Message;
+  public details!: string;
+  public type!: string;
+  public content: string | undefined;
 
   @Input()
-  public envelope: MessageEnvelope;
+  public envelope!: MessageEnvelope;
 
   @Output()
   public delete = new EventEmitter<void>();
@@ -55,7 +55,7 @@ function getContent(envelope: MessageEnvelope): string | undefined {
     case MessageType.BINARY:
       return decode(envelope.message.getBinaryAttachment(), encoding);
     case MessageType.TEXT:
-      return decode(envelope.message.getSdtContainer().getValue(), encoding);
+      return decode(envelope.message.getSdtContainer()!.getValue(), encoding);
     default:
       return undefined;
   }
