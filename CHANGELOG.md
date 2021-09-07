@@ -1,4 +1,10 @@
-#  (2021-08-20)
+# [12.0.0](https://github.com/solacecommunity/angular-solace-message-client/compare/11.0.1...12.0.0) (2021-09-08)
+
+### Chore
+
+* **solace-message-client:** update @solace-community/angular-solace-message-client to Angular 12 ([913ae8a](https://github.com/solacecommunity/angular-solace-message-client/commit/913ae8a0264529ecf5c52cb625c1045bdb9537eb))
+
+## [11.0.1](https://github.com/solacecommunity/angular-solace-message-client/compare/11.0.0...11.0.1) (2021-08-20)
 
 
 ### Bug Fixes
@@ -40,7 +46,7 @@
     if passing structured data in the form of a `SDTField`, data is transported as structured message of the type
     `TEXT`, `MAP`, or `STREAM`, or as binary message otherwise;
   - removed RxJS operator `mapToObject` for unmarshalling received JSON data;
-
+  
   To migrate:
   - to send JSON serialized data (formerly via `MessageBodyFormat.JSON` or by default), you need to pass serialized data instead of the object literal;
   - to send a structured text message (formerly via `MessageBodyFormat.TEXT`), add transfer data to a `SDTField` of the type `STRING`, as following: `solaceMessageClient.publish('topic', SolaceObjectFactory.createSDTField(SDTFieldType.STRING, 'payload'))`;
@@ -50,7 +56,7 @@
 
 
 
-#  (2021-03-18)
+# [11.0.0](https://github.com/solacecommunity/angular-solace-message-client/compare/d5b275bc4787f0afb0bfc7f4500c7b18e16eb9b6...11.0.0) (2021-03-18)
 
 
 ### Bug Fixes
