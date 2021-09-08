@@ -1,0 +1,2121 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>Message | Angular Solace Message Client - v12.0.0</title>
+	<meta name="description" content="Documentation for Angular Solace Message Client - v12.0.0">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="../assets/css/main.css">
+	<script async src="../assets/js/search.js" id="search-script"></script>
+	<link rel="icon" href="../favicon.ico" />
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="../assets/js/search.json" data-base="..">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="../index.html" class="title">Angular Solace Message Client - v12.0.0</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<ul class="tsd-breadcrumb">
+				<li>
+					<a href="../modules.html">Angular Solace Message Client - v12.0.0</a>
+				</li>
+				<li>
+					<a href="Message.html">Message</a>
+				</li>
+			</ul>
+			<h1>Interface Message</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-comment">
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>A message is a container that can be used to store and send messages to and from the Solace Message Router.</p>
+					</div>
+					<p>Applications manage the lifecycle of a message; a message is created by calling <a href="../modules/SolaceObjectFactory.html#createMessage">SolaceObjectFactory.createMessage</a>
+						and is freed by dereferencing it. API operations that cache or mutate messages always take a copy. A message may be
+						created, mutated by the API user, and sent multiple times. The Message Object provides methods to manipulate the common
+					Solace message header fields that are optionally sent in the binary metadata portion of the Solace message.</p>
+					<p>Applications can also use the structured data API {@link Message#setSdtContainer} to add containers (maps or streams) and
+					their fields to the binary payload or to the User Property map contained within the binary metadata.</p>
+					<p>This does not prevent applications from ignoring these methods and sending payload in the binary payload
+					as an opaque binary field for end-to-end communications</p>
+					<dl class="tsd-comment-tags">
+						<dt>see</dt>
+						<dd><p>solace.Message</p>
+						</dd>
+					</dl>
+				</div>
+			</section>
+			<section class="tsd-panel tsd-hierarchy">
+				<h3>Hierarchy</h3>
+				<ul class="tsd-hierarchy">
+					<li>
+						<span class="target">Message</span>
+					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel tsd-kind-interface">
+				<h3 class="tsd-before-signature">Indexable</h3>
+				<div class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">[</span>key: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">]: </span><span class="tsd-signature-type">any</span></div>
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>Allow additional properties, e.g., properties of new <code>solclientjs</code> versions.</p>
+					</div>
+				</div>
+			</section>
+			<section class="tsd-panel-group tsd-index-group">
+				<h2>Index</h2>
+				<section class="tsd-panel tsd-index-panel">
+					<div class="tsd-index-content">
+						<section class="tsd-index-section ">
+							<h3>Properties</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="Message.html#isAcknowledged" class="tsd-kind-icon">is<wbr>Acknowledged</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section ">
+							<h3>Methods</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#acknowledge" class="tsd-kind-icon">acknowledge</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#dump" class="tsd-kind-icon">dump</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#getApplicationMessageId" class="tsd-kind-icon">get<wbr>Application<wbr>Message<wbr>Id</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#getApplicationMessageType" class="tsd-kind-icon">get<wbr>Application<wbr>Message<wbr>Type</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#getBinaryAttachment" class="tsd-kind-icon">get<wbr>Binary<wbr>Attachment</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#getCacheRequestId" class="tsd-kind-icon">get<wbr>Cache<wbr>Request<wbr>Id</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#getCacheStatus" class="tsd-kind-icon">get<wbr>Cache<wbr>Status</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#getCorrelationId" class="tsd-kind-icon">get<wbr>Correlation<wbr>Id</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#getCorrelationKey" class="tsd-kind-icon">get<wbr>Correlation<wbr>Key</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#getDeliveryCount" class="tsd-kind-icon">get<wbr>Delivery<wbr>Count</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#getDeliveryMode" class="tsd-kind-icon">get<wbr>Delivery<wbr>Mode</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#getDestination" class="tsd-kind-icon">get<wbr>Destination</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#getGMExpiration" class="tsd-kind-icon">getGMExpiration</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#getGuaranteedMessageId" class="tsd-kind-icon">get<wbr>Guaranteed<wbr>Message<wbr>Id</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#getPriority" class="tsd-kind-icon">get<wbr>Priority</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#getReceiverTimestamp" class="tsd-kind-icon">get<wbr>Receiver<wbr>Timestamp</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#getReplyTo" class="tsd-kind-icon">get<wbr>Reply<wbr>To</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#getSdtContainer" class="tsd-kind-icon">get<wbr>Sdt<wbr>Container</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#getSenderId" class="tsd-kind-icon">get<wbr>Sender<wbr>Id</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#getSenderTimestamp" class="tsd-kind-icon">get<wbr>Sender<wbr>Timestamp</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#getSequenceNumber" class="tsd-kind-icon">get<wbr>Sequence<wbr>Number</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#getTimeToLive" class="tsd-kind-icon">get<wbr>Time<wbr>ToLive</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#getTopicSequenceNumber" class="tsd-kind-icon">get<wbr>Topic<wbr>Sequence<wbr>Number</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#getType" class="tsd-kind-icon">get<wbr>Type</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#getUserCos" class="tsd-kind-icon">get<wbr>User<wbr>Cos</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#getUserData" class="tsd-kind-icon">get<wbr>User<wbr>Data</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#getUserPropertyMap" class="tsd-kind-icon">get<wbr>User<wbr>Property<wbr>Map</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#getXmlContent" class="tsd-kind-icon">get<wbr>Xml<wbr>Content</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#getXmlContentDecoded" class="tsd-kind-icon">get<wbr>Xml<wbr>Content<wbr>Decoded</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#getXmlMetadata" class="tsd-kind-icon">get<wbr>Xml<wbr>Metadata</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#isAcknowledgeImmediately" class="tsd-kind-icon">is<wbr>Acknowledge<wbr>Immediately</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#isDMQEligible" class="tsd-kind-icon">isDMQEligible</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#isDiscardIndication" class="tsd-kind-icon">is<wbr>Discard<wbr>Indication</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#isElidingEligible" class="tsd-kind-icon">is<wbr>Eliding<wbr>Eligible</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#isRedelivered" class="tsd-kind-icon">is<wbr>Redelivered</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#isReplyMessage" class="tsd-kind-icon">is<wbr>Reply<wbr>Message</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#reset" class="tsd-kind-icon">reset</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#setAcknowledgeImmediately" class="tsd-kind-icon">set<wbr>Acknowledge<wbr>Immediately</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#setApplicationMessageId" class="tsd-kind-icon">set<wbr>Application<wbr>Message<wbr>Id</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#setApplicationMessageType" class="tsd-kind-icon">set<wbr>Application<wbr>Message<wbr>Type</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#setAsReplyMessage" class="tsd-kind-icon">set<wbr>AsReply<wbr>Message</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#setBinaryAttachment" class="tsd-kind-icon">set<wbr>Binary<wbr>Attachment</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#setCorrelationId" class="tsd-kind-icon">set<wbr>Correlation<wbr>Id</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#setCorrelationKey" class="tsd-kind-icon">set<wbr>Correlation<wbr>Key</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#setDMQEligible" class="tsd-kind-icon">setDMQEligible</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#setDeliveryMode" class="tsd-kind-icon">set<wbr>Delivery<wbr>Mode</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#setDestination" class="tsd-kind-icon">set<wbr>Destination</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#setElidingEligible" class="tsd-kind-icon">set<wbr>Eliding<wbr>Eligible</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#setGMExpiration" class="tsd-kind-icon">setGMExpiration</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#setPriority" class="tsd-kind-icon">set<wbr>Priority</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#setReplyTo" class="tsd-kind-icon">set<wbr>Reply<wbr>To</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#setSdtContainer" class="tsd-kind-icon">set<wbr>Sdt<wbr>Container</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#setSenderId" class="tsd-kind-icon">set<wbr>Sender<wbr>Id</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#setSenderTimestamp" class="tsd-kind-icon">set<wbr>Sender<wbr>Timestamp</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#setSequenceNumber" class="tsd-kind-icon">set<wbr>Sequence<wbr>Number</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#setTimeToLive" class="tsd-kind-icon">set<wbr>Time<wbr>ToLive</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#setUserCos" class="tsd-kind-icon">set<wbr>User<wbr>Cos</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#setUserData" class="tsd-kind-icon">set<wbr>User<wbr>Data</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#setUserPropertyMap" class="tsd-kind-icon">set<wbr>User<wbr>Property<wbr>Map</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#setXmlContent" class="tsd-kind-icon">set<wbr>Xml<wbr>Content</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Message.html#setXmlMetadata" class="tsd-kind-icon">set<wbr>Xml<wbr>Metadata</a></li>
+							</ul>
+						</section>
+					</div>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Properties</h2>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="isAcknowledged" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> is<wbr>Acknowledged</h3>
+					<div class="tsd-signature tsd-kind-icon">is<wbr>Acknowledged<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L701">lib/solace.model.ts:701</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Returns whether acknowledge() has been called on this message.</p>
+						</div>
+					</div>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Methods</h2>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="acknowledge" class="tsd-anchor"></a>
+					<h3>acknowledge</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">acknowledge<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L696">lib/solace.model.ts:696</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Acknowledges this message.</p>
+								</div>
+								<p>If the <a href="MessageConsumer.html">MessageConsumer</a> on which this message was received is configured to use
+									<a href="../enums/MessageConsumerAcknowledgeMode.html#CLIENT">MessageConsumerAcknowledgeMode.CLIENT</a>, then when a message is received by an
+									application, the application must call this method to explicitly acknowledge reception of the
+								message. This frees local and router resources associated with an unacknowledged message.</p>
+								<p>The API does not send acknowledgments immediately. It stores the state for
+									acknowledged messages internally and acknowledges messages, in bulk, when a
+								threshold or timer is reached.</p>
+								<dl class="tsd-comment-tags">
+									<dt>throws</dt>
+									<dd><p><a href="OperationError.html">OperationError</a></p>
+										<ul>
+											<li>if this message was not received via Guaranteed Message;
+											subcode: <a href="../enums/ErrorSubcode.html#MESSAGE_DELIVERY_MODE_MISMATCH">ErrorSubcode.MESSAGE_DELIVERY_MODE_MISMATCH</a></li>
+											<li>if the associated <a href="Session.html">Session</a> is not connected;
+											subcode: <a href="../enums/ErrorSubcode.html#SESSION_NOT_CONNECTED">ErrorSubcode.SESSION_NOT_CONNECTED</a></li>
+											<li>if the associated <a href="MessageConsumer.html">MessageConsumer</a> is not connectedl
+											subcode: <a href="../enums/ErrorSubcode.html#INVALID_OPERATION">ErrorSubcode.INVALID_OPERATION</a></li>
+										</ul>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="dump" class="tsd-anchor"></a>
+					<h3>dump</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">dump<span class="tsd-signature-symbol">(</span>flags<span class="tsd-signature-symbol">: </span><a href="../enums/MessageDumpFlag.html" class="tsd-signature-type" data-tsd-kind="Enumeration">MessageDumpFlag</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L954">lib/solace.model.ts:954</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Produces a human-readable dump of the message&#39;s properties and contents. Applications must not parse the output, as its format is
+									not a defined part of the API and subject to change.</p>
+								</div>
+								<p>Output can be controlled by the <code>flags</code> parameter.</p>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>flags: <a href="../enums/MessageDumpFlag.html" class="tsd-signature-type" data-tsd-kind="Enumeration">MessageDumpFlag</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="getApplicationMessageId" class="tsd-anchor"></a>
+					<h3>get<wbr>Application<wbr>Message<wbr>Id</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Application<wbr>Message<wbr>Id<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L460">lib/solace.model.ts:460</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Gets the application-provided message ID.</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="getApplicationMessageType" class="tsd-anchor"></a>
+					<h3>get<wbr>Application<wbr>Message<wbr>Type</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Application<wbr>Message<wbr>Type<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L470">lib/solace.model.ts:470</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Gets the application message type. This value is used by applications only, and is passed through the API and Solace Message Router untouched.</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="getBinaryAttachment" class="tsd-anchor"></a>
+					<h3>get<wbr>Binary<wbr>Attachment</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Binary<wbr>Attachment<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Uint8Array</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L478">lib/solace.model.ts:478</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Gets the binary attachment part of the message.</p>
+								</div>
+								<p>Backward compatibility note: Using the version10 factory profile or older, the binary attachment is returned as a &#39;latin1&#39; String:
+								Each character has a code in the range * 0-255 representing the value of a single received byte at that position.</p>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Uint8Array</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="getCacheRequestId" class="tsd-anchor"></a>
+					<h3>get<wbr>Cache<wbr>Request<wbr>Id</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Cache<wbr>Request<wbr>Id<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L503">lib/solace.model.ts:503</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Given a Message containing a cached message, return the cache Request Id that the application set in the call to {@link CacheSession#sendCacheRequest}.</p>
+								</div>
+								<p>The request ID of the cache request associated with this message.</p>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="getCacheStatus" class="tsd-anchor"></a>
+					<h3>get<wbr>Cache<wbr>Status</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Cache<wbr>Status<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../enums/MessageCacheStatus.html" class="tsd-signature-type" data-tsd-kind="Enumeration">MessageCacheStatus</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L737">lib/solace.model.ts:737</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Gets the cache status of this message.</p>
+								</div>
+								<p>The status will be {@link MessageCacheStatus#LIVE} unless the message was returned in a reply to a cache request.</p>
+							</div>
+							<h4 class="tsd-returns-title">Returns <a href="../enums/MessageCacheStatus.html" class="tsd-signature-type" data-tsd-kind="Enumeration">MessageCacheStatus</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="getCorrelationId" class="tsd-anchor"></a>
+					<h3>get<wbr>Correlation<wbr>Id</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Correlation<wbr>Id<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L512">lib/solace.model.ts:512</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Gets the correlation ID.</p>
+								</div>
+								<p>The message Correlation Id is carried in the Solace message headers unmodified by the API and
+									the Solace Message Router. This field may be used for peer-to-peer message synchronization and
+								is commonly used for correlating a request to a reply. See {@link Session#sendRequest}.</p>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="getCorrelationKey" class="tsd-anchor"></a>
+					<h3>get<wbr>Correlation<wbr>Key</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Correlation<wbr>Key<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L534">lib/solace.model.ts:534</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Gets the correlation Key.</p>
+								</div>
+								<p>A correlation key is used to correlate a message with its acknowledgement or rejection.
+									The correlation key is an object that is passed back to the client during the router
+								acknowledgement or rejection.</p>
+								<p>The correlation key is a local reference used by applications generating Guaranteed messages.
+									Messages that are sent in either <a href="../enums/MessageDeliveryModeType.html#PERSISTENT">MessageDeliveryModeType.PERSISTENT</a> or
+								<a href="../enums/MessageDeliveryModeType.html#NON_PERSISTENT">MessageDeliveryModeType.NON_PERSISTENT</a> mode may set the correlation key.</p>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="getDeliveryCount" class="tsd-anchor"></a>
+					<h3>get<wbr>Delivery<wbr>Count</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Delivery<wbr>Count<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L674">lib/solace.model.ts:674</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Returns the delivery count.</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="getDeliveryMode" class="tsd-anchor"></a>
+					<h3>get<wbr>Delivery<wbr>Mode</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Delivery<wbr>Mode<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../enums/MessageDeliveryModeType.html" class="tsd-signature-type" data-tsd-kind="Enumeration">MessageDeliveryModeType</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L561">lib/solace.model.ts:561</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Gets the delivery mode of the message.</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <a href="../enums/MessageDeliveryModeType.html" class="tsd-signature-type" data-tsd-kind="Enumeration">MessageDeliveryModeType</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="getDestination" class="tsd-anchor"></a>
+					<h3>get<wbr>Destination</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Destination<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="Destination.html" class="tsd-signature-type" data-tsd-kind="Interface">Destination</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L571">lib/solace.model.ts:571</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Gets the destination to which the message was published.</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <a href="Destination.html" class="tsd-signature-type" data-tsd-kind="Interface">Destination</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="getGMExpiration" class="tsd-anchor"></a>
+					<h3>getGMExpiration</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">getGMExpiration<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L633">lib/solace.model.ts:633</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Returns the Guaranteed Message expiration value.
+										The expiration time is the UTC time
+										(that is, the number of milliseconds from midnight January 1, 1970 UTC) when the
+									message is to expire.</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="getGuaranteedMessageId" class="tsd-anchor"></a>
+					<h3>get<wbr>Guaranteed<wbr>Message<wbr>Id</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Guaranteed<wbr>Message<wbr>Id<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L664">lib/solace.model.ts:664</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Returns the Guaranteed Message MessageID for this message.</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="getPriority" class="tsd-anchor"></a>
+					<h3>get<wbr>Priority</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Priority<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L842">lib/solace.model.ts:842</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Gets the Message Priority Parameter (JMS Priority) value for the message.
+										Numerical values between 0 and 255 are valid return values,
+									undefined means the parameter is not present.</p>
+								</div>
+								<p>If destination queues and topic endpoints for this message
+									are configured to respect message priority,
+									the values 0 through 9 can be used to affect the priority
+									of delivery to consumers of those queues or topic endpoints.
+									For the purposes of prioritized message delivery,
+								values larger than 9 are treated the same as 9.</p>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="getReceiverTimestamp" class="tsd-anchor"></a>
+					<h3>get<wbr>Receiver<wbr>Timestamp</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Receiver<wbr>Timestamp<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L758">lib/solace.model.ts:758</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Gets the receive timestamp (in milliseconds, from midnight, January 1, 1970 UTC).</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="getReplyTo" class="tsd-anchor"></a>
+					<h3>get<wbr>Reply<wbr>To</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Reply<wbr>To<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="Destination.html" class="tsd-signature-type" data-tsd-kind="Interface">Destination</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L763">lib/solace.model.ts:763</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Gets the replyTo destination, if set.</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="Destination.html" class="tsd-signature-type" data-tsd-kind="Interface">Destination</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="getSdtContainer" class="tsd-anchor"></a>
+					<h3>get<wbr>Sdt<wbr>Container</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Sdt<wbr>Container<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><a href="SDTField.html" class="tsd-signature-type" data-tsd-kind="Interface">SDTField</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L946">lib/solace.model.ts:946</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Gets the message&#39;s structured data container, if this is a structured data message.</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><a href="SDTField.html" class="tsd-signature-type" data-tsd-kind="Interface">SDTField</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="getSenderId" class="tsd-anchor"></a>
+					<h3>get<wbr>Sender<wbr>Id</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Sender<wbr>Id<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L773">lib/solace.model.ts:773</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Returns the Sender&#39;s ID, if set.</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="getSenderTimestamp" class="tsd-anchor"></a>
+					<h3>get<wbr>Sender<wbr>Timestamp</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Sender<wbr>Timestamp<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L783">lib/solace.model.ts:783</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Gets the send timestamp (in milliseconds, from midnight, January 1, 1970 UTC), if set.</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="getSequenceNumber" class="tsd-anchor"></a>
+					<h3>get<wbr>Sequence<wbr>Number</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Sequence<wbr>Number<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L803">lib/solace.model.ts:803</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Gets the sequence number, if set.</p>
+								</div>
+								<p>This is an application-defined field, see <a href="Message.html#setSequenceNumber">setSequenceNumber</a>.</p>
+								<dl class="tsd-comment-tags">
+									<dt>throws</dt>
+									<dd><p><a href="SDTUnsupportedValueError.html">SDTUnsupportedValueError</a> in case the sequence number is out of range.</p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="getTimeToLive" class="tsd-anchor"></a>
+					<h3>get<wbr>Time<wbr>ToLive</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Time<wbr>ToLive<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L607">lib/solace.model.ts:607</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>The Guaranteed Message TTL, in milliseconds.</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="getTopicSequenceNumber" class="tsd-anchor"></a>
+					<h3>get<wbr>Topic<wbr>Sequence<wbr>Number</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Topic<wbr>Sequence<wbr>Number<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L669">lib/solace.model.ts:669</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Returns the Topic Sequence Number. If there is no topic sequence number, <code>undefined</code> is returned.</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="getType" class="tsd-anchor"></a>
+					<h3>get<wbr>Type</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Type<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../enums/MessageType.html" class="tsd-signature-type" data-tsd-kind="Enumeration">MessageType</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L450">lib/solace.model.ts:450</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Gets the payload type (<a href="../enums/MessageType.html">MessageType</a>) of the message. A message has a
+										structured payload if one was attached via {@link Message#setSdtContainer} otherwise
+										if the payload is attached via {@link Message#setBinaryAttachment} then it
+									is unstructured {@link MessageType#BINARY}.</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>default</dt>
+									<dd><p>MessageType.BINARY</p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-returns-title">Returns <a href="../enums/MessageType.html" class="tsd-signature-type" data-tsd-kind="Enumeration">MessageType</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="getUserCos" class="tsd-anchor"></a>
+					<h3>get<wbr>User<wbr>Cos</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>User<wbr>Cos<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../enums/MessageUserCosType.html" class="tsd-signature-type" data-tsd-kind="Enumeration">MessageUserCosType</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L828">lib/solace.model.ts:828</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Gets the Class of Service (CoS) value for the message.
+									The Class of Service has different semantics for direct and guaranteed messages.</p>
+								</div>
+								<p>For messages published with <a href="../enums/MessageDeliveryModeType.html#DIRECT">MessageDeliveryModeType.DIRECT</a>, the
+									class of service selects the weighted round-robin delivery queue when the
+									message is forwarded to a consumer.<a href="../enums/MessageUserCosType.html#COS1">MessageUserCosType.COS1</a> are the
+								lowest priority messages and will use the Solace Message Router D-1 delivery queues.</p>
+								<p>For messages published as guaranteed messages
+									(<a href="../enums/MessageDeliveryModeType.html#PERSISTENT">MessageDeliveryModeType.PERSISTENT</a> or
+									<a href="../enums/MessageDeliveryModeType.html#NON_PERSISTENT">MessageDeliveryModeType.NON_PERSISTENT</a>), messages published
+									with <a href="../enums/MessageUserCosType.html#COS1">MessageUserCosType.COS1</a> can be rejected by the Solace Message Router if
+									that message would cause any queue or topic-endpoint to exceed its configured
+								low-priority-max-msg-count.</p>
+							</div>
+							<h4 class="tsd-returns-title">Returns <a href="../enums/MessageUserCosType.html" class="tsd-signature-type" data-tsd-kind="Enumeration">MessageUserCosType</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="getUserData" class="tsd-anchor"></a>
+					<h3>get<wbr>User<wbr>Data</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>User<wbr>Data<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L882">lib/solace.model.ts:882</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Gets the user data part of the message, if set.</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="getUserPropertyMap" class="tsd-anchor"></a>
+					<h3>get<wbr>User<wbr>Property<wbr>Map</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>User<wbr>Property<wbr>Map<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="SDTMapContainer.html" class="tsd-signature-type" data-tsd-kind="Interface">SDTMapContainer</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L922">lib/solace.model.ts:922</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Gets the user property map carried in the message binary metadata, if set.</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="SDTMapContainer.html" class="tsd-signature-type" data-tsd-kind="Interface">SDTMapContainer</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="getXmlContent" class="tsd-anchor"></a>
+					<h3>get<wbr>Xml<wbr>Content</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Xml<wbr>Content<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L894">lib/solace.model.ts:894</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Gets the XML content part of the message, if set.
+										Notice that the content is encoded as UTF-8 characters,
+									it needs to be decoded as JavaScript surrogate pair: decodeURIComponent(escape(value))</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="getXmlContentDecoded" class="tsd-anchor"></a>
+					<h3>get<wbr>Xml<wbr>Content<wbr>Decoded</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Xml<wbr>Content<wbr>Decoded<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L899">lib/solace.model.ts:899</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Gets the XML content part of the message decoded from UTF-8 encoding of the characters.</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="getXmlMetadata" class="tsd-anchor"></a>
+					<h3>get<wbr>Xml<wbr>Metadata</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Xml<wbr>Metadata<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L917">lib/solace.model.ts:917</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Gets the message&#39;s XML metadata section, if set.</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="isAcknowledgeImmediately" class="tsd-anchor"></a>
+					<h3>is<wbr>Acknowledge<wbr>Immediately</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">is<wbr>Acknowledge<wbr>Immediately<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L714">lib/solace.model.ts:714</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Test if the Acknowledge Immediately message property is set or not.
+										When the Acknowledge Immediately property is set to true on an outgoing
+										Guaranteed Message, it indicates that the Solace Message Router should
+									acknowledge this message immediately upon receipt.</p>
+								</div>
+								<p>This property, when set by a publisher, may or may not be removed by the
+									Solace Message Router prior to delivery to a consumer, so message consumers
+									must not expect the property value indicates how the message was
+								originally published</p>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="isDMQEligible" class="tsd-anchor"></a>
+					<h3>isDMQEligible</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">isDMQEligible<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L651">lib/solace.model.ts:651</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Whether this message is Guaranteed Message DMQ eligible</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="isDiscardIndication" class="tsd-anchor"></a>
+					<h3>is<wbr>Discard<wbr>Indication</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">is<wbr>Discard<wbr>Indication<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L582">lib/solace.model.ts:582</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Indicates whether one or more messages have been discarded prior to the current message.
+									This indicates congestion discards only and is not affected by message eliding.</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="isElidingEligible" class="tsd-anchor"></a>
+					<h3>is<wbr>Eliding<wbr>Eligible</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">is<wbr>Eliding<wbr>Eligible<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L592">lib/solace.model.ts:592</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Returns whether the message is eligible for eliding.</p>
+								</div>
+								<p>Message eliding enables filtering of data to avoid transmitting
+								every single update to a subscribing client.</p>
+								<p>This property does not indicate whether the message was elided.</p>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="isRedelivered" class="tsd-anchor"></a>
+					<h3>is<wbr>Redelivered</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">is<wbr>Redelivered<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L748">lib/solace.model.ts:748</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Indicates whether the message has been marked as redelivered by the Solace Message Router.</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="isReplyMessage" class="tsd-anchor"></a>
+					<h3>is<wbr>Reply<wbr>Message</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">is<wbr>Reply<wbr>Message<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L743">lib/solace.model.ts:743</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Returns whether the message&#39;s reply field is set, indicating
+									that this message is a reply to a previous request. See {@link Session#sendRequest}.</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="reset" class="tsd-anchor"></a>
+					<h3>reset</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">reset<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L959">lib/solace.model.ts:959</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Releases all memory associated with this message. All values are reinitialized to defaults. The message is no longer associated with any session or consumer.</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="setAcknowledgeImmediately" class="tsd-anchor"></a>
+					<h3>set<wbr>Acknowledge<wbr>Immediately</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">set<wbr>Acknowledge<wbr>Immediately<span class="tsd-signature-symbol">(</span>value<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L730">lib/solace.model.ts:730</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Set the optional Acknoweledge Immediately message property.
+										When the Acknowledge Immediately property is set to true on an outgoing Guaranteed Message,
+										it indicates that the Solace Message Router should acknoweledge this message
+									immediately upon receipt. By default the property is set to false on newly created messages.</p>
+								</div>
+								<p>This property, when set by a publisher, may or may not be removed by the appliance
+									prior to delivery to a consumer, so message consumers must not expect the property value
+									indicates how the message was originally published. Therefore if a received message
+									is forwarded by the application, the Acknowledge Immediately property should be
+								explicitly set to the desired value (true or false).</p>
+								<p>Setting this property on an outgoing direct message has no effect.</p>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>value: <span class="tsd-signature-type">boolean</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="setApplicationMessageId" class="tsd-anchor"></a>
+					<h3>set<wbr>Application<wbr>Message<wbr>Id</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">set<wbr>Application<wbr>Message<wbr>Id<span class="tsd-signature-symbol">(</span>value<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L455">lib/solace.model.ts:455</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Sets the application-provided message ID.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>value: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="setApplicationMessageType" class="tsd-anchor"></a>
+					<h3>set<wbr>Application<wbr>Message<wbr>Type</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">set<wbr>Application<wbr>Message<wbr>Type<span class="tsd-signature-symbol">(</span>value<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L465">lib/solace.model.ts:465</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Sets the application message type. This value is used by applications only, and is passed through the API and Solace Message Router untouched.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>value: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="setAsReplyMessage" class="tsd-anchor"></a>
+					<h3>set<wbr>AsReply<wbr>Message</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">set<wbr>AsReply<wbr>Message<span class="tsd-signature-symbol">(</span>value<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L753">lib/solace.model.ts:753</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Sets whether to flag the message as a reply.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>value: <span class="tsd-signature-type">boolean</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="setBinaryAttachment" class="tsd-anchor"></a>
+					<h3>set<wbr>Binary<wbr>Attachment</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">set<wbr>Binary<wbr>Attachment<span class="tsd-signature-symbol">(</span>value<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">ArrayBufferLike</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">DataView</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L496">lib/solace.model.ts:496</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Sets the binary attachment part of the message.</p>
+								</div>
+								<p>The binary attachment is conceptually an array of bytes.
+									When this method is used, the message payload type is {@link MessageType#BINARY}
+								See {@link Message#getType}.</p>
+								<p>Applications may set the binary attachment to NULL or undefined to
+								remove the binary attachment and create a message with no payload.</p>
+								<p>The following types are accepted:</p>
+								<ul>
+									<li>ArrayBuffer</li>
+									<li>any DataView or TypedArray</li>
+									<li>&#39;latin1&#39; String for backwards compatibility:
+									Each character has a code in the range 0-255 representing exactly one byte in the attachment.</li>
+								</ul>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>value: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">ArrayBufferLike</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">DataView</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="setCorrelationId" class="tsd-anchor"></a>
+					<h3>set<wbr>Correlation<wbr>Id</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">set<wbr>Correlation<wbr>Id<span class="tsd-signature-symbol">(</span>value<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L521">lib/solace.model.ts:521</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Sets the correlation ID.</p>
+								</div>
+								<p>The message Correlation Id is carried in the Solace message headers unmodified by the API and
+									the Solace Message Router. This field may be used for peer-to-peer message synchronization and
+								is commonly used for correlating a request to a reply. See {@link Session#sendRequest}.</p>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>value: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="setCorrelationKey" class="tsd-anchor"></a>
+					<h3>set<wbr>Correlation<wbr>Key</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">set<wbr>Correlation<wbr>Key<span class="tsd-signature-symbol">(</span>value<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L556">lib/solace.model.ts:556</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Sets the correlation Key. A correlation key is used to correlate
+										a message with its acknowledgement or rejection. The correlation key is an object that is
+									passed back to the client during the router acknowledgement or rejection.</p>
+								</div>
+								<p>The correlation key is a local reference used by applications generating Guaranteed Messages.
+									Messages that are sent in either <a href="../enums/MessageDeliveryModeType.html#PERSISTENT">MessageDeliveryModeType.PERSISTENT</a> or
+									<a href="../enums/MessageDeliveryModeType.html#NON_PERSISTENT">MessageDeliveryModeType.NON_PERSISTENT</a> mode may set the correlation key. If this
+									method is used, the correlation information is returned when the
+									<a href="../enums/SessionEventCode.html#ACKNOWLEDGED_MESSAGE">SessionEventCode.ACKNOWLEDGED_MESSAGE</a> event is later received for an
+									acknowledged message or when the <a href="../enums/SessionEventCode.html#REJECTED_MESSAGE_ERROR">SessionEventCode.REJECTED_MESSAGE_ERROR</a>
+								is received for a rejected message.</p>
+								<p>The API only maintains a reference to the passed object. If the application requires the
+									contents are unmodified for proper correlation, then it is the application&#39;s responsibility
+								to ensure the contents of the object are not modified.</p>
+								<p>Important: <b>The Correlation Key is not included in the transmitted message and is only used
+								with the local API</b></p>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>value: <span class="tsd-signature-type">any</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="setDMQEligible" class="tsd-anchor"></a>
+					<h3>setDMQEligible</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">setDMQEligible<span class="tsd-signature-symbol">(</span>value<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L659">lib/solace.model.ts:659</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Sets the new value for Guaranteed Message DMQ (Dead Message Queue) Eligible.
+										When this property is set, when the message expires in the network
+										the message is saved on a appliance dead message queue. Otherwise the expired message is
+									discarded. See <a href="Message.html#setTimeToLive">setTimeToLive</a>.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>value: <span class="tsd-signature-type">boolean</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="setDeliveryMode" class="tsd-anchor"></a>
+					<h3>set<wbr>Delivery<wbr>Mode</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">set<wbr>Delivery<wbr>Mode<span class="tsd-signature-symbol">(</span>value<span class="tsd-signature-symbol">: </span><a href="../enums/MessageDeliveryModeType.html" class="tsd-signature-type" data-tsd-kind="Enumeration">MessageDeliveryModeType</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L566">lib/solace.model.ts:566</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Sets the delivery mode of the message.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>value: <a href="../enums/MessageDeliveryModeType.html" class="tsd-signature-type" data-tsd-kind="Enumeration">MessageDeliveryModeType</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="setDestination" class="tsd-anchor"></a>
+					<h3>set<wbr>Destination</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">set<wbr>Destination<span class="tsd-signature-symbol">(</span>value<span class="tsd-signature-symbol">: </span><a href="Destination.html" class="tsd-signature-type" data-tsd-kind="Interface">Destination</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L576">lib/solace.model.ts:576</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Sets the destination (<a href="../enums/DestinationType.html#TOPIC">DestinationType.TOPIC</a> or <a href="../enums/DestinationType.html#QUEUE">DestinationType.QUEUE</a>) to publish the message to.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>value: <a href="Destination.html" class="tsd-signature-type" data-tsd-kind="Interface">Destination</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="setElidingEligible" class="tsd-anchor"></a>
+					<h3>set<wbr>Eliding<wbr>Eligible</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">set<wbr>Eliding<wbr>Eligible<span class="tsd-signature-symbol">(</span>value<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L602">lib/solace.model.ts:602</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Sets whether the message is eligible for eliding.</p>
+								</div>
+								<p>Message eliding enables filtering of data to avoid transmitting
+								every single update to a subscribing client.</p>
+								<p>This property does not indicate whether the message was elided.</p>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>value: <span class="tsd-signature-type">boolean</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="setGMExpiration" class="tsd-anchor"></a>
+					<h3>setGMExpiration</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">setGMExpiration<span class="tsd-signature-symbol">(</span>value<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L646">lib/solace.model.ts:646</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Sets the expiration time field. The expiration time is the UTC time
+										(that is, the number of milliseconds from midnight January 1, 1970 UTC) when the
+										message is to expire. The expiration time is carried in the message when set to
+										a non-zero value. Expiration time is not included when this value is set to zero or
+									undefined</p>
+								</div>
+								<p>The message expiration time is carried to clients that receive the message
+									unmodified and does not effect the life cycle of the message. Use
+								<a href="Message.html#setTimeToLive">setTimeToLive</a> to enforce message expiry in the network.</p>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>value: <span class="tsd-signature-type">number</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="setPriority" class="tsd-anchor"></a>
+					<h3>set<wbr>Priority</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">set<wbr>Priority<span class="tsd-signature-symbol">(</span>value<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L877">lib/solace.model.ts:877</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Sets the Message Priority Parameter (JMS Priority) value for the message.
+										Numerical values between 0 and 255 are accepted,
+									use undefined to unset.</p>
+								</div>
+								<p>If destination queues and topic endpoints for this message
+									are configured to respect message priority,
+									the values 0 through 9 can be used to affect the priority
+									of delivery to consumers of those queues or topic endpoints.
+									For the purposes of prioritized message delivery, values larger than 9
+								are treated the same as 9.</p>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>value: <span class="tsd-signature-type">number</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="setReplyTo" class="tsd-anchor"></a>
+					<h3>set<wbr>Reply<wbr>To</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">set<wbr>Reply<wbr>To<span class="tsd-signature-symbol">(</span>value<span class="tsd-signature-symbol">: </span><a href="Destination.html" class="tsd-signature-type" data-tsd-kind="Interface">Destination</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L768">lib/solace.model.ts:768</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Sets the replyTo destination</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>value: <a href="Destination.html" class="tsd-signature-type" data-tsd-kind="Interface">Destination</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="setSdtContainer" class="tsd-anchor"></a>
+					<h3>set<wbr>Sdt<wbr>Container</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">set<wbr>Sdt<wbr>Container<span class="tsd-signature-symbol">(</span>container<span class="tsd-signature-symbol">: </span><a href="SDTField.html" class="tsd-signature-type" data-tsd-kind="Interface">SDTField</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L941">lib/solace.model.ts:941</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Makes this message a structured data message by assigning it a structured data type (SDT) container payload (such as a
+										<a href="SDTMapContainer.html">SDTMapContainer</a>, <a href="SDTStreamContainer.html">SDTStreamContainer</a> or a {@link SDTFieldType#STRING}, which is transported in the binary
+									attachment field.</p>
+								</div>
+								<p>Assigning a SDT container updates the message&#39;s Type property to the appropriate value.</p>
+								<p>The container argument must be a <a href="SDTField.html">SDTField</a> with a type of <a href="../enums/SDTFieldType.html#MAP">SDTFieldType.MAP</a>,
+								<a href="../enums/SDTFieldType.html#STREAM">SDTFieldType.STREAM</a>, or <a href="../enums/SDTFieldType.html#STRING">SDTFieldType.STRING</a>.</p>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>container: <a href="SDTField.html" class="tsd-signature-type" data-tsd-kind="Interface">SDTField</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="setSenderId" class="tsd-anchor"></a>
+					<h3>set<wbr>Sender<wbr>Id</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">set<wbr>Sender<wbr>Id<span class="tsd-signature-symbol">(</span>value<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L778">lib/solace.model.ts:778</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Sets the Sender ID for the message</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>value: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="setSenderTimestamp" class="tsd-anchor"></a>
+					<h3>set<wbr>Sender<wbr>Timestamp</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">set<wbr>Sender<wbr>Timestamp<span class="tsd-signature-symbol">(</span>value<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L795">lib/solace.model.ts:795</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Sets the send timestamp (in milliseconds, from midnight, January 1,
+										1970 UTC). This field can be generated automatically during message
+										publishing, but it will not be generated if previously set to a non-null value by this method.
+									See {@link SessionProperties#generateSendTimestamps}.</p>
+								</div>
+								<p>An application that publishes the same <a href="Message.html">Message</a> multiple times and
+									also wants generted timestamps on each messages, should set the sender timestamp
+								to undefined after each call to {@link Session#send}.</p>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>value: <span class="tsd-signature-type">number</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="setSequenceNumber" class="tsd-anchor"></a>
+					<h3>set<wbr>Sequence<wbr>Number</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">set<wbr>Sequence<wbr>Number<span class="tsd-signature-symbol">(</span>value<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L810">lib/solace.model.ts:810</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Sets the application-defined sequence number. If the sequence number
+										is not set, or set to undefined, and {@link SessionProperties#generateSequenceNumber}
+									is true, then a sequence number is automatically generated for each sent message.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>value: <span class="tsd-signature-type">number</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="setTimeToLive" class="tsd-anchor"></a>
+					<h3>set<wbr>Time<wbr>ToLive</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">set<wbr>Time<wbr>ToLive<span class="tsd-signature-symbol">(</span>value<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L625">lib/solace.model.ts:625</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Sets the Guaranteed Message TTL to set, in milliseconds.</p>
+								</div>
+								<p>The time to live is the number of milliseconds the message may be stored on the
+									Solace Message Router before the message is discarded or moved to a Dead Message
+								Queue. See <a href="Message.html#setDMQEligible">setDMQEligible</a>.</p>
+								<p>Setting the Time To Live to zero disables TTL for the message.</p>
+								<p>This property is only valid for Guaranteed messages (Persistent and Non-Persistent).
+									It has no effect when used in conjunction with other message types unless the message
+								is promoted by the appliance to a Guaranteed message.</p>
+								<p>The maxium allowed time to live is 3.1536E11 (315360000000) which is
+								approximately 10 years.</p>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>value: <span class="tsd-signature-type">number</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="setUserCos" class="tsd-anchor"></a>
+					<h3>set<wbr>User<wbr>Cos</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">set<wbr>User<wbr>Cos<span class="tsd-signature-symbol">(</span>value<span class="tsd-signature-symbol">: </span><a href="../enums/MessageUserCosType.html" class="tsd-signature-type" data-tsd-kind="Enumeration">MessageUserCosType</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L863">lib/solace.model.ts:863</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Sets the Class of Service (CoS) value for the message.</p>
+								</div>
+								<p>The Class of Service has different semantics for direct and guaranteed messages.</p>
+								<p>For messages published with <a href="../enums/MessageDeliveryModeType.html#DIRECT">MessageDeliveryModeType.DIRECT</a>, the
+									class of service selects the weighted round-robin delivery queue when the
+									message is forwarded to a consumer.{@link MessageUserCosType#COS1} are the
+								lowest priority messages and will use the Solace Message Router D-1 delivery queues.</p>
+								<p>For messages published as guaranteed messages
+									(<a href="../enums/MessageDeliveryModeType.html#PERSISTENT">MessageDeliveryModeType.PERSISTENT</a> or
+									<a href="../enums/MessageDeliveryModeType.html#NON_PERSISTENT">MessageDeliveryModeType.NON_PERSISTENT</a>), messages published
+									with {@link MessageUserCosType#COS1} can be rejected by the Solace Message Router if
+									that message would cause any queue or topic-endpoint to exceed its configured
+								low-priority-max-msg-count.</p>
+								<dl class="tsd-comment-tags">
+									<dt>default</dt>
+									<dd><p>{@link MessageUserCosType#COS1}</p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>value: <a href="../enums/MessageUserCosType.html" class="tsd-signature-type" data-tsd-kind="Enumeration">MessageUserCosType</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="setUserData" class="tsd-anchor"></a>
+					<h3>set<wbr>User<wbr>Data</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">set<wbr>User<wbr>Data<span class="tsd-signature-symbol">(</span>value<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L887">lib/solace.model.ts:887</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Sets the user data part of the message.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>value: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="setUserPropertyMap" class="tsd-anchor"></a>
+					<h3>set<wbr>User<wbr>Property<wbr>Map</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">set<wbr>User<wbr>Property<wbr>Map<span class="tsd-signature-symbol">(</span>value<span class="tsd-signature-symbol">: </span><a href="SDTMapContainer.html" class="tsd-signature-type" data-tsd-kind="Interface">SDTMapContainer</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L928">lib/solace.model.ts:928</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Allows users to specify their own user properties to be carried
+									in the message binary metadata separate from the payload.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>value: <a href="SDTMapContainer.html" class="tsd-signature-type" data-tsd-kind="Interface">SDTMapContainer</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="setXmlContent" class="tsd-anchor"></a>
+					<h3>set<wbr>Xml<wbr>Content</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">set<wbr>Xml<wbr>Content<span class="tsd-signature-symbol">(</span>value<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L907">lib/solace.model.ts:907</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Sets the XML content part of the message.
+										The content is encoded by replacing each instance of certain characters
+										by one, two, three, or four escape sequences representing the
+									UTF-8 encoding of the character.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>value: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="setXmlMetadata" class="tsd-anchor"></a>
+					<h3>set<wbr>Xml<wbr>Metadata</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">set<wbr>Xml<wbr>Metadata<span class="tsd-signature-symbol">(</span>value<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace.model.ts#L912">lib/solace.model.ts:912</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Sets the message&#39;s XML metadata section.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>value: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+			</section>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class=" ">
+						<a href="../modules.html">Exports</a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+				</ul>
+				<ul class="current">
+					<li class="current tsd-kind-interface">
+						<a href="Message.html" class="tsd-kind-icon">Message</a>
+						<ul>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="Message.html#isAcknowledged" class="tsd-kind-icon">is<wbr>Acknowledged</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#acknowledge" class="tsd-kind-icon">acknowledge</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#dump" class="tsd-kind-icon">dump</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#getApplicationMessageId" class="tsd-kind-icon">get<wbr>Application<wbr>Message<wbr>Id</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#getApplicationMessageType" class="tsd-kind-icon">get<wbr>Application<wbr>Message<wbr>Type</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#getBinaryAttachment" class="tsd-kind-icon">get<wbr>Binary<wbr>Attachment</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#getCacheRequestId" class="tsd-kind-icon">get<wbr>Cache<wbr>Request<wbr>Id</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#getCacheStatus" class="tsd-kind-icon">get<wbr>Cache<wbr>Status</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#getCorrelationId" class="tsd-kind-icon">get<wbr>Correlation<wbr>Id</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#getCorrelationKey" class="tsd-kind-icon">get<wbr>Correlation<wbr>Key</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#getDeliveryCount" class="tsd-kind-icon">get<wbr>Delivery<wbr>Count</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#getDeliveryMode" class="tsd-kind-icon">get<wbr>Delivery<wbr>Mode</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#getDestination" class="tsd-kind-icon">get<wbr>Destination</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#getGMExpiration" class="tsd-kind-icon">getGMExpiration</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#getGuaranteedMessageId" class="tsd-kind-icon">get<wbr>Guaranteed<wbr>Message<wbr>Id</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#getPriority" class="tsd-kind-icon">get<wbr>Priority</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#getReceiverTimestamp" class="tsd-kind-icon">get<wbr>Receiver<wbr>Timestamp</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#getReplyTo" class="tsd-kind-icon">get<wbr>Reply<wbr>To</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#getSdtContainer" class="tsd-kind-icon">get<wbr>Sdt<wbr>Container</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#getSenderId" class="tsd-kind-icon">get<wbr>Sender<wbr>Id</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#getSenderTimestamp" class="tsd-kind-icon">get<wbr>Sender<wbr>Timestamp</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#getSequenceNumber" class="tsd-kind-icon">get<wbr>Sequence<wbr>Number</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#getTimeToLive" class="tsd-kind-icon">get<wbr>Time<wbr>ToLive</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#getTopicSequenceNumber" class="tsd-kind-icon">get<wbr>Topic<wbr>Sequence<wbr>Number</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#getType" class="tsd-kind-icon">get<wbr>Type</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#getUserCos" class="tsd-kind-icon">get<wbr>User<wbr>Cos</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#getUserData" class="tsd-kind-icon">get<wbr>User<wbr>Data</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#getUserPropertyMap" class="tsd-kind-icon">get<wbr>User<wbr>Property<wbr>Map</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#getXmlContent" class="tsd-kind-icon">get<wbr>Xml<wbr>Content</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#getXmlContentDecoded" class="tsd-kind-icon">get<wbr>Xml<wbr>Content<wbr>Decoded</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#getXmlMetadata" class="tsd-kind-icon">get<wbr>Xml<wbr>Metadata</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#isAcknowledgeImmediately" class="tsd-kind-icon">is<wbr>Acknowledge<wbr>Immediately</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#isDMQEligible" class="tsd-kind-icon">isDMQEligible</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#isDiscardIndication" class="tsd-kind-icon">is<wbr>Discard<wbr>Indication</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#isElidingEligible" class="tsd-kind-icon">is<wbr>Eliding<wbr>Eligible</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#isRedelivered" class="tsd-kind-icon">is<wbr>Redelivered</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#isReplyMessage" class="tsd-kind-icon">is<wbr>Reply<wbr>Message</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#reset" class="tsd-kind-icon">reset</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#setAcknowledgeImmediately" class="tsd-kind-icon">set<wbr>Acknowledge<wbr>Immediately</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#setApplicationMessageId" class="tsd-kind-icon">set<wbr>Application<wbr>Message<wbr>Id</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#setApplicationMessageType" class="tsd-kind-icon">set<wbr>Application<wbr>Message<wbr>Type</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#setAsReplyMessage" class="tsd-kind-icon">set<wbr>AsReply<wbr>Message</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#setBinaryAttachment" class="tsd-kind-icon">set<wbr>Binary<wbr>Attachment</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#setCorrelationId" class="tsd-kind-icon">set<wbr>Correlation<wbr>Id</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#setCorrelationKey" class="tsd-kind-icon">set<wbr>Correlation<wbr>Key</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#setDMQEligible" class="tsd-kind-icon">setDMQEligible</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#setDeliveryMode" class="tsd-kind-icon">set<wbr>Delivery<wbr>Mode</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#setDestination" class="tsd-kind-icon">set<wbr>Destination</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#setElidingEligible" class="tsd-kind-icon">set<wbr>Eliding<wbr>Eligible</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#setGMExpiration" class="tsd-kind-icon">setGMExpiration</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#setPriority" class="tsd-kind-icon">set<wbr>Priority</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#setReplyTo" class="tsd-kind-icon">set<wbr>Reply<wbr>To</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#setSdtContainer" class="tsd-kind-icon">set<wbr>Sdt<wbr>Container</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#setSenderId" class="tsd-kind-icon">set<wbr>Sender<wbr>Id</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#setSenderTimestamp" class="tsd-kind-icon">set<wbr>Sender<wbr>Timestamp</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#setSequenceNumber" class="tsd-kind-icon">set<wbr>Sequence<wbr>Number</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#setTimeToLive" class="tsd-kind-icon">set<wbr>Time<wbr>ToLive</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#setUserCos" class="tsd-kind-icon">set<wbr>User<wbr>Cos</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#setUserData" class="tsd-kind-icon">set<wbr>User<wbr>Data</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#setUserPropertyMap" class="tsd-kind-icon">set<wbr>User<wbr>Property<wbr>Map</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#setXmlContent" class="tsd-kind-icon">set<wbr>Xml<wbr>Content</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Message.html#setXmlMetadata" class="tsd-kind-icon">set<wbr>Xml<wbr>Metadata</a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+				<ul class="after-current">
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer class="with-border-bottom">
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited property</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="container tsd-generator">
+	<p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a>, the 9/8/2021 at 7:29:12 AM</p>
+</div>
+<div class="overlay"></div>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>
