@@ -531,7 +531,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
    * - the Promise resolves or rejects outside the Angular zone
    * - the Promise is bound the current session, i.e., will ony be settled as long as the current session is not disposed.
    */
-  private whenEvent(resolveOnEvent: SessionEventCode, options?: { rejectOnEvent?: SessionEventCode; correlationKey?: string; }): Promise<SessionEvent> {
+  private whenEvent(resolveOnEvent: SessionEventCode, options?: { rejectOnEvent?: SessionEventCode; correlationKey?: string }): Promise<SessionEvent> {
     return this._event$
       .pipe(
         assertNotInAngularZone(),
