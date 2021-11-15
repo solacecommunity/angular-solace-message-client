@@ -5,6 +5,15 @@
 
 ## Changelog
 
+## [12.0.1](https://github.com/solacecommunity/angular-solace-message-client/compare/12.0.0...12.0.1) (2021-11-15)
+
+
+### Features
+
+* **solace-message-client:** allow controlling if to receive messages outside the Angular zone ([6399eca](https://github.com/solacecommunity/angular-solace-message-client/commit/6399eca398c3ce61dd8a54d993c8a5a32b7e78af)), closes [#30](https://github.com/solacecommunity/angular-solace-message-client/issues/30)
+
+
+
 # [12.0.0](https://github.com/solacecommunity/angular-solace-message-client/compare/11.0.1...12.0.0) (2021-09-08)
 
 ### Chore
