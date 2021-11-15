@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>SDTField | Angular Solace Message Client - v12.0.1</title>
+	<title>ConsumeOptions | Angular Solace Message Client - v12.0.1</title>
 	<meta name="description" content="Documentation for Angular Solace Message Client - v12.0.1">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -54,10 +54,10 @@
 					<a href="../modules.html">Angular Solace Message Client - v12.0.1</a>
 				</li>
 				<li>
-					<a href="SDTField.html">SDTField</a>
+					<a href="ConsumeOptions.html">ConsumeOptions</a>
 				</li>
 			</ul>
-			<h1>Interface SDTField</h1>
+			<h1>Interface ConsumeOptions</h1>
 		</div>
 	</div>
 </header>
@@ -67,24 +67,15 @@
 			<section class="tsd-panel tsd-comment">
 				<div class="tsd-comment tsd-typography">
 					<div class="lead">
-						<p>Represents a SDT (Structured Data Type) field.</p>
+						<p>Control how to consume messages.</p>
 					</div>
-					<p>SDTs are structured, language-independent, and architecture-independent data types.
-						SDTs can be used in messages to facilitate the exchange of binary data in a heterogeneous network
-					that has clients that use different hardware architectures and programming languages.</p>
-					<p>To create an instance of an <code>SDTField</code>, call <a href="../modules/SolaceObjectFactory.html#createSDTField">SolaceObjectFactory.createSDTField</a>.</p>
-					<dl class="tsd-comment-tags">
-						<dt>see</dt>
-						<dd><p>solace.SDTField</p>
-						</dd>
-					</dl>
 				</div>
 			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">SDTField</span>
+						<span class="target">ConsumeOptions</span>
 					</li>
 				</ul>
 			</section>
@@ -93,81 +84,75 @@
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section ">
+							<h3>Properties</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="ConsumeOptions.html#emitOutsideAngularZone" class="tsd-kind-icon">emit<wbr>Outside<wbr>Angular<wbr>Zone</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section ">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="SDTField.html#getType" class="tsd-kind-icon">get<wbr>Type</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="SDTField.html#getValue" class="tsd-kind-icon">get<wbr>Value</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="SDTField.html#toString" class="tsd-kind-icon">to<wbr>String</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="ConsumeOptions.html#onSubscribed" class="tsd-kind-icon">on<wbr>Subscribed</a></li>
 							</ul>
 						</section>
 					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Properties</h2>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="emitOutsideAngularZone" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> emit<wbr>Outside<wbr>Angular<wbr>Zone</h3>
+					<div class="tsd-signature tsd-kind-icon">emit<wbr>Outside<wbr>Angular<wbr>Zone<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/45b49e5/projects/solace-message-client/src/lib/solace-message-client.ts#L320">lib/solace-message-client.ts:320</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Controls if to emit received messages inside or outside of the Angular zone.
+							If emitted outside of the Angular zone no change detection cycle is triggered.</p>
+						</div>
+						<p>By default, if not specified, emits inside the Angular zone.</p>
+					</div>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Methods</h2>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
-					<a name="getType" class="tsd-anchor"></a>
-					<h3>get<wbr>Type</h3>
+					<a name="onSubscribed" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> on<wbr>Subscribed</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
-						<li class="tsd-signature tsd-kind-icon">get<wbr>Type<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../enums/SDTFieldType.html" class="tsd-signature-type" data-tsd-kind="Enumeration">SDTFieldType</a></li>
+						<li class="tsd-signature tsd-kind-icon">on<wbr>Subscribed<span class="tsd-signature-symbol">(</span>messageConsumer<span class="tsd-signature-symbol">: </span><a href="MessageConsumer.html" class="tsd-signature-type" data-tsd-kind="Interface">MessageConsumer</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/45b49e5/projects/solace-message-client/src/lib/solace.model.ts#L1140">lib/solace.model.ts:1140</a></li>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/45b49e5/projects/solace-message-client/src/lib/solace-message-client.ts#L333">lib/solace-message-client.ts:333</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Gets the type of field represented.</p>
+									<p>A lifecycle hook that is called when subscribed to a destination.</p>
 								</div>
+								<p>Use if you need to wait until the destination is actually subscribed, e.g, if implementing the request/response message exchange pattern,
+								or for reading information about the endpoint if consuming messages via {@link SolaceMessageClient#consume$}.</p>
 							</div>
-							<h4 class="tsd-returns-title">Returns <a href="../enums/SDTFieldType.html" class="tsd-signature-type" data-tsd-kind="Enumeration">SDTFieldType</a></h4>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
-					<a name="getValue" class="tsd-anchor"></a>
-					<h3>get<wbr>Value</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
-						<li class="tsd-signature tsd-kind-icon">get<wbr>Value<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/45b49e5/projects/solace-message-client/src/lib/solace.model.ts#L1146">lib/solace.model.ts:1146</a></li>
-								</ul>
-							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Gets the field value.</p>
-								</div>
-								<dl class="tsd-comment-tags">
-									<dt>throws</dt>
-									<dd><p>{SDTUnsupportedValueError} if value found in the field is not in range supported by the platform/runtime.</p>
-									</dd>
-								</dl>
-							</div>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
-					<a name="toString" class="tsd-anchor"></a>
-					<h3>to<wbr>String</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
-						<li class="tsd-signature tsd-kind-icon">to<wbr>String<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/45b49e5/projects/solace-message-client/src/lib/solace.model.ts#L1148">lib/solace.model.ts:1148</a></li>
-								</ul>
-							</aside>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>messageConsumer: <a href="MessageConsumer.html" class="tsd-signature-type" data-tsd-kind="Interface">MessageConsumer</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>reference to the message consumer, useful to read generated endpoint names:
+											* For non-durable endpoints, if not passing an endpoint name, Solace API generates a name which can be queried by calling {@link MessageConsumer#getDestination};
+											The generated descriptor can be queried by calling {@link MessageConsumer#getProperties#queueDescriptor};
+										* For durable endpoints, endpoint properties can be retrieved as configured on the broker by calling {@link MessageConsumer#getProperties#queueProperties};</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -186,16 +171,13 @@
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-interface">
-						<a href="SDTField.html" class="tsd-kind-icon">SDTField</a>
+						<a href="ConsumeOptions.html" class="tsd-kind-icon">Consume<wbr>Options</a>
 						<ul>
-							<li class=" tsd-kind-method tsd-parent-kind-interface">
-								<a href="SDTField.html#getType" class="tsd-kind-icon">get<wbr>Type</a>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="ConsumeOptions.html#emitOutsideAngularZone" class="tsd-kind-icon">emit<wbr>Outside<wbr>Angular<wbr>Zone</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-interface">
-								<a href="SDTField.html#getValue" class="tsd-kind-icon">get<wbr>Value</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-interface">
-								<a href="SDTField.html#toString" class="tsd-kind-icon">to<wbr>String</a>
+								<a href="ConsumeOptions.html#onSubscribed" class="tsd-kind-icon">on<wbr>Subscribed</a>
 							</li>
 						</ul>
 					</li>

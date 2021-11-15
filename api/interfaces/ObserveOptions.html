@@ -3,8 +3,8 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>ObserveOptions | Angular Solace Message Client - v12.0.0</title>
-	<meta name="description" content="Documentation for Angular Solace Message Client - v12.0.0">
+	<title>ObserveOptions | Angular Solace Message Client - v12.0.1</title>
+	<meta name="description" content="Documentation for Angular Solace Message Client - v12.0.1">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
 	<script async src="../assets/js/search.js" id="search-script"></script>
@@ -24,7 +24,7 @@
 						<li class="state loading">Preparing search index...</li>
 						<li class="state failure">The search index is not available</li>
 					</ul>
-					<a href="../index.html" class="title">Angular Solace Message Client - v12.0.0</a>
+					<a href="../index.html" class="title">Angular Solace Message Client - v12.0.1</a>
 				</div>
 				<div class="table-cell" id="tsd-widgets">
 					<div id="tsd-filter">
@@ -51,7 +51,7 @@
 		<div class="container">
 			<ul class="tsd-breadcrumb">
 				<li>
-					<a href="../modules.html">Angular Solace Message Client - v12.0.0</a>
+					<a href="../modules.html">Angular Solace Message Client - v12.0.1</a>
 				</li>
 				<li>
 					<a href="ObserveOptions.html">ObserveOptions</a>
@@ -75,12 +75,7 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<a href="OnSubscribed.html" class="tsd-signature-type" data-tsd-kind="Interface">OnSubscribed</a>
-						<ul class="tsd-hierarchy">
-							<li>
-								<span class="target">ObserveOptions</span>
-							</li>
-						</ul>
+						<span class="target">ObserveOptions</span>
 					</li>
 				</ul>
 			</section>
@@ -91,13 +86,14 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="ObserveOptions.html#emitOutsideAngularZone" class="tsd-kind-icon">emit<wbr>Outside<wbr>Angular<wbr>Zone</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="ObserveOptions.html#requestTimeout" class="tsd-kind-icon">request<wbr>Timeout</a></li>
 							</ul>
 						</section>
-						<section class="tsd-index-section tsd-is-inherited">
+						<section class="tsd-index-section ">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-inherited"><a href="ObserveOptions.html#onSubscribed" class="tsd-kind-icon">on<wbr>Subscribed</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="ObserveOptions.html#onSubscribed" class="tsd-kind-icon">on<wbr>Subscribed</a></li>
 							</ul>
 						</section>
 					</div>
@@ -106,12 +102,29 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="emitOutsideAngularZone" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> emit<wbr>Outside<wbr>Angular<wbr>Zone</h3>
+					<div class="tsd-signature tsd-kind-icon">emit<wbr>Outside<wbr>Angular<wbr>Zone<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/45b49e5/projects/solace-message-client/src/lib/solace-message-client.ts#L298">lib/solace-message-client.ts:298</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Controls if to emit received messages inside or outside of the Angular zone.
+							If emitted outside of the Angular zone no change detection cycle is triggered.</p>
+						</div>
+						<p>By default, if not specified, emits inside the Angular zone.</p>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
 					<a name="requestTimeout" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagOptional">Optional</span> request<wbr>Timeout</h3>
 					<div class="tsd-signature tsd-kind-icon">request<wbr>Timeout<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace-message-client.ts#L290">lib/solace-message-client.ts:290</a></li>
+							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/45b49e5/projects/solace-message-client/src/lib/solace-message-client.ts#L290">lib/solace-message-client.ts:290</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -122,40 +135,28 @@
 					</div>
 				</section>
 			</section>
-			<section class="tsd-panel-group tsd-member-group tsd-is-inherited">
+			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Methods</h2>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface tsd-is-inherited">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
 					<a name="onSubscribed" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagOptional">Optional</span> on<wbr>Subscribed</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-is-inherited">
-						<li class="tsd-signature tsd-kind-icon">on<wbr>Subscribed<span class="tsd-signature-symbol">(</span>messageConsumer<span class="tsd-signature-symbol">?: </span><a href="MessageConsumer.html" class="tsd-signature-type" data-tsd-kind="Interface">MessageConsumer</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">on<wbr>Subscribed<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="OnSubscribed.html">OnSubscribed</a>.<a href="OnSubscribed.html#onSubscribed">onSubscribed</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/bf6d45e/projects/solace-message-client/src/lib/solace-message-client.ts#L310">lib/solace-message-client.ts:310</a></li>
+									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/45b49e5/projects/solace-message-client/src/lib/solace-message-client.ts#L306">lib/solace-message-client.ts:306</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Callback invoked when subscribed to a destination.</p>
+									<p>A lifecycle hook that is called when subscribed to a destination.</p>
 								</div>
+								<p>Use if you need to wait until the destination is actually subscribed, e.g, if implementing the request/response message exchange pattern,
+								or for reading information about the endpoint if consuming messages via {@link SolaceMessageClient#consume$}.</p>
 							</div>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5><span class="tsd-flag ts-flagOptional">Optional</span> messageConsumer: <a href="MessageConsumer.html" class="tsd-signature-type" data-tsd-kind="Interface">MessageConsumer</a></h5>
-									<div class="tsd-comment tsd-typography">
-										<p>consumer object only passed if consuming messages from a topic endpoint or queue endpoint via {@link SolaceMessageClient#consume$},
-											but not if observing a topic destination via {@link SolaceMessageClient#observe$}.
-											* For non-durable endpoints, if not passing an endpoint name, Solace API generates a name which can be queried by calling {@link MessageConsumer#getDestination};
-											The generated descriptor can be queried by calling {@link MessageConsumer#getProperties#queueDescriptor};
-										* For durable endpoints, endpoint properties can be retrieved as configured on the broker by calling {@link MessageConsumer#getProperties#queueProperties};</p>
-									</div>
-								</li>
-							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
 						</li>
 					</ul>
@@ -178,9 +179,12 @@
 						<a href="ObserveOptions.html" class="tsd-kind-icon">Observe<wbr>Options</a>
 						<ul>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="ObserveOptions.html#emitOutsideAngularZone" class="tsd-kind-icon">emit<wbr>Outside<wbr>Angular<wbr>Zone</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
 								<a href="ObserveOptions.html#requestTimeout" class="tsd-kind-icon">request<wbr>Timeout</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-is-inherited">
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
 								<a href="ObserveOptions.html#onSubscribed" class="tsd-kind-icon">on<wbr>Subscribed</a>
 							</li>
 						</ul>
@@ -215,7 +219,7 @@
 	</div>
 </footer>
 <div class="container tsd-generator">
-	<p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a>, the 9/8/2021 at 7:29:13 AM</p>
+	<p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a>, the 11/15/2021 at 4:54:00 PM</p>
 </div>
 <div class="overlay"></div>
 <script src="../assets/js/main.js"></script>
