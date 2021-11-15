@@ -2,10 +2,10 @@
 // @ts-ignore
 import * as solace from 'solclientjs/lib-browser/solclient';
 import {Injectable, NgZone, OnDestroy, Optional} from '@angular/core';
-import {ConnectableObservable, EMPTY, merge, MonoTypeOperatorFunction, noop, Observable, Observer, of, OperatorFunction, Subject, TeardownLogic, throwError} from 'rxjs';
+import {ConnectableObservable, EMPTY, identity, merge, MonoTypeOperatorFunction, noop, Observable, Observer, of, OperatorFunction, Subject, TeardownLogic, throwError} from 'rxjs';
 import {distinctUntilChanged, filter, finalize, map, mergeMap, publishReplay, take, takeUntil, tap} from 'rxjs/operators';
 import {UUID} from '@scion/toolkit/uuid';
-import {Data, MessageEnvelope, ObserveOptions, OnSubscribed, PublishOptions, SolaceMessageClient} from './solace-message-client';
+import {BrowseOptions, ConsumeOptions, Data, MessageEnvelope, ObserveOptions, PublishOptions, SolaceMessageClient} from './solace-message-client';
 import {TopicMatcher} from './topic-matcher';
 import {observeInside} from '@scion/toolkit/operators';
 import {SolaceSessionProvider} from './solace-session-provider';
@@ -157,6 +157,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
     return new Observable((observer: Observer<MessageEnvelope>): TeardownLogic => {
       const unsubscribe$ = new Subject<void>();
       const topicDestination = createSubscriptionTopicDestination(topic);
+      const observeOutsideAngular = options?.emitOutsideAngularZone ?? false;
 
       // Complete the Observable when the session died.
       this._sessionDisposed$
@@ -178,7 +179,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
               assertNotInAngularZone(),
               filter(message => this._topicMatcher.matchesSubscriptionTopic(message.getDestination(), topicDestination)),
               mapToMessageEnvelope(topic),
-              observeInside(continueFn => this._zone.run(continueFn)),
+              observeOutsideAngular ? identity : observeInside(continueFn => this._zone.run(continueFn)),
               takeUntil(merge(this._sessionDisposed$, unsubscribe$)),
               finalize(async () => {
                 // Unsubscribe from the topic on the Solace session, but only if being the last subscription on that topic and if successfully subscribed to the Solace broker.
@@ -289,7 +290,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
     });
   }
 
-  public consume$(topicOrDescriptor: string | (MessageConsumerProperties & OnSubscribed)): Observable<MessageEnvelope> {
+  public consume$(topicOrDescriptor: string | (MessageConsumerProperties & ConsumeOptions)): Observable<MessageEnvelope> {
     if (topicOrDescriptor === undefined) {
       throw Error('[SolaceMessageClient] Missing required topic or endpoint descriptor.');
     }
@@ -305,11 +306,12 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
     return this.createMessageConsumer$(topicOrDescriptor);
   }
 
-  private createMessageConsumer$(consumerProperties: MessageConsumerProperties & OnSubscribed): Observable<MessageEnvelope> {
+  private createMessageConsumer$(consumerProperties: MessageConsumerProperties & ConsumeOptions): Observable<MessageEnvelope> {
     const topicEndpointSubscription = consumerProperties.topicEndpointSubscription?.getName();
     if (topicEndpointSubscription) {
       consumerProperties.topicEndpointSubscription = createSubscriptionTopicDestination(consumerProperties.topicEndpointSubscription!.getName());
     }
+    const observeOutsideAngular = consumerProperties?.emitOutsideAngularZone ?? false;
 
     return new Observable((observer: Observer<Message>): TeardownLogic => {
       let messageConsumer: MessageConsumer | undefined;
@@ -320,7 +322,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
           // Define message consumer event listeners
           messageConsumer.on(MessageConsumerEventName.UP, () => {
             console.debug(`[SolaceMessageClient] solclientjs message consumer event: MessageConsumerEventName.UP`);
-            consumerProperties?.onSubscribed?.(messageConsumer);
+            consumerProperties?.onSubscribed?.(messageConsumer!);
           });
           messageConsumer.on(MessageConsumerEventName.CONNECT_FAILED_ERROR, (error: OperationError) => {
             console.debug(`[SolaceMessageClient] solclientjs message consumer event: MessageConsumerEventName.CONNECT_FAILED_ERROR`, error);
@@ -360,11 +362,11 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
     })
       .pipe(
         mapToMessageEnvelope(topicEndpointSubscription),
-        observeInside(continueFn => this._zone.run(continueFn)),
+        observeOutsideAngular ? identity : observeInside(continueFn => this._zone.run(continueFn)),
       );
   }
 
-  public browse$(queueOrDescriptor: string | QueueBrowserProperties): Observable<MessageEnvelope> {
+  public browse$(queueOrDescriptor: string | (QueueBrowserProperties & BrowseOptions)): Observable<MessageEnvelope> {
     if (queueOrDescriptor === undefined) {
       throw Error('[SolaceMessageClient] Missing required queue or descriptor.');
     }
@@ -379,7 +381,8 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
     return this.createQueueBrowser$(queueOrDescriptor);
   }
 
-  private createQueueBrowser$(queueBrowserProperties: QueueBrowserProperties): Observable<MessageEnvelope> {
+  private createQueueBrowser$(queueBrowserProperties: (QueueBrowserProperties & BrowseOptions)): Observable<MessageEnvelope> {
+    const observeOutsideAngular = queueBrowserProperties?.emitOutsideAngularZone ?? false;
     return new Observable((observer: Observer<Message>): TeardownLogic => {
       let queueBrowser: QueueBrowser | undefined;
       let disposed = false;
@@ -434,7 +437,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
     })
       .pipe(
         mapToMessageEnvelope(),
-        observeInside(continueFn => this._zone.run(continueFn)),
+        observeOutsideAngular ? identity : observeInside(continueFn => this._zone.run(continueFn)),
       );
   }
 

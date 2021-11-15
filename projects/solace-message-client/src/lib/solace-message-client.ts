@@ -149,7 +149,7 @@ export abstract class SolaceMessageClient {
    *        you can also use a named wildcard segment starting with a colon (`:`), allowing you to retrieve substituted values of wildcard segments when receiving a message.
    * @return Observable that emits when receiving a message published to the given endpoint. The Observable never completes. If not connected to the broker yet, or if the connect attempt failed, the Observable errors.
    */
-  public abstract consume$(topicOrDescriptor: string | (MessageConsumerProperties & OnSubscribed)): Observable<MessageEnvelope>;
+  public abstract consume$(topicOrDescriptor: string | (MessageConsumerProperties & ConsumeOptions)): Observable<MessageEnvelope>;
 
   /**
    * Browses messages in a queue, without removing/consuming the messages.
@@ -157,7 +157,7 @@ export abstract class SolaceMessageClient {
    * @param queueOrDescriptor - Specifies the queue to browse, or a descriptor object describing how to connect to the queue browser.
    * @return Observable that emits spooled messages in the specified queue. The Observable never completes. If not connected to the broker yet, or if the connect attempt failed, the Observable errors.
    */
-  public abstract browse$(queueOrDescriptor: string | QueueBrowserProperties): Observable<MessageEnvelope>;
+  public abstract browse$(queueOrDescriptor: string | (QueueBrowserProperties & BrowseOptions)): Observable<MessageEnvelope>;
 
   /**
    * Publishes a message to the given topic destination. The message is transported to all consumers subscribed to the topic.
@@ -250,11 +250,11 @@ export class NullSolaceMessageClient implements SolaceMessageClient {
     return EMPTY;
   }
 
-  public consume$(topicOrDescriptor: string | (MessageConsumerProperties & OnSubscribed)): Observable<MessageEnvelope> {
+  public consume$(topicOrDescriptor: string | (MessageConsumerProperties & ConsumeOptions)): Observable<MessageEnvelope> {
     return EMPTY;
   }
 
-  public browse$(queueOrDescriptor: string | QueueBrowserProperties): Observable<MessageEnvelope> {
+  public browse$(queueOrDescriptor: string | (QueueBrowserProperties & BrowseOptions)): Observable<MessageEnvelope> {
     return EMPTY;
   }
 
@@ -282,32 +282,69 @@ export class NullSolaceMessageClient implements SolaceMessageClient {
 /**
  * Control how to observe a topic.
  */
-export interface ObserveOptions extends OnSubscribed {
+export interface ObserveOptions {
   /**
    * The request timeout period (in milliseconds).
    * If specified, this value overwrites readTimeoutInMsecs property in {@link SessionProperties}.
    */
   requestTimeout?: number;
+
+  /**
+   * Controls if to emit received messages inside or outside of the Angular zone.
+   * If emitted outside of the Angular zone no change detection cycle is triggered.
+   *
+   * By default, if not specified, emits inside the Angular zone.
+   */
+  emitOutsideAngularZone?: boolean;
+
+  /**
+   * A lifecycle hook that is called when subscribed to a destination.
+   *
+   * Use if you need to wait until the destination is actually subscribed, e.g, if implementing the request/response message exchange pattern,
+   * or for reading information about the endpoint if consuming messages via {@link SolaceMessageClient#consume$}.
+   */
+  onSubscribed?(): void;
 }
 
 /**
- * A lifecycle hook that is called when subscribed to a destination.
- *
- * Use if you need to wait until the destination is actually subscribed, e.g, if implementing the request/response message exchange pattern,
- * or for reading information about the endpoint if consuming messages via {@link SolaceMessageClient#consume$}.
+ * Control how to consume messages.
  */
-export interface OnSubscribed {
+export interface ConsumeOptions {
 
   /**
-   * Callback invoked when subscribed to a destination.
+   * Controls if to emit received messages inside or outside of the Angular zone.
+   * If emitted outside of the Angular zone no change detection cycle is triggered.
    *
-   * @param messageConsumer - consumer object only passed if consuming messages from a topic endpoint or queue endpoint via {@link SolaceMessageClient#consume$},
-   *        but not if observing a topic destination via {@link SolaceMessageClient#observe$}.
+   * By default, if not specified, emits inside the Angular zone.
+   */
+  emitOutsideAngularZone?: boolean;
+
+  /**
+   * A lifecycle hook that is called when subscribed to a destination.
+   *
+   * Use if you need to wait until the destination is actually subscribed, e.g, if implementing the request/response message exchange pattern,
+   * or for reading information about the endpoint if consuming messages via {@link SolaceMessageClient#consume$}.
+   *
+   * @param messageConsumer - reference to the message consumer, useful to read generated endpoint names:
    *        * For non-durable endpoints, if not passing an endpoint name, Solace API generates a name which can be queried by calling {@link MessageConsumer#getDestination};
    *          The generated descriptor can be queried by calling {@link MessageConsumer#getProperties#queueDescriptor};
    *        * For durable endpoints, endpoint properties can be retrieved as configured on the broker by calling {@link MessageConsumer#getProperties#queueProperties};
    */
-  onSubscribed?(messageConsumer?: MessageConsumer): void;
+  onSubscribed?(messageConsumer: MessageConsumer): void;
+}
+
+/**
+ * Control how to browse a queue.
+ */
+export interface BrowseOptions {
+
+  /**
+   * Controls if to emit received messages inside or outside of the Angular zone.
+   * If emitted outside of the Angular zone no change detection cycle is triggered.
+   *
+   * By default, if not specified, emits inside the Angular zone.
+   */
+  emitOutsideAngularZone?: boolean;
 }
 
 /**

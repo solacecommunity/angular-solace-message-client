@@ -75,7 +75,7 @@ import { SolaceMessageClient } from '@solace-community/angular-solace-message-cl
 @Injectable()
 export class YourService {
 
-  constructor(private messageClient: SolaceMessageClient) {
+  constructor(private messageClient: SolaceMessageClient, private zone: NgZone) {
   }
 
   public receiveMessagesOnExactTopic(): void {
@@ -93,6 +93,13 @@ export class YourService {
   public receiveMessagesForAnyRoomUsingNamedWildcardSegment(): void {
     this.messageClient.observe$('myhome/:room/temperature').subscribe(envelope => {
       console.log(`Received temperature for room ${envelope.params.get('room')}`, envelope.message);
+    });
+  }
+
+  public receiveMessagesOutsideAngular(): void {
+    this.messageClient.observe$('myhome/livingroom/temperature', {emitOutsideAngularZone: true}).subscribe(() => {
+      console.log('Running outside Angular zone');
+      this.zone.run(() => console.log('Running inside Angular zone'));
     });
   }
 

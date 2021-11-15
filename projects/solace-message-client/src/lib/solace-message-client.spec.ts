@@ -574,6 +574,40 @@ describe('SolaceMessageClient', () => {
       expect(observeCaptor3_topic2.getValues()).toEqual([message8]);
     });
 
+    it('should receive messages inside the Angular zone (by default)', async () => {
+      const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+      const observeCaptor = new ObserveCaptor(() => NgZone.isInAngularZone());
+
+      // Subscribe to topic
+      const sessionSubscribeCaptor = installSessionSubscribeCaptor();
+      solaceMessageClient.observe$('topic').subscribe(observeCaptor);
+      await drainMicrotaskQueue();
+      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+
+      // Simulate receiving a message from the Solace broker
+      await simulateTopicMessage(createTopicMessage('topic'));
+
+      // Expect message to be received inside the Angular zone
+      expect(observeCaptor.getValues()).toEqual([true]);
+    });
+
+    it('should receive messages outside the Angular zone', async () => {
+      const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+      const observeCaptor = new ObserveCaptor(() => NgZone.isInAngularZone());
+
+      // Subscribe to topic
+      const sessionSubscribeCaptor = installSessionSubscribeCaptor();
+      solaceMessageClient.observe$('topic', {emitOutsideAngularZone: true}).subscribe(observeCaptor);
+      await drainMicrotaskQueue();
+      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+
+      // Simulate receiving a message from the Solace broker
+      await simulateTopicMessage(createTopicMessage('topic'));
+
+      // Expect message to be received outside the Angular zone
+      expect(observeCaptor.getValues()).toEqual([false]);
+    });
+
     it('should allow wildcard subscriptions', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
       const sessionSubscribeCaptor = installSessionSubscribeCaptor();
@@ -710,25 +744,6 @@ describe('SolaceMessageClient', () => {
       expect(observeCaptor1.getValues()).toEqual([jasmine.objectContaining({message, params: new Map().set('room', 'livingroom')})]);
       expect(observeCaptor2.getValues()).toEqual([jasmine.objectContaining({message, params: new Map().set('room', 'livingroom').set('measurement', 'temperature')})]);
       expect(observeCaptor3.getValues()).toEqual([['20°C', new Map().set('room', 'livingroom'), message]]);
-    });
-
-    it('should emit messages inside of the Angular zone', async () => {
-      const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-      const sessionSubscribeCaptor = installSessionSubscribeCaptor();
-
-      // Subscribe to topic
-      let receivedMessageInsideAngularZone;
-      solaceMessageClient.observe$('topic').subscribe(() => {
-        receivedMessageInsideAngularZone = NgZone.isInAngularZone();
-      });
-      await drainMicrotaskQueue();
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
-
-      // Simulate receiving a message from the Solace broker
-      const message = createTopicMessage('topic');
-      simulateTopicMessage(message);
-
-      expect(receivedMessageInsideAngularZone).toBeTrue();
     });
 
     it('should notify when subscribed to topic destination', async () => {
@@ -1476,15 +1491,13 @@ describe('SolaceMessageClient', () => {
         ]);
       });
 
-      it('should receive messages inside the Angular zone', async () => {
+      it('should receive messages inside the Angular zone (by default)', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+        const observeCaptor = new ObserveCaptor(() => NgZone.isInAngularZone());
 
         // Subscribe to a topic endpoint
         const messageConsumerMock = installMessageConsumerMock();
-        let receivedMessageInsideAngularZone;
-        solaceMessageClient.consume$('topic').subscribe(() => {
-          receivedMessageInsideAngularZone = NgZone.isInAngularZone();
-        });
+        solaceMessageClient.consume$('topic').subscribe(observeCaptor);
         await drainMicrotaskQueue();
 
         // Simulate the message consumer to be connected to the broker
@@ -1494,7 +1507,30 @@ describe('SolaceMessageClient', () => {
         await messageConsumerMock.simulateMessage(createTopicMessage('topic'));
 
         // Expect message to be received inside the Angular zone
-        expect(receivedMessageInsideAngularZone).toBeTrue();
+        expect(observeCaptor.getValues()).toEqual([true]);
+      });
+
+      it('should receive messages outside the Angular zone', async () => {
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+        const observeCaptor = new ObserveCaptor(() => NgZone.isInAngularZone());
+
+        // Subscribe to a topic endpoint
+        const messageConsumerMock = installMessageConsumerMock();
+        solaceMessageClient.consume$({
+          topicEndpointSubscription: SolaceObjectFactory.createTopicDestination('topic'),
+          queueDescriptor: {type: QueueType.TOPIC_ENDPOINT, durable: false},
+          emitOutsideAngularZone: true,
+        }).subscribe(observeCaptor);
+        await drainMicrotaskQueue();
+
+        // Simulate the message consumer to be connected to the broker
+        await messageConsumerMock.simulateLifecycleEvent(MessageConsumerEventName.UP);
+
+        // Simulate to receive a message
+        await messageConsumerMock.simulateMessage(createTopicMessage('topic'));
+
+        // Expect message to be received outside the Angular zone
+        expect(observeCaptor.getValues()).toEqual([false]);
       });
 
       it('should error on connection error (CONNECT_FAILED_ERROR)', async () => {
@@ -1763,15 +1799,13 @@ describe('SolaceMessageClient', () => {
         ]);
       });
 
-      it('should receive messages inside the Angular zone', async () => {
+      it('should receive messages inside the Angular zone (by default)', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+        const observeCaptor = new ObserveCaptor(() => NgZone.isInAngularZone());
 
         // Connect to the queue browser
         const queueBrowserMock = installQueueBrowserMock();
-        let receivedMessageInsideAngularZone;
-        solaceMessageClient.browse$('queue').subscribe(() => {
-          receivedMessageInsideAngularZone = NgZone.isInAngularZone();
-        });
+        solaceMessageClient.browse$('queue').subscribe(observeCaptor);
         await drainMicrotaskQueue();
 
         // Simulate the queue browser to be connected to the broker
@@ -1781,7 +1815,29 @@ describe('SolaceMessageClient', () => {
         await queueBrowserMock.simulateMessage(createQueueMessage('queue'));
 
         // Expect message to be received inside the Angular zone
-        expect(receivedMessageInsideAngularZone).toBeTrue();
+        expect(observeCaptor.getValues()).toEqual([true]);
+      });
+
+      it('should receive messages outside the Angular zone', async () => {
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+        const observeCaptor = new ObserveCaptor(() => NgZone.isInAngularZone());
+
+        // Connect to the queue browser
+        const queueBrowserMock = installQueueBrowserMock();
+        solaceMessageClient.browse$({
+          queueDescriptor: {type: QueueType.QUEUE, name: 'queue'},
+          emitOutsideAngularZone: true,
+        }).subscribe(observeCaptor);
+        await drainMicrotaskQueue();
+
+        // Simulate the queue browser to be connected to the broker
+        await queueBrowserMock.simulateLifecycleEvent(QueueBrowserEventName.UP);
+
+        // Simulate to receive a message
+        await queueBrowserMock.simulateMessage(createQueueMessage('queue'));
+
+        // Expect message to be received outside the Angular zone
+        expect(observeCaptor.getValues()).toEqual([false]);
       });
 
       it('should start the queue browser when connected to the broker (UP)', async () => {
