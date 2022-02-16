@@ -12,17 +12,6 @@
     "excludePrivate": true,
     "excludeExternals": true,
     "exclude": "**/ɵ*.ts",
-    "toc": [
-      "SolaceMessageClient",
-      "SolaceMessageClientModule",
-      "SolaceMessageClientConfig",
-      "SolaceSessionProvider",
-      "SolaceObjectFactory",
-      "SessionProperties",
-      "MessageEnvelope",
-      "mapToText",
-      "mapToBinary"
-    ],
     "categorizeByGroup": true
   }
 }
