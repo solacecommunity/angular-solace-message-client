@@ -59,7 +59,7 @@ export class PublisherComponent {
       }
     }
     catch (error) {
-      this.publishError = error.toString();
+      this.publishError = `${error}`;
     }
     finally {
       this.form.enable();

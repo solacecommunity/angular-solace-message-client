@@ -1,5 +1,5 @@
-@use '~@angular/material' as mat;
-@use '~@angular/cdk' as cdk;
+@use '@angular/material' as mat;
+@use '@angular/cdk' as cdk;
 @use 'styles/solace-client-theme' as app-theme;
 
 $theme: mat.define-light-theme((

@@ -2,8 +2,8 @@
 // @ts-ignore
 import * as solace from 'solclientjs/lib-browser/solclient';
 import {Injectable, NgZone, OnDestroy, Optional} from '@angular/core';
-import {ConnectableObservable, EMPTY, identity, merge, MonoTypeOperatorFunction, noop, Observable, Observer, of, OperatorFunction, Subject, TeardownLogic, throwError} from 'rxjs';
-import {distinctUntilChanged, filter, finalize, map, mergeMap, publishReplay, take, takeUntil, tap} from 'rxjs/operators';
+import {EMPTY, identity, merge, MonoTypeOperatorFunction, noop, Observable, Observer, of, OperatorFunction, ReplaySubject, share, Subject, TeardownLogic, throwError} from 'rxjs';
+import {distinctUntilChanged, filter, finalize, map, mergeMap, take, takeUntil, tap} from 'rxjs/operators';
 import {UUID} from '@scion/toolkit/uuid';
 import {BrowseOptions, ConsumeOptions, Data, MessageEnvelope, ObserveOptions, PublishOptions, SolaceMessageClient} from './solace-message-client';
 import {TopicMatcher} from './topic-matcher';
@@ -24,21 +24,11 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
   private _session: Promise<Session> | null = null;
   private _destroy$ = new Subject<void>();
   private _sessionDisposed$ = new Subject<void>();
-  private _whenDestroy = this._destroy$.pipe(take(1)).toPromise();
 
   private _subscriptionExecutor!: SerialExecutor;
   private _subscriptionCounter!: TopicSubscriptionCounter;
 
-  public connected$: ConnectableObservable<boolean> = this._event$
-    .pipe(
-      assertNotInAngularZone(),
-      map(event => event.sessionEventCode),
-      filter(event => CONNECTION_ESTABLISHED_EVENTS.has(event) || CONNECTION_LOST_EVENTS.has(event)),
-      map(event => CONNECTION_ESTABLISHED_EVENTS.has(event)),
-      distinctUntilChanged(),
-      observeInside(continueFn => this._zone.run(continueFn)),
-      publishReplay(1),
-    ) as ConnectableObservable<boolean>;
+  public connected$: Observable<boolean>;
 
   constructor(@Optional() config: SolaceMessageClientConfig,
               private _sessionProvider: SolaceSessionProvider,
@@ -47,9 +37,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
     this.initSolaceClientFactory();
     this.disposeWhenSolaceSessionDied();
     this.logSolaceSessionEvents();
-
-    const multicaster = this.connected$.connect();
-    this._whenDestroy.then(() => multicaster.unsubscribe());
+    this.connected$ = this.monitorConnectionState$();
 
     // Auto connect to the Solace broker if having provided a module config.
     if (config) {
@@ -174,7 +162,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
           const subscriptionError$ = new Subject<never>();
 
           // Filter messages sent to the given topic.
-          merge<Message>(this._message$, subscriptionError$)
+          merge(this._message$, subscriptionError$)
             .pipe(
               assertNotInAngularZone(),
               filter(message => this._topicMatcher.matchesSubscriptionTopic(message.getDestination(), topicDestination)),
@@ -535,31 +523,31 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
    * - the Promise is bound the current session, i.e., will ony be settled as long as the current session is not disposed.
    */
   private whenEvent(resolveOnEvent: SessionEventCode, options?: { rejectOnEvent?: SessionEventCode; correlationKey?: string }): Promise<SessionEvent> {
-    return this._event$
-      .pipe(
-        assertNotInAngularZone(),
-        filter(event => !options?.correlationKey || event.correlationKey === options.correlationKey),
-        mergeMap(event => {
-          switch (event.sessionEventCode) {
-            case resolveOnEvent:
-              return of(event);
-            case options?.rejectOnEvent: {
-              return throwError(event);
+    return new Promise((resolve, reject) => {
+      this._event$
+        .pipe(
+          assertNotInAngularZone(),
+          filter(event => !options?.correlationKey || event.correlationKey === options.correlationKey),
+          mergeMap(event => {
+            switch (event.sessionEventCode) {
+              case resolveOnEvent:
+                return of(event);
+              case options?.rejectOnEvent: {
+                return throwError(() => event);
+              }
+              default:
+                return EMPTY;
             }
-            default:
-              return EMPTY;
-          }
-        }),
-        take(1),
-        takeUntil(this._sessionDisposed$),
-      )
-      .toPromise()
-      .then(event => {
-        if (event === undefined) {
-          return new Promise(noop); // do not resolve the Promise when the session is disposed
-        }
-        return event;
-      });
+          }),
+          take(1),
+          takeUntil(this._sessionDisposed$),
+        )
+        .subscribe({
+          next: (event: SessionEvent) => resolve(event),
+          error: error => reject(error),
+          complete: noop // do not resolve the Promise when the session is disposed
+        });
+    });
   }
 
   private initSolaceClientFactory(): void {
@@ -590,6 +578,27 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
       .subscribe((event: SessionEvent) => {
         console.debug(`[SolaceMessageClient] solclientjs session event:  ${solace.SessionEventCode.nameOf(event.sessionEventCode)}`, event);
       });
+  }
+
+  private monitorConnectionState$(): Observable<boolean> {
+    const connected$ = this._event$
+      .pipe(
+        assertNotInAngularZone(),
+        map(event => event.sessionEventCode),
+        filter(event => CONNECTION_ESTABLISHED_EVENTS.has(event) || CONNECTION_LOST_EVENTS.has(event)),
+        map(event => CONNECTION_ESTABLISHED_EVENTS.has(event)),
+        distinctUntilChanged(),
+        observeInside(continueFn => this._zone.run(continueFn)),
+        share({
+          connector: () => new ReplaySubject<boolean>(1),
+          resetOnRefCountZero: false,
+          resetOnError: false,
+          resetOnComplete: false,
+        }),
+      );
+    // Connect to the source, then unsubscribe immediately (resetOnRefCountZero: false)
+    connected$.subscribe().unsubscribe();
+    return connected$;
   }
 
   public ngOnDestroy(): void {
@@ -633,7 +642,7 @@ function collectNamedTopicSegmentValues(message: Message, subscriptionTopic: str
   const effectiveDestinationSegments = message.getDestination().getName().split('/');
   return subscriptionSegments.reduce((acc, subscriptionSegment, i) => {
     if (isNamedWildcardSegment(subscriptionSegment)) {
-      return acc.set(subscriptionSegment.substr(1), effectiveDestinationSegments[i]);
+      return acc.set(subscriptionSegment.substring(1), effectiveDestinationSegments[i]);
     }
     return acc;
   }, new Map<string, string>());
