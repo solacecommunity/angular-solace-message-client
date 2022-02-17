@@ -92,7 +92,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/solace-message-client-testing-app",
+            "outputPath": "dist/solace-message-client-testing-app/angular-solace-message-client/tryme",
             "index": "apps/solace-message-client-testing-app/src/index.html",
             "main": "apps/solace-message-client-testing-app/src/main.ts",
             "polyfills": "apps/solace-message-client-testing-app/src/polyfills.ts",
