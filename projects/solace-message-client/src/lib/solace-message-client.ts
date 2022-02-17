@@ -192,10 +192,10 @@ export abstract class SolaceMessageClient {
   public abstract publish(topic: string, data?: Data | Message, options?: PublishOptions): Promise<void>;
 
   /**
-   * Sends a message to the given queue destination. A queue is typically used in a point-to-point (PTP) messaging environment.
+   * Sends a message to the given queue destination. A queue is typically used in a point-to-point (P2P) messaging environment.
    *
    * A queue differs from the topic distribution mechanism that the message is transported to exactly a single consumer, i.e., the message is load
-   * balanced to a single consumer in round‑robin fashion, or is always transported to the same subscription in case of an exclusive queue.
+   * balanced to a single consumer in round‑robin fashion, or for exclusive queues, it is always transported to the same subscription.
    * When sending a message to a queue, the broker retains the message until it is consumed, or until it expires.
    * Refer to the subsequent chapter 'Durability of Endpoints' for more information.
    *
