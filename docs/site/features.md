@@ -165,8 +165,8 @@ published directly to topic endpoints, but only indirectly via topics. For more 
   <summary><strong>Send message to a queue endpoint</strong></summary>
   <br>
 
-A queue is typically used in a point-to-point (PTP) messaging environment. A queue differs from the topic distribution mechanism that the message is transported to exactly a single consumer,
-i.e., the message is load balanced to a single consumer in round‑robin fashion, or is always transported to the same subscription in case of an exclusive queue. When sending a message to a
+A queue is typically used in a point-to-point (P2P) messaging environment. A queue differs from the topic distribution mechanism that the message is transported to exactly a single consumer,
+i.e., the message is load balanced to a single consumer in round‑robin fashion, or for exclusive queues, it is always transported to the same subscription. When sending a message to a
 queue, the broker retains the message until it is consumed, or until it expires.
 
 > Refer to [SolaceMessageClient#enqueue](https://solacecommunity.github.io/angular-solace-message-client/api/classes/solacemessageclient.html#enqueue) for more information.
