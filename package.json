@@ -8,6 +8,9 @@
     "test:headless": "cross-env HEADLESS=true run-s **:*:test",
     "e2e": "run-s **:*:e2e",
     "e2e:headless": "cross-env HEADLESS=true run-s **:*:e2e",
+    "e2e:ci": "cross-env HEADLESS=true run-s **:*:e2e-ci",
+    "pre:e2e": "npx webdriver-manager update --versions.chrome=91.0.4472.19",
+    "pre:e2e-ci": "npx webdriver-manager update --versions.chrome=91.0.4472.19",
     "changelog": "conventional-changelog -k projects/solace-message-client -p angular -i CHANGELOG.md -s && markdown-include docs/site/changelog/changelog.template.json",
     "postinstall": "ngcc",
 
@@ -15,9 +18,9 @@
     "solace-message-client.e2e:lint": "ng lint solace-message-client.e2e",
     "solace-message-client:test": "ng test solace-message-client",
     "solace-message-client:build": "ng build --configuration production solace-message-client",
-    "solace-message-client:e2e": "npx webdriver-manager update --versions.chrome=91.0.4472.19 && ng e2e solace-message-client.e2e",
-    "solace-message-client:e2e-ci": "cross-env HEADLESS=true run-p -r solace-message-client-testing-app:http-server solace-message-client-testing-app:await-then-protractor",
-    "solace-message-client:protractor": "npx webdriver-manager update --versions.chrome=91.0.4472.19 && ng e2e solace-message-client.e2e --dev-server-target",
+    "solace-message-client:e2e": "ng e2e solace-message-client.e2e",
+    "solace-message-client:e2e-ci": "run-p -r solace-message-client-testing-app:http-server solace-message-client-testing-app:await-then-protractor",
+    "solace-message-client:protractor": "ng e2e solace-message-client.e2e --dev-server-target",
     "solace-message-client:typedoc": "typedoc --plugin typedoc-plugin-extras --tsconfig projects/solace-message-client/tsconfig.lib.prod.typedoc.json --favicon resources/branding/favicon.ico",
 
     "solace-message-client-testing-app:serve": "ng serve solace-message-client-testing-app",

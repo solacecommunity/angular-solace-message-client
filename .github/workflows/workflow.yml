@@ -91,7 +91,7 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: solace-message-client-testing-app
-          path: dist/solace-message-client-testing-app
+          path: dist/solace-message-client-testing-app/angular-solace-message-client/tryme
   test:
     name: 'Unit Testing'
     needs: install
@@ -125,8 +125,8 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: solace-message-client-testing-app
-          path: dist/solace-message-client-testing-app
-      - run: npm run solace-message-client:e2e-ci
+          path: dist/solace-message-client-testing-app/angular-solace-message-client/tryme
+      - run: npm run e2e:ci
   release-guard:
     name: 'Release Guard'
     if: github.ref == 'refs/heads/master'
