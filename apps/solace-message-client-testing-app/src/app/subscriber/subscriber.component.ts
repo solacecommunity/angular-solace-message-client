@@ -62,36 +62,37 @@ export class SubscriberComponent implements OnDestroy {
 
     const destination: string = this.form.get([SUBSCRIPTION, DESTINATION])!.value;
     const destinationType: SubscriptionDestinationType = this.form.get([SUBSCRIPTION, DESTINATION_TYPE])!.value;
-    const message$: Observable<MessageEnvelope> = (() => {
-      switch (destinationType) {
-        case SubscriptionDestinationType.TOPIC: {
-          return this.solaceMessageClient.observe$(destination);
-        }
-        case SubscriptionDestinationType.QUEUE: {
-          return this.solaceMessageClient.consume$({
-            queueDescriptor: {type: QueueType.QUEUE, name: destination},
-          });
-        }
-        case SubscriptionDestinationType.TOPIC_ENDPOINT: {
-          return this.solaceMessageClient.consume$(destination);
-        }
-        case SubscriptionDestinationType.QUEUE_BROWSER: {
-          return this.solaceMessageClient.browse$(destination);
-        }
-        default: {
-          throw Error(`[UnsupportedDestinationError] Expected '${SubscriptionDestinationType.TOPIC}', '${SubscriptionDestinationType.QUEUE}', '${SubscriptionDestinationType.TOPIC_ENDPOINT}', or '${SubscriptionDestinationType.QUEUE_BROWSER}', but was ${destinationType}`);
-        }
-      }
-    })();
 
     try {
+      const message$: Observable<MessageEnvelope> = (() => {
+        switch (destinationType) {
+          case SubscriptionDestinationType.TOPIC: {
+            return this.solaceMessageClient.observe$(destination);
+          }
+          case SubscriptionDestinationType.QUEUE: {
+            return this.solaceMessageClient.consume$({
+              queueDescriptor: {type: QueueType.QUEUE, name: destination},
+            });
+          }
+          case SubscriptionDestinationType.TOPIC_ENDPOINT: {
+            return this.solaceMessageClient.consume$(destination);
+          }
+          case SubscriptionDestinationType.QUEUE_BROWSER: {
+            return this.solaceMessageClient.browse$(destination);
+          }
+          default: {
+            throw Error(`[UnsupportedDestinationError] Expected '${SubscriptionDestinationType.TOPIC}', '${SubscriptionDestinationType.QUEUE}', '${SubscriptionDestinationType.TOPIC_ENDPOINT}', or '${SubscriptionDestinationType.QUEUE_BROWSER}', but was ${destinationType}`);
+          }
+        }
+      })();
+
       this._subscription = message$
         .pipe(
           finalize(() => this.form.get(SUBSCRIPTION)!.enable()),
           takeUntil(this._destroy$),
         )
-        .subscribe(
-          (envelope: MessageEnvelope) => {
+        .subscribe({
+          next: (envelope: MessageEnvelope) => {
             this.envelopes = this.envelopes.concat(envelope);
 
             if (this.form.get(FOLLOW_TAIL)!.value) {
@@ -99,12 +100,12 @@ export class SubscriberComponent implements OnDestroy {
               this.scrollToEnd();
             }
           },
-          error => this.subscribeError = error,
-        );
+          error: error => this.subscribeError = `${error}`,
+        });
     }
     catch (error) {
       this.form.get(SUBSCRIPTION)!.enable();
-      this.subscribeError = error;
+      this.subscribeError = `${error}`;
     }
   }
 
