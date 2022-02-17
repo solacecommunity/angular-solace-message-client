@@ -234,7 +234,18 @@ We have the following packages:
   <summary><strong>Versioning</strong></summary>
   <br>  
 
-We follow the same SemVer philosophy as Angular, with major versions being released at the same time as major versions of the Angular framework.
+We follow the same SemVer (Semantic Versioning) philosophy as Angular, with major versions being released at the same time as major versions of the Angular framework.
+
+### Semantic Versioning Scheme (SemVer)
+
+**Major Version:**\
+Major versions contain breaking changes.
+
+**Minor Version**\
+Minor versions add new features or deprecate existing features without breaking changes.
+
+**Patch Level**\
+Patch versions fix bugs or optimize existing features without breaking changes.
 
 </details>
 
