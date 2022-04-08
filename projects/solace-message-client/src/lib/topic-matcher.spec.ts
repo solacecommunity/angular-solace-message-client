@@ -13,6 +13,14 @@ describe('SolaceMessageClient', () => {
     testee = TestBed.inject(TopicMatcher);
   });
 
+  it('should not match a `null` topic', () => {
+    expect(testee.matchesSubscriptionTopic(null, 'a/b/c')).toBeFalse();
+  });
+
+  it('should not match an empty topic', () => {
+    expect(testee.matchesSubscriptionTopic('', 'a/b/c')).toBeFalse();
+  });
+
   it('should match when publishing a message to the exact topic \'a\'', () => {
     expect(testee.matchesSubscriptionTopic('a', 'a')).toBeTrue();
   });

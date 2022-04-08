@@ -1,6 +1,5 @@
 import {Injectable} from '@angular/core';
-import {Session, SessionProperties} from './solace.model';
-import {SolaceObjectFactory} from './solace-object-factory';
+import {Session, SessionProperties, SolclientFactory} from 'solclientjs';
 
 /**
  * Creates a {@link Session} from a given config to connect to the Solace message broker.
@@ -25,6 +24,6 @@ export abstract class SolaceSessionProvider {
 @Injectable()
 export class ɵSolaceSessionProvider implements SolaceSessionProvider {
   public provide(sessionProperties: SessionProperties): Session {
-    return SolaceObjectFactory.createSession(sessionProperties);
+    return SolclientFactory.createSession(sessionProperties);
   }
 }

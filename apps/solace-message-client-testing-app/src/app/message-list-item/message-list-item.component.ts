@@ -1,6 +1,7 @@
 import {ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges} from '@angular/core';
-import {Message, MessageDumpFlag, MessageEnvelope, MessageType} from '@solace-community/angular-solace-message-client';
+import {MessageEnvelope} from '@solace-community/angular-solace-message-client';
 import {ungzip} from 'pako';
+import {Message, MessageDumpFlag, MessageType} from 'solclientjs';
 
 @Component({
   selector: 'app-message-list-item',
@@ -61,7 +62,7 @@ function getContent(envelope: MessageEnvelope): string | undefined {
   }
 }
 
-function decode(content: string | Uint8Array, encoding: string): string | undefined {
+function decode(content: Uint8Array | string | null | undefined, encoding: string): string | undefined {
   if (content === undefined || content === null) {
     return undefined;
   }

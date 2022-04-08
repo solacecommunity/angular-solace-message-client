@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {Router} from '@angular/router';
-import {SOLACE_CONNECT_PROPERTIES_SESSION_KEY} from './constants';
+import {LocalStorageKeys} from './local-storage-keys';
 
 @Injectable({providedIn: 'root'})
 export class LocationService {
@@ -10,7 +10,7 @@ export class LocationService {
 
   public navigateToAppRoot(options: { clearConnectProperties: boolean }): void {
     if (options.clearConnectProperties) {
-      localStorage.removeItem(SOLACE_CONNECT_PROPERTIES_SESSION_KEY);
+      localStorage.removeItem(LocalStorageKeys.SOLACE_CONNECT_CONFIG);
     }
     this._router.navigate(['/']).then(() => location.reload());
   }

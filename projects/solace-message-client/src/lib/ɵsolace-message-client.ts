@@ -1,6 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import * as solace from 'solclientjs/lib-browser/solclient';
 import {Injectable, NgZone, OnDestroy, Optional} from '@angular/core';
 import {EMPTY, identity, merge, MonoTypeOperatorFunction, noop, Observable, Observer, of, OperatorFunction, ReplaySubject, share, Subject, TeardownLogic, throwError} from 'rxjs';
 import {distinctUntilChanged, filter, finalize, map, mergeMap, take, takeUntil, tap} from 'rxjs/operators';
@@ -10,10 +7,10 @@ import {TopicMatcher} from './topic-matcher';
 import {observeInside} from '@scion/toolkit/operators';
 import {SolaceSessionProvider} from './solace-session-provider';
 import {SolaceMessageClientConfig} from './solace-message-client.config';
-import {Destination, Message, MessageConsumer, MessageConsumerEventName, MessageConsumerProperties, MessageDeliveryModeType, OperationError, QueueBrowser, QueueBrowserEventName, QueueBrowserProperties, QueueType, SDTField, SDTFieldType, Session, SessionEvent, SessionEventCode, SessionProperties} from './solace.model';
+import {Destination, LogLevel, Message, MessageConsumer, MessageConsumerEventName, MessageConsumerProperties, MessageDeliveryModeType, OperationError, QueueBrowser, QueueBrowserEventName, QueueBrowserProperties, QueueDescriptor, QueueType, SDTField, SDTFieldType, SDTMapContainer, Session, SessionEvent, SessionEventCode, SessionProperties as SolaceSessionProperties, SessionProperties, SolclientFactory, SolclientFactoryProfiles, SolclientFactoryProperties} from 'solclientjs';
 import {TopicSubscriptionCounter} from './topic-subscription-counter';
 import {SerialExecutor} from './serial-executor.service';
-import {SolaceObjectFactory} from './solace-object-factory';
+import './solclientjs-typedef-augmentation';
 
 @Injectable()
 export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
@@ -55,6 +52,8 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
       const sessionProperties: SessionProperties = {
         reapplySubscriptions: true, // remember subscriptions after a network interruption (default value if not set)
         reconnectRetries: -1, // Try to restore the connection automatically after a network interruption (default value if not set)
+        // @ts-expect-error: typedef(solclientjs): remove when changed 'publisherProperties' to optional
+        publisherProperties: undefined,
         ...config,
       };
 
@@ -64,7 +63,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
           this._subscriptionExecutor = new SerialExecutor();
           this._subscriptionCounter = new TopicSubscriptionCounter();
 
-          const session: Session = this._sessionProvider.provide(SolaceObjectFactory.createSessionProperties(sessionProperties));
+          const session: Session = this._sessionProvider.provide(new SolaceSessionProperties(sessionProperties));
 
           // When the Session is ready to send/receive messages and perform control operations.
           session.on(SessionEventCode.UP_NOTICE, (event: SessionEvent) => {
@@ -286,8 +285,12 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
     // If passed a `string` literal, subscribe to a non-durable topic endpoint.
     if (typeof topicOrDescriptor === 'string') {
       return this.createMessageConsumer$({
-        topicEndpointSubscription: SolaceObjectFactory.createTopicDestination(topicOrDescriptor),
+        topicEndpointSubscription: SolclientFactory.createTopicDestination(topicOrDescriptor),
+        // @ts-expect-error: typedef(solclientjs): remove '@ts-expect-error' when changed 'queueDescriptor' to accept an object literal with 'name' as optional field
+        // see 'solclient-fulljs' line 4301 that 'solclientjs' already supports the 'queueDescriptor' to be an object literal with 'name' as optional field. */
         queueDescriptor: {type: QueueType.TOPIC_ENDPOINT, durable: false},
+        // @ts-expect-error: typedef(solclientjs): remove 'queueProperties' when changed 'queueProperties' to optional
+        queueProperties: undefined,
       });
     }
 
@@ -309,26 +312,26 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
 
           // Define message consumer event listeners
           messageConsumer.on(MessageConsumerEventName.UP, () => {
-            console.debug(`[SolaceMessageClient] solclientjs message consumer event: MessageConsumerEventName.UP`);
+            console.debug?.(`[SolaceMessageClient] MessageConsumerEvent: UP`);
             consumerProperties?.onSubscribed?.(messageConsumer!);
           });
           messageConsumer.on(MessageConsumerEventName.CONNECT_FAILED_ERROR, (error: OperationError) => {
-            console.debug(`[SolaceMessageClient] solclientjs message consumer event: MessageConsumerEventName.CONNECT_FAILED_ERROR`, error);
+            console.debug?.(`[SolaceMessageClient] MessageConsumerEvent: CONNECT_FAILED_ERROR`, error);
             observer.error(error);
           });
           messageConsumer.on(MessageConsumerEventName.DOWN_ERROR, (error: OperationError) => {
-            console.debug(`[SolaceMessageClient] solclientjs message consumer event: MessageConsumerEventName.DOWN_ERROR`, error);
+            console.debug?.(`[SolaceMessageClient] MessageConsumerEvent: DOWN_ERROR`, error);
             observer.error(error);
           });
-          messageConsumer.on(MessageConsumerEventName.DOWN, (error: OperationError) => { // event emitted after successful disconnect request
-            console.debug(`[SolaceMessageClient] solclientjs message consumer event: MessageConsumerEventName.DOWN`, error);
+          messageConsumer.on(MessageConsumerEventName.DOWN, () => { // event emitted after successful disconnect request
+            console.debug?.(`[SolaceMessageClient] MessageConsumerEvent: DOWN`);
             messageConsumer?.dispose();
             observer.complete();
           });
 
           // Define message event listener
           messageConsumer.on(MessageConsumerEventName.MESSAGE, (message: Message) => {
-            console.debug(`[SolaceMessageClient] solclientjs message consumer event: MessageConsumerEventName.MESSAGE`, message);
+            console.debug?.(`[SolaceMessageClient] MessageConsumerEvent: MESSAGE`, message);
             NgZone.assertNotInAngularZone();
             observer.next(message);
           });
@@ -343,6 +346,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
 
       return (): void => {
         // Initiate an orderly disconnection of the consumer. In turn, we will receive a `MessageConsumerEventName#DOWN` event and dispose the consumer.
+        // @ts-expect-error: typedef(solclientjs): remove when changed 'MessageConsumer#disposed' from 'void' to 'boolean'
         if (messageConsumer && !messageConsumer.disposed) {
           messageConsumer.disconnect();
         }
@@ -362,7 +366,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
     // If passed a `string` literal, connect to the given queue using default 'browsing' options.
     if (typeof queueOrDescriptor === 'string') {
       return this.createQueueBrowser$({
-        queueDescriptor: {type: QueueType.QUEUE, name: queueOrDescriptor},
+        queueDescriptor: new QueueDescriptor({type: QueueType.QUEUE, name: queueOrDescriptor}),
       });
     }
 
@@ -380,30 +384,30 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
 
           // Define browser event listeners
           queueBrowser.on(QueueBrowserEventName.UP, () => {
-            console.debug(`[SolaceMessageClient] solclientjs queue browser event: QueueBrowserEventName.UP`);
+            console.debug?.(`[SolaceMessageClient] QueueBrowserEvent: UP`);
             queueBrowser!.start();
           });
           queueBrowser.on(QueueBrowserEventName.CONNECT_FAILED_ERROR, (error: OperationError) => {
-            console.debug(`[SolaceMessageClient] solclientjs queue browser event: QueueBrowserEventName.CONNECT_FAILED_ERROR`, error);
+            console.debug?.(`[SolaceMessageClient] QueueBrowserEvent: CONNECT_FAILED_ERROR`, error);
             observer.error(error);
           });
           queueBrowser.on(QueueBrowserEventName.DOWN_ERROR, (error: OperationError) => {
-            console.debug(`[SolaceMessageClient] solclientjs queue browser event: QueueBrowserEventName.DOWN_ERROR`, error);
+            console.debug?.(`[SolaceMessageClient] QueueBrowserEvent: DOWN_ERROR`, error);
             observer.error(error);
           });
-          queueBrowser.on(QueueBrowserEventName.DOWN, (error: OperationError) => { // event emitted after successful disconnect request
-            console.debug(`[SolaceMessageClient] solclientjs queue browser event: QueueBrowserEventName.DOWN`, error);
+          queueBrowser.on(QueueBrowserEventName.DOWN, () => { // event emitted after successful disconnect request
+            console.debug?.(`[SolaceMessageClient] QueueBrowserEvent: DOWN`);
             observer.complete();
           });
-          queueBrowser.on(QueueBrowserEventName.DISPOSED, (error: OperationError) => { // event emitted after successful disconnect request
-            console.debug(`[SolaceMessageClient] solclientjs queue browser event: QueueBrowserEventName.DOWN`, error);
+          queueBrowser.on(QueueBrowserEventName.DISPOSED, () => {
+            console.debug?.(`[SolaceMessageClient] QueueBrowserEvent: DOWN`);
             disposed = true;
             observer.complete();
           });
 
           // Define browser event listener
           queueBrowser.on(QueueBrowserEventName.MESSAGE, (message: Message) => {
-            console.debug(`[SolaceMessageClient] solclientjs queue browser event: QueueBrowserEventName.MESSAGE`, message);
+            console.debug?.(`[SolaceMessageClient] QueueBrowserEvent: MESSAGE`, message);
             NgZone.assertNotInAngularZone();
             observer.next(message);
           });
@@ -430,27 +434,27 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
   }
 
   public publish(topic: string, data?: Data | Message, options?: PublishOptions): Promise<void> {
-    const destination = SolaceObjectFactory.createTopicDestination(topic);
+    const destination = SolclientFactory.createTopicDestination(topic);
     return this.sendToDestination(destination, data, options);
   }
 
   public enqueue(queue: string, data?: Data | Message, options?: PublishOptions): Promise<void> {
-    const destination = SolaceObjectFactory.createDurableQueueDestination(queue);
+    const destination = SolclientFactory.createDurableQueueDestination(queue);
     return this.sendToDestination(destination, data, options);
   }
 
   private async sendToDestination(destination: Destination, data?: ArrayBufferLike | DataView | string | SDTField | Message, options?: PublishOptions): Promise<void> {
-    const message: Message = data instanceof solace.Message ? (data as Message) : SolaceObjectFactory.createMessage();
+    const message: Message = data instanceof Message ? data : SolclientFactory.createMessage();
     message.setDestination(destination);
     message.setDeliveryMode(message.getDeliveryMode() ?? MessageDeliveryModeType.DIRECT);
 
     // Set data, either as unstructured byte data, or as structured container if passed a structured data type (SDT).
-    if (data !== undefined && data !== null && !(data instanceof solace.Message)) {
-      if (data instanceof solace.SDTField) {
-        message.setSdtContainer(data as SDTField);
+    if (data !== undefined && data !== null && !(data instanceof Message)) {
+      if (data instanceof SDTField) {
+        message.setSdtContainer(data);
       }
       else {
-        message.setBinaryAttachment(data as ArrayBufferLike | DataView | string);
+        message.setBinaryAttachment(data);
       }
     }
 
@@ -466,13 +470,13 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
 
     // Add headers.
     if (options?.headers?.size) {
-      const userPropertyMap = message.getUserPropertyMap() || SolaceObjectFactory.createSDTMapContainer();
+      const userPropertyMap = (message.getUserPropertyMap() || new SDTMapContainer());
       options.headers.forEach((value, key) => {
         if (value === undefined || value === null) {
           return;
         }
-        if (value instanceof solace.SDTField) {
-          const sdtField = value as SDTField;
+        if (value instanceof SDTField) {
+          const sdtField = value;
           userPropertyMap.addField(key, sdtField.getType(), sdtField.getValue());
         }
         else if (typeof value === 'string') {
@@ -522,7 +526,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
    * - the Promise resolves or rejects outside the Angular zone
    * - the Promise is bound the current session, i.e., will ony be settled as long as the current session is not disposed.
    */
-  private whenEvent(resolveOnEvent: SessionEventCode, options?: { rejectOnEvent?: SessionEventCode; correlationKey?: string }): Promise<SessionEvent> {
+  private whenEvent(resolveOnEvent: SessionEventCode, options?: { rejectOnEvent?: SessionEventCode; correlationKey?: string | object }): Promise<SessionEvent> {
     return new Promise((resolve, reject) => {
       this._event$
         .pipe(
@@ -545,16 +549,16 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
         .subscribe({
           next: (event: SessionEvent) => resolve(event),
           error: error => reject(error),
-          complete: noop // do not resolve the Promise when the session is disposed
+          complete: noop, // do not resolve the Promise when the session is disposed
         });
     });
   }
 
   private initSolaceClientFactory(): void {
-    const factoryProperties = new solace.SolclientFactoryProperties();
-    factoryProperties.profile = solace.SolclientFactoryProfiles.version10_5;
-    factoryProperties.logLevel = solace.LogLevel.INFO;
-    solace.SolclientFactory.init(factoryProperties);
+    const factoryProperties = new SolclientFactoryProperties();
+    factoryProperties.profile = SolclientFactoryProfiles.version10_5;
+    factoryProperties.logLevel = LogLevel.INFO;
+    SolclientFactory.init(factoryProperties);
   }
 
   private disposeWhenSolaceSessionDied(): void {
@@ -570,13 +574,14 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
   }
 
   private logSolaceSessionEvents(): void {
-    console.debug && this._event$
+    const sessionEventCodeMapping = Object.entries(SessionEventCode).reduce((acc, [key, value]) => acc.set(value as number, key), new Map<number, string>());
+    this._event$
       .pipe(
         assertNotInAngularZone(),
         takeUntil(this._destroy$),
       )
       .subscribe((event: SessionEvent) => {
-        console.debug(`[SolaceMessageClient] solclientjs session event:  ${solace.SessionEventCode.nameOf(event.sessionEventCode)}`, event);
+        console.debug?.(`[SolaceMessageClient] SessionEvent: ${sessionEventCodeMapping.get(event.sessionEventCode)}`, event);
       });
   }
 
@@ -662,7 +667,7 @@ function createSubscriptionTopicDestination(topic: string): Destination {
   const subscriptionTopic = topic.split('/')
     .map(segment => isNamedWildcardSegment(segment) ? '*' : segment)
     .join('/');
-  return SolaceObjectFactory.createTopicDestination(subscriptionTopic);
+  return SolclientFactory.createTopicDestination(subscriptionTopic);
 }
 
 /**

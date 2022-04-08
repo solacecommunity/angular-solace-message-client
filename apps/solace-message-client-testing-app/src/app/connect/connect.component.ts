@@ -1,8 +1,8 @@
 import {Component} from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
-import {SessionProperties} from '@solace-community/angular-solace-message-client';
-import {SOLACE_CONNECT_PROPERTIES_SESSION_KEY} from '../constants';
+import {LocalStorageKeys} from '../local-storage-keys';
 import {LocationService} from '../location.service';
+import {SolaceMessageClientConfig} from '@solace-community/angular-solace-message-client';
 
 export const URL = 'url';
 export const VPN_NAME = 'vpnName';
@@ -40,7 +40,7 @@ export class ConnectComponent {
   }
 
   public onConnect(): void {
-    const solaceConnectProperties: SessionProperties = {
+    const solaceConnectProperties: SolaceMessageClientConfig = {
       url: this.form.get(URL)!.value ?? undefined,
       vpnName: this.form.get(VPN_NAME)!.value ?? undefined,
       userName: this.form.get(USER_NAME)!.value ?? undefined,
@@ -51,7 +51,7 @@ export class ConnectComponent {
       generateReceiveTimestamps: true,
     };
 
-    localStorage.setItem(SOLACE_CONNECT_PROPERTIES_SESSION_KEY, JSON.stringify(solaceConnectProperties));
+    localStorage.setItem(LocalStorageKeys.SOLACE_CONNECT_CONFIG, JSON.stringify(solaceConnectProperties));
     this._locationService.navigateToAppRoot({clearConnectProperties: false});
   }
 

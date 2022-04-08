@@ -1,6 +1,7 @@
 import {Component} from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
-import {Data, DestinationType, MessageDeliveryModeType, MessageType, PublishOptions, SDTFieldType, SolaceMessageClient, SolaceObjectFactory} from '@solace-community/angular-solace-message-client';
+import {DestinationType, MessageDeliveryModeType, MessageType, SDTField, SDTFieldType} from 'solclientjs';
+import {Data, PublishOptions, SolaceMessageClient} from '@solace-community/angular-solace-message-client';
 
 export const DESTINATION = 'destination';
 export const DESTINATION_TYPE = 'destinationType';
@@ -80,7 +81,7 @@ export class PublisherComponent {
     }
 
     if (this.form.get(MESSAGE_TYPE)!.value === MessageType.TEXT) {
-      return SolaceObjectFactory.createSDTField(SDTFieldType.STRING, message); // structuredTextMessage
+      return SDTField.create(SDTFieldType.STRING, message); // structuredTextMessage
     }
     else {
       return new TextEncoder().encode(message); // binary message
