@@ -1,8 +1,8 @@
+import {Destination} from 'solclientjs';
+
 /**
  * Maintains the subscription count per topic.
  */
-import {Destination} from './solace.model';
-
 export class TopicSubscriptionCounter {
 
   private _subscriptionCounts = new Map<string, number>();

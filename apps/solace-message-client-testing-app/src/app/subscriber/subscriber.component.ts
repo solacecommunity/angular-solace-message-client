@@ -1,9 +1,10 @@
 import {ChangeDetectorRef, Component, OnDestroy, ViewChild} from '@angular/core';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
-import {MessageEnvelope, QueueType, SolaceMessageClient} from '@solace-community/angular-solace-message-client';
+import {MessageEnvelope, SolaceMessageClient} from '@solace-community/angular-solace-message-client';
 import {Observable, Subject, Subscription} from 'rxjs';
 import {filter, finalize, takeUntil} from 'rxjs/operators';
 import {SciViewportComponent} from '@scion/toolkit/viewport';
+import {QueueDescriptor, QueueType} from 'solclientjs';
 
 export const DESTINATION = 'destination';
 export const DESTINATION_TYPE = 'destinationType';
@@ -71,7 +72,9 @@ export class SubscriberComponent implements OnDestroy {
           }
           case SubscriptionDestinationType.QUEUE: {
             return this.solaceMessageClient.consume$({
-              queueDescriptor: {type: QueueType.QUEUE, name: destination},
+              queueDescriptor: new QueueDescriptor({type: QueueType.QUEUE, name: destination}),
+              // @ts-expect-error: typedef(solclientjs): remove 'queueProperties' when changed 'queueProperties' to optional
+              queueProperties: undefined,
             });
           }
           case SubscriptionDestinationType.TOPIC_ENDPOINT: {

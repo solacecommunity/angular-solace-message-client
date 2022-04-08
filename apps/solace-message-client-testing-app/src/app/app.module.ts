@@ -11,7 +11,7 @@ import {SubscriberComponent} from './subscriber/subscriber.component';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {ConnectComponent} from './connect/connect.component';
 import {TryMeComponent} from './try-me/try-me.component';
-import {SOLACE_CONNECT_PROPERTIES_SESSION_KEY} from './constants';
+import {LocalStorageKeys} from './local-storage-keys';
 import {ClipboardModule} from '@angular/cdk/clipboard';
 import {MatButtonModule} from '@angular/material/button';
 import {MAT_FORM_FIELD_DEFAULT_OPTIONS, MatFormFieldModule} from '@angular/material/form-field';
@@ -32,7 +32,7 @@ import {MatDividerModule} from '@angular/material/divider';
 import {MatTooltipModule} from '@angular/material/tooltip';
 import {AutofocusDirective} from './autofocus.directive';
 
-const connectProperties = localStorage.getItem(SOLACE_CONNECT_PROPERTIES_SESSION_KEY);
+const connectConfig = localStorage.getItem(LocalStorageKeys.SOLACE_CONNECT_CONFIG);
 
 @NgModule({
   declarations: [
@@ -54,7 +54,7 @@ const connectProperties = localStorage.getItem(SOLACE_CONNECT_PROPERTIES_SESSION
     AppRoutingModule,
     ReactiveFormsModule,
     FormsModule,
-    SolaceMessageClientModule.forRoot(connectProperties && JSON.parse(connectProperties)),
+    SolaceMessageClientModule.forRoot(connectConfig && JSON.parse(connectConfig)),
     ClipboardModule,
     MatButtonModule,
     MatCheckboxModule,

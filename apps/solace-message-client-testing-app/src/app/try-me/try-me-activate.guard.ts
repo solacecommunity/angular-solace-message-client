@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot, UrlTree} from '@angular/router';
-import {SOLACE_CONNECT_PROPERTIES_SESSION_KEY} from '../constants';
+import {LocalStorageKeys} from '../local-storage-keys';
 
 @Injectable({providedIn: 'root'})
 export class TryMeActivateGuard implements CanActivate {
@@ -9,7 +9,7 @@ export class TryMeActivateGuard implements CanActivate {
   }
 
   public canActivate(next: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean | UrlTree {
-    if (localStorage.getItem(SOLACE_CONNECT_PROPERTIES_SESSION_KEY)) {
+    if (localStorage.getItem(LocalStorageKeys.SOLACE_CONNECT_CONFIG)) {
       return true;
     }
     return this._router.createUrlTree(['/connect']);

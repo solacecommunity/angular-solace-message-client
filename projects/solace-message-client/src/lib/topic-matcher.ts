@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {Destination} from './solace.model';
+import {Destination} from 'solclientjs';
 
 /**
  * Matches exact topics as used when publishing messages against subscription topics.
@@ -10,7 +10,10 @@ import {Destination} from './solace.model';
 @Injectable()
 export class TopicMatcher {
 
-  public matchesSubscriptionTopic(testeeTopic: string | Destination, subscriptionTopic: string | Destination): boolean {
+  public matchesSubscriptionTopic(testeeTopic: string | Destination | null, subscriptionTopic: string | Destination): boolean {
+    if (!testeeTopic) {
+      return false;
+    }
     const testeeSegments = coerceTopicName(testeeTopic).split('/');
     const subscriptionTopicSegments = coerceTopicName(subscriptionTopic).split('/');
 

@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {BehaviorSubject, EMPTY, noop, Observable, OperatorFunction} from 'rxjs';
-import {Message, MessageConsumer, MessageConsumerProperties, MessageDeliveryModeType, MessageType, QueueBrowserProperties, SDTField, Session} from './solace.model';
+import {Message, MessageConsumer, MessageConsumerProperties, MessageDeliveryModeType, MessageType, QueueBrowserProperties, SDTField, Session} from 'solclientjs';
 import {map} from 'rxjs/operators';
 import {SolaceMessageClientConfig} from './solace-message-client.config';
 
@@ -104,7 +104,7 @@ export abstract class SolaceMessageClient {
    *
    * ```ts
    * solaceMessageClient.consume$({
-   *   topicEndpointSubscription: SolaceObjectFactory.createTopicDestination('topic'),
+   *   topicEndpointSubscription: SolclientFactory.createTopicDestination('topic'),
    *   queueDescriptor: {
    *     type: QueueType.TOPIC_ENDPOINT,
    *     durable: false,
@@ -184,7 +184,7 @@ export abstract class SolaceMessageClient {
    * @param  topic - Specifies the topic to which the message should be published.
    * @param  data - Specifies optional {@link Data transfer data} to be carried along with this message. A message may contain unstructured byte data,
    *         or structured data in the form of a {@link SDTField}. Alternatively, to have full control over the message to be published, pass the
-   *         {@link Message} object instead, which you can construct using {@link SolaceObjectFactory#createMessage}.
+   *         {@link Message} object instead, which you can construct using {@link SolclientFactory#createMessage}.
    *         For more information, refer to the documentation of {@link Data}.
    * @param  options - Controls how to publish the message.
    * @return A Promise that resolves when dispatched the message, or that rejects if the message could not be dispatched.
@@ -230,7 +230,7 @@ export abstract class SolaceMessageClient {
    * @param  queue - Specifies the queue to which the message should be sent.
    * @param  data - Specifies optional {@link Data transfer data} to be carried along with this message. A message may contain unstructured byte data,
    *         or structured data in the form of a {@link SDTField}. Alternatively, to have full control over the message to be published, pass the
-   *         {@link Message} object instead, which you can construct using {@link SolaceObjectFactory#createMessage}.
+   *         {@link Message} object instead, which you can construct using {@link SolclientFactory#createMessage}.
    *         For more information, refer to the documentation of {@link Data}.
    * @param  options - Controls how to publish the message.
    * @return A Promise that resolves when dispatched the message, or that rejects if the message could not be dispatched.
@@ -365,7 +365,7 @@ export interface PublishOptions {
    *
    * Headers are transported as structured data separate from the payload. To pass a header value
    * different to `string`, `boolean` or `number`, pass it as Structured Data Type (SDT) in the
-   * form of a {@link SDTField}, as following: `SolaceObjectFactory.createSDTField(SDTFieldType.INT8, 2);`
+   * form of a {@link SDTField}, as following: `SDTField.create(SDTFieldType.INT8, 2);`
    *
    * Header values are mapped as following to structured data types:
    * `string` -> SDTFieldType.STRING
@@ -459,7 +459,7 @@ export interface PublishOptions {
    * The correlation key is an object that is passed back to the client during the router acknowledgement or rejection.
    * Note that the correlation key is not included in the transmitted message and is only used with the local API.
    */
-  correlationKey?: string;
+  correlationKey?: string | object;
 }
 
 /**
@@ -562,7 +562,7 @@ export interface MessageEnvelope {
  * in a heterogeneous network that has clients that use different hardware architectures and programming languages, allowing exchanging binary data in
  * a structured, language- and architecture-independent way.
  *
- * Example: `SolaceObjectFactory.createSDTField(SDTFieldType.STRING, 'payload')`
+ * Example: `SDTField.create(SDTFieldType.STRING, 'payload')`
  *
  * https://solace.com/blog/inside-solace-message-introduction/
  */
