@@ -1,228 +1,35 @@
-<!doctype html>
-<html class="default no-js">
-<head>
-	<meta charset="utf-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>MessageDeliveryModeType | Angular Solace Message Client - v12.0.1</title>
-	<meta name="description" content="Documentation for Angular Solace Message Client - v12.0.1">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel="stylesheet" href="../assets/css/main.css">
-	<script async src="../assets/js/search.js" id="search-script"></script>
-	<link rel="icon" href="../favicon.ico" />
-</head>
-<body>
-<header>
-	<div class="tsd-page-toolbar">
-		<div class="container">
-			<div class="table-wrap">
-				<div class="table-cell" id="tsd-search" data-index="../assets/js/search.json" data-base="..">
-					<div class="field">
-						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
-						<input id="tsd-search-field" type="text" />
-					</div>
-					<ul class="results">
-						<li class="state loading">Preparing search index...</li>
-						<li class="state failure">The search index is not available</li>
-					</ul>
-					<a href="../index.html" class="title">Angular Solace Message Client - v12.0.1</a>
-				</div>
-				<div class="table-cell" id="tsd-widgets">
-					<div id="tsd-filter">
-						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
-						<div class="tsd-filter-group">
-							<div class="tsd-select" id="tsd-filter-visibility">
-								<span class="tsd-select-label">All</span>
-								<ul class="tsd-select-list">
-									<li data-value="public">Public</li>
-									<li data-value="protected">Public/Protected</li>
-									<li data-value="private" class="selected">All</li>
-								</ul>
-							</div>
-							<input type="checkbox" id="tsd-filter-inherited" checked />
-							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
-						</div>
-					</div>
-					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
-				</div>
-			</div>
-		</div>
-	</div>
-	<div class="tsd-page-title">
-		<div class="container">
-			<ul class="tsd-breadcrumb">
-				<li>
-					<a href="../modules.html">Angular Solace Message Client - v12.0.1</a>
-				</li>
-				<li>
-					<a href="MessageDeliveryModeType.html">MessageDeliveryModeType</a>
-				</li>
-			</ul>
-			<h1>Enumeration MessageDeliveryModeType</h1>
-		</div>
-	</div>
-</header>
-<div class="container container-main">
-	<div class="row">
-		<div class="col-8 col-content">
-			<section class="tsd-panel tsd-comment">
-				<div class="tsd-comment tsd-typography">
-					<div class="lead">
-						<p>Represents an enumeration of message delivery modes.</p>
-					</div>
-					<dl class="tsd-comment-tags">
-						<dt>see</dt>
-						<dd><p>solace.MessageDeliveryModeType</p>
-						</dd>
-					</dl>
-				</div>
-			</section>
-			<section class="tsd-panel-group tsd-index-group">
-				<h2>Index</h2>
-				<section class="tsd-panel tsd-index-panel">
-					<div class="tsd-index-content">
-						<section class="tsd-index-section ">
-							<h3>Enumeration members</h3>
-							<ul class="tsd-index-list">
-								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="MessageDeliveryModeType.html#DIRECT" class="tsd-kind-icon">DIRECT</a></li>
-								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="MessageDeliveryModeType.html#NON_PERSISTENT" class="tsd-kind-icon">NON_<wbr>PERSISTENT</a></li>
-								<li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="MessageDeliveryModeType.html#PERSISTENT" class="tsd-kind-icon">PERSISTENT</a></li>
-							</ul>
-						</section>
-					</div>
-				</section>
-			</section>
-			<section class="tsd-panel-group tsd-member-group ">
-				<h2>Enumeration members</h2>
-				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
-					<a name="DIRECT" class="tsd-anchor"></a>
-					<h3>DIRECT</h3>
-					<div class="tsd-signature tsd-kind-icon">DIRECT<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = 0</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/45b49e5/projects/solace-message-client/src/lib/solace.model.ts#L399">lib/solace.model.ts:399</a></li>
-						</ul>
-					</aside>
-					<div class="tsd-comment tsd-typography">
-						<div class="lead">
-							<p>This mode provides at-most-once message delivery. Direct messages have
-							the following characteristics:</p>
-							<ul>
-								<li>They are not retained for clients that are not connected to a Solace Message Router.</li>
-								<li>They can be discarded when congestion or system failures are encountered.</li>
-								<li>They can be reordered in the event of network topology changes.</li>
-							</ul>
-						</div>
-						<p>Direct messages are most appropriate for messaging applications that require very
-							high-rate or very low-latency message transmission. Direct Messaging enables
-							applications to efficiently publish messages to a large number of clients
-						with matching subscriptions.</p>
-					</div>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
-					<a name="NON_PERSISTENT" class="tsd-anchor"></a>
-					<h3>NON_<wbr>PERSISTENT</h3>
-					<div class="tsd-signature tsd-kind-icon">NON_<wbr>PERSISTENT<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = 2</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/45b49e5/projects/solace-message-client/src/lib/solace.model.ts#L421">lib/solace.model.ts:421</a></li>
-						</ul>
-					</aside>
-					<div class="tsd-comment tsd-typography">
-						<div class="lead">
-							<p>This mode is functionally the same as Persistent. It exists to facilitate interaction
-								with JMS applications. In most situations where you want to use Guaranteed Messaging,
-							it is recommended that you use <a href="MessageDeliveryModeType.html#PERSISTENT">MessageDeliveryModeType.PERSISTENT</a>.</p>
-						</div>
-					</div>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum">
-					<a name="PERSISTENT" class="tsd-anchor"></a>
-					<h3>PERSISTENT</h3>
-					<div class="tsd-signature tsd-kind-icon">PERSISTENT<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol"> = 1</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/45b49e5/projects/solace-message-client/src/lib/solace.model.ts#L415">lib/solace.model.ts:415</a></li>
-						</ul>
-					</aside>
-					<div class="tsd-comment tsd-typography">
-						<div class="lead">
-							<p>A Persistent delivery mode is used for Guaranteed Messaging, and this delivery mode
-								is most appropriate for applications that require persistent storage of the messages
-							they send or intend to receive. Persistent messages have the following characteristics:</p>
-						</div>
-						<ul>
-							<li>They cannot be discarded or lost (once they are acknowledged by the Solace Message Router).</li>
-							<li>They cannot be reordered in the event of network topology changes.</li>
-							<li>They cannot be delivered more than once to a single client (unless the redelivered
-							message flag is applied).</li>
-							<li>When they match subscriptions on durable endpoints, they are retained for a client
-							when that client is not connected.</li>
-						</ul>
-						<p>Persistent messages are most appropriate for applications that require persistent storage
-						of the messages they send or intend to receive.</p>
-					</div>
-				</section>
-			</section>
-		</div>
-		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
-			<nav class="tsd-navigation primary">
-				<ul>
-					<li class=" ">
-						<a href="../modules.html">Exports</a>
-					</li>
-				</ul>
-			</nav>
-			<nav class="tsd-navigation secondary menu-sticky">
-				<ul class="before-current">
-				</ul>
-				<ul class="current">
-					<li class="current tsd-kind-enum">
-						<a href="MessageDeliveryModeType.html" class="tsd-kind-icon">Message<wbr>Delivery<wbr>Mode<wbr>Type</a>
-						<ul>
-							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
-								<a href="MessageDeliveryModeType.html#DIRECT" class="tsd-kind-icon">DIRECT</a>
-							</li>
-							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
-								<a href="MessageDeliveryModeType.html#NON_PERSISTENT" class="tsd-kind-icon">NON_<wbr>PERSISTENT</a>
-							</li>
-							<li class=" tsd-kind-enum-member tsd-parent-kind-enum">
-								<a href="MessageDeliveryModeType.html#PERSISTENT" class="tsd-kind-icon">PERSISTENT</a>
-							</li>
-						</ul>
-					</li>
-				</ul>
-				<ul class="after-current">
-				</ul>
-			</nav>
-		</div>
-	</div>
-</div>
-<footer class="with-border-bottom">
-	<div class="container">
-		<h2>Legend</h2>
-		<div class="tsd-legend-group">
-			<ul class="tsd-legend">
-				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
-				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited property</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
-			</ul>
-		</div>
-	</div>
-</footer>
-<div class="container tsd-generator">
-	<p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a>, the 11/15/2021 at 4:54:00 PM</p>
-</div>
-<div class="overlay"></div>
-<script src="../assets/js/main.js"></script>
-</body>
-</html>
+<!DOCTYPE html><html class="default"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>MessageDeliveryModeType | Angular Solace Message Client - v13.0.0</title><meta name="description" content="Documentation for Angular Solace Message Client - v13.0.0"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="../assets/style.css"/><link rel="stylesheet" href="../assets/highlight.css"/><script async src="../assets/search.js" id="search-script"></script>	<link rel="icon" href="../favicon.ico" />
+</head><body><script>document.body.classList.add(localStorage.getItem("tsd-theme") || "os")</script><header><div class="tsd-page-toolbar"><div class="container"><div class="table-wrap"><div class="table-cell" id="tsd-search" data-base=".."><div class="field"><label for="tsd-search-field" class="tsd-widget search no-caption">Search</label><input type="text" id="tsd-search-field"/></div><ul class="results"><li class="state loading">Preparing search index...</li><li class="state failure">The search index is not available</li></ul><a href="../index.html" class="title">Angular Solace Message Client - v13.0.0</a></div><div class="table-cell" id="tsd-widgets"><div id="tsd-filter"><a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a><div class="tsd-filter-group"><div class="tsd-select" id="tsd-filter-visibility"><span class="tsd-select-label">All</span><ul class="tsd-select-list"><li data-value="public">Public</li><li data-value="protected">Public/Protected</li><li data-value="private" class="selected">All</li></ul></div> <input type="checkbox" id="tsd-filter-inherited" checked/><label class="tsd-widget" for="tsd-filter-inherited">Inherited</label></div></div><a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a></div></div></div></div><div class="tsd-page-title"><div class="container"><ul class="tsd-breadcrumb"><li><a href="../modules.html">Angular Solace Message Client - v13.0.0</a></li><li><a href="MessageDeliveryModeType.html">MessageDeliveryModeType</a></li></ul><h1>Enumeration MessageDeliveryModeType</h1></div></div></header><div class="container container-main"><div class="row"><div class="col-8 col-content"><section class="tsd-panel tsd-comment"><div class="tsd-comment tsd-typography"><div class="lead">
+<p>Represents an enumeration of message delivery modes.</p>
+</div><dl class="tsd-comment-tags"><dt>see</dt><dd><p>solace.MessageDeliveryModeType</p>
+</dd></dl></div></section><section class="tsd-panel-group tsd-index-group"><h2>Index</h2><section class="tsd-panel tsd-index-panel"><div class="tsd-index-content"><section class="tsd-index-section "><h3>Enumeration members</h3><ul class="tsd-index-list"><li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="MessageDeliveryModeType.html#DIRECT" class="tsd-kind-icon">DIRECT</a></li><li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="MessageDeliveryModeType.html#NON_PERSISTENT" class="tsd-kind-icon">NON_<wbr/>PERSISTENT</a></li><li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="MessageDeliveryModeType.html#PERSISTENT" class="tsd-kind-icon">PERSISTENT</a></li></ul></section></div></section></section><section class="tsd-panel-group tsd-member-group "><h2>Enumeration members</h2><section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum"><a id="DIRECT" class="tsd-anchor"></a><h3 class="tsd-anchor-link">DIRECT<a href="#DIRECT" aria-label="Permalink" class="tsd-anchor-icon"><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5"></path><path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5"></path></svg></a></h3><div class="tsd-signature tsd-kind-icon">DIRECT<span class="tsd-signature-symbol"> = 0</span></div><aside class="tsd-sources"><ul><li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/8e13996/projects/solace-message-client/src/lib/solace.model.ts#L399">lib/solace.model.ts:399</a></li></ul></aside><div class="tsd-comment tsd-typography"><div class="lead">
+<p>This mode provides at-most-once message delivery. Direct messages have
+the following characteristics:</p>
+<ul>
+<li>They are not retained for clients that are not connected to a Solace Message Router.</li>
+<li>They can be discarded when congestion or system failures are encountered.</li>
+<li>They can be reordered in the event of network topology changes.</li>
+</ul>
+</div><div><p>Direct messages are most appropriate for messaging applications that require very
+high-rate or very low-latency message transmission. Direct Messaging enables
+applications to efficiently publish messages to a large number of clients
+with matching subscriptions.</p>
+</div></div></section><section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum"><a id="NON_PERSISTENT" class="tsd-anchor"></a><h3 class="tsd-anchor-link">NON_<wbr/>PERSISTENT<a href="#NON_PERSISTENT" aria-label="Permalink" class="tsd-anchor-icon"><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5"></path><path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5"></path></svg></a></h3><div class="tsd-signature tsd-kind-icon">NON_<wbr/>PERSISTENT<span class="tsd-signature-symbol"> = 2</span></div><aside class="tsd-sources"><ul><li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/8e13996/projects/solace-message-client/src/lib/solace.model.ts#L421">lib/solace.model.ts:421</a></li></ul></aside><div class="tsd-comment tsd-typography"><div class="lead">
+<p>This mode is functionally the same as Persistent. It exists to facilitate interaction
+with JMS applications. In most situations where you want to use Guaranteed Messaging,
+it is recommended that you use <a href="MessageDeliveryModeType.html#PERSISTENT">MessageDeliveryModeType.PERSISTENT</a>.</p>
+</div></div></section><section class="tsd-panel tsd-member tsd-kind-enum-member tsd-parent-kind-enum"><a id="PERSISTENT" class="tsd-anchor"></a><h3 class="tsd-anchor-link">PERSISTENT<a href="#PERSISTENT" aria-label="Permalink" class="tsd-anchor-icon"><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5"></path><path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5"></path></svg></a></h3><div class="tsd-signature tsd-kind-icon">PERSISTENT<span class="tsd-signature-symbol"> = 1</span></div><aside class="tsd-sources"><ul><li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/8e13996/projects/solace-message-client/src/lib/solace.model.ts#L415">lib/solace.model.ts:415</a></li></ul></aside><div class="tsd-comment tsd-typography"><div class="lead">
+<p>A Persistent delivery mode is used for Guaranteed Messaging, and this delivery mode
+is most appropriate for applications that require persistent storage of the messages
+they send or intend to receive. Persistent messages have the following characteristics:</p>
+</div><div><ul>
+<li>They cannot be discarded or lost (once they are acknowledged by the Solace Message Router).</li>
+<li>They cannot be reordered in the event of network topology changes.</li>
+<li>They cannot be delivered more than once to a single client (unless the redelivered
+message flag is applied).</li>
+<li>When they match subscriptions on durable endpoints, they are retained for a client
+when that client is not connected.</li>
+</ul>
+<p>Persistent messages are most appropriate for applications that require persistent storage
+of the messages they send or intend to receive.</p>
+</div></div></section></section></div><div class="col-4 col-menu menu-sticky-wrap menu-highlight"><nav class="tsd-navigation primary"><ul><li class=""><a href="../modules.html">Exports</a></li><li class=" tsd-kind-namespace"><a href="../modules/SolaceObjectFactory.html">Solace<wbr/>Object<wbr/>Factory</a></li></ul></nav><nav class="tsd-navigation secondary menu-sticky"><ul><li class="current tsd-kind-enum"><a href="MessageDeliveryModeType.html" class="tsd-kind-icon">Message<wbr/>Delivery<wbr/>Mode<wbr/>Type</a><ul><li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="MessageDeliveryModeType.html#DIRECT" class="tsd-kind-icon">DIRECT</a></li><li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="MessageDeliveryModeType.html#NON_PERSISTENT" class="tsd-kind-icon">NON_<wbr/>PERSISTENT</a></li><li class="tsd-kind-enum-member tsd-parent-kind-enum"><a href="MessageDeliveryModeType.html#PERSISTENT" class="tsd-kind-icon">PERSISTENT</a></li></ul></li></ul></nav></div></div></div><footer class="with-border-bottom"><div class="container"><h2>Legend</h2><div class="tsd-legend-group"><ul class="tsd-legend"><li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li><li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li><li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li></ul><ul class="tsd-legend"><li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li><li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li></ul><ul class="tsd-legend"><li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited property</span></li></ul><ul class="tsd-legend"><li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li></ul></div><h2>Settings</h2><p>Theme <select id="theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></p></div></footer><div class="container tsd-generator"><p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></div><div class="overlay"></div><script src="../assets/main.js"></script></body></html>

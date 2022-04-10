@@ -1,520 +1,69 @@
-<!doctype html>
-<html class="default no-js">
-<head>
-	<meta charset="utf-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>Angular Solace Message Client - v12.0.1</title>
-	<meta name="description" content="Documentation for Angular Solace Message Client - v12.0.1">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel="stylesheet" href="assets/css/main.css">
-	<script async src="assets/js/search.js" id="search-script"></script>
-	<link rel="icon" href="favicon.ico" />
-</head>
-<body>
-<header>
-	<div class="tsd-page-toolbar">
-		<div class="container">
-			<div class="table-wrap">
-				<div class="table-cell" id="tsd-search" data-index="assets/js/search.json" data-base=".">
-					<div class="field">
-						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
-						<input id="tsd-search-field" type="text" />
-					</div>
-					<ul class="results">
-						<li class="state loading">Preparing search index...</li>
-						<li class="state failure">The search index is not available</li>
-					</ul>
-					<a href="index.html" class="title">Angular Solace Message Client - v12.0.1</a>
-				</div>
-				<div class="table-cell" id="tsd-widgets">
-					<div id="tsd-filter">
-						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
-						<div class="tsd-filter-group">
-							<div class="tsd-select" id="tsd-filter-visibility">
-								<span class="tsd-select-label">All</span>
-								<ul class="tsd-select-list">
-									<li data-value="public">Public</li>
-									<li data-value="protected">Public/Protected</li>
-									<li data-value="private" class="selected">All</li>
-								</ul>
-							</div>
-							<input type="checkbox" id="tsd-filter-inherited" checked />
-							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
-						</div>
-					</div>
-					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
-				</div>
-			</div>
-		</div>
-	</div>
-	<div class="tsd-page-title">
-		<div class="container">
-			<h1>Angular Solace Message Client - v12.0.1</h1>
-		</div>
-	</div>
-</header>
-<div class="container container-main">
-	<div class="row">
-		<div class="col-8 col-content">
-			<section class="tsd-panel-group tsd-index-group">
-				<h2>Index</h2>
-				<section class="tsd-panel tsd-index-panel">
-					<div class="tsd-index-content">
-						<section class="tsd-index-section ">
-							<h3>Namespaces</h3>
-							<ul class="tsd-index-list">
-								<li class="tsd-kind-namespace"><a href="modules/SolaceObjectFactory.html" class="tsd-kind-icon">Solace<wbr>Object<wbr>Factory</a></li>
-							</ul>
-						</section>
-						<section class="tsd-index-section ">
-							<h3>Enumerations</h3>
-							<ul class="tsd-index-list">
-								<li class="tsd-kind-enum"><a href="enums/AuthenticationScheme.html" class="tsd-kind-icon">Authentication<wbr>Scheme</a></li>
-								<li class="tsd-kind-enum"><a href="enums/CacheLiveDataAction.html" class="tsd-kind-icon">Cache<wbr>Live<wbr>Data<wbr>Action</a></li>
-								<li class="tsd-kind-enum"><a href="enums/CacheReturnCode.html" class="tsd-kind-icon">Cache<wbr>Return<wbr>Code</a></li>
-								<li class="tsd-kind-enum"><a href="enums/CacheReturnSubcode.html" class="tsd-kind-icon">Cache<wbr>Return<wbr>Subcode</a></li>
-								<li class="tsd-kind-enum"><a href="enums/CapabilityType.html" class="tsd-kind-icon">Capability<wbr>Type</a></li>
-								<li class="tsd-kind-enum"><a href="enums/DestinationType.html" class="tsd-kind-icon">Destination<wbr>Type</a></li>
-								<li class="tsd-kind-enum"><a href="enums/ErrorSubcode.html" class="tsd-kind-icon">Error<wbr>Subcode</a></li>
-								<li class="tsd-kind-enum"><a href="enums/MessageCacheStatus.html" class="tsd-kind-icon">Message<wbr>Cache<wbr>Status</a></li>
-								<li class="tsd-kind-enum"><a href="enums/MessageConsumerAcknowledgeMode.html" class="tsd-kind-icon">Message<wbr>Consumer<wbr>Acknowledge<wbr>Mode</a></li>
-								<li class="tsd-kind-enum"><a href="enums/MessageConsumerEventName.html" class="tsd-kind-icon">Message<wbr>Consumer<wbr>Event<wbr>Name</a></li>
-								<li class="tsd-kind-enum"><a href="enums/MessageDeliveryModeType.html" class="tsd-kind-icon">Message<wbr>Delivery<wbr>Mode<wbr>Type</a></li>
-								<li class="tsd-kind-enum"><a href="enums/MessageDumpFlag.html" class="tsd-kind-icon">Message<wbr>Dump<wbr>Flag</a></li>
-								<li class="tsd-kind-enum"><a href="enums/MessagePublisherAcknowledgeMode.html" class="tsd-kind-icon">Message<wbr>Publisher<wbr>Acknowledge<wbr>Mode</a></li>
-								<li class="tsd-kind-enum"><a href="enums/MessageType.html" class="tsd-kind-icon">Message<wbr>Type</a></li>
-								<li class="tsd-kind-enum"><a href="enums/MessageUserCosType.html" class="tsd-kind-icon">Message<wbr>User<wbr>Cos<wbr>Type</a></li>
-								<li class="tsd-kind-enum"><a href="enums/MutableSessionProperty.html" class="tsd-kind-icon">Mutable<wbr>Session<wbr>Property</a></li>
-								<li class="tsd-kind-enum"><a href="enums/QueueAccessType.html" class="tsd-kind-icon">Queue<wbr>Access<wbr>Type</a></li>
-								<li class="tsd-kind-enum"><a href="enums/QueueBrowserEventName.html" class="tsd-kind-icon">Queue<wbr>Browser<wbr>Event<wbr>Name</a></li>
-								<li class="tsd-kind-enum"><a href="enums/QueueDiscardBehavior.html" class="tsd-kind-icon">Queue<wbr>Discard<wbr>Behavior</a></li>
-								<li class="tsd-kind-enum"><a href="enums/QueuePermissions.html" class="tsd-kind-icon">Queue<wbr>Permissions</a></li>
-								<li class="tsd-kind-enum"><a href="enums/QueueType.html" class="tsd-kind-icon">Queue<wbr>Type</a></li>
-								<li class="tsd-kind-enum"><a href="enums/SDTFieldType.html" class="tsd-kind-icon">SDTField<wbr>Type</a></li>
-								<li class="tsd-kind-enum"><a href="enums/SessionEventCode.html" class="tsd-kind-icon">Session<wbr>Event<wbr>Code</a></li>
-								<li class="tsd-kind-enum"><a href="enums/StatType.html" class="tsd-kind-icon">Stat<wbr>Type</a></li>
-							</ul>
-						</section>
-						<section class="tsd-index-section ">
-							<h3>Classes</h3>
-							<ul class="tsd-index-list">
-								<li class="tsd-kind-class"><a href="classes/NullSolaceMessageClient.html" class="tsd-kind-icon">Null<wbr>Solace<wbr>Message<wbr>Client</a></li>
-								<li class="tsd-kind-class"><a href="classes/SolaceMessageClient.html" class="tsd-kind-icon">Solace<wbr>Message<wbr>Client</a></li>
-								<li class="tsd-kind-class"><a href="classes/SolaceMessageClientConfig.html" class="tsd-kind-icon">Solace<wbr>Message<wbr>Client<wbr>Config</a></li>
-								<li class="tsd-kind-class"><a href="classes/SolaceMessageClientModule.html" class="tsd-kind-icon">Solace<wbr>Message<wbr>Client<wbr>Module</a></li>
-								<li class="tsd-kind-class"><a href="classes/SolaceSessionProvider.html" class="tsd-kind-icon">Solace<wbr>Session<wbr>Provider</a></li>
-							</ul>
-						</section>
-						<section class="tsd-index-section ">
-							<h3>Interfaces</h3>
-							<ul class="tsd-index-list">
-								<li class="tsd-kind-interface"><a href="interfaces/BrowseOptions.html" class="tsd-kind-icon">Browse<wbr>Options</a></li>
-								<li class="tsd-kind-interface"><a href="interfaces/CacheCBInfo.html" class="tsd-kind-icon">CacheCBInfo</a></li>
-								<li class="tsd-kind-interface"><a href="interfaces/CacheRequestResult.html" class="tsd-kind-icon">Cache<wbr>Request<wbr>Result</a></li>
-								<li class="tsd-kind-interface"><a href="interfaces/CacheSession.html" class="tsd-kind-icon">Cache<wbr>Session</a></li>
-								<li class="tsd-kind-interface"><a href="interfaces/CacheSessionProperties.html" class="tsd-kind-icon">Cache<wbr>Session<wbr>Properties</a></li>
-								<li class="tsd-kind-interface"><a href="interfaces/ConsumeOptions.html" class="tsd-kind-icon">Consume<wbr>Options</a></li>
-								<li class="tsd-kind-interface"><a href="interfaces/Destination.html" class="tsd-kind-icon">Destination</a></li>
-								<li class="tsd-kind-interface"><a href="interfaces/Message.html" class="tsd-kind-icon">Message</a></li>
-								<li class="tsd-kind-interface"><a href="interfaces/MessageConsumer.html" class="tsd-kind-icon">Message<wbr>Consumer</a></li>
-								<li class="tsd-kind-interface"><a href="interfaces/MessageConsumerProperties.html" class="tsd-kind-icon">Message<wbr>Consumer<wbr>Properties</a></li>
-								<li class="tsd-kind-interface"><a href="interfaces/MessageEnvelope.html" class="tsd-kind-icon">Message<wbr>Envelope</a></li>
-								<li class="tsd-kind-interface"><a href="interfaces/MessagePublisherProperties.html" class="tsd-kind-icon">Message<wbr>Publisher<wbr>Properties</a></li>
-								<li class="tsd-kind-interface"><a href="interfaces/ObserveOptions.html" class="tsd-kind-icon">Observe<wbr>Options</a></li>
-								<li class="tsd-kind-interface"><a href="interfaces/OperationError.html" class="tsd-kind-icon">Operation<wbr>Error</a></li>
-								<li class="tsd-kind-interface"><a href="interfaces/PublishOptions.html" class="tsd-kind-icon">Publish<wbr>Options</a></li>
-								<li class="tsd-kind-interface"><a href="interfaces/QueueBrowser.html" class="tsd-kind-icon">Queue<wbr>Browser</a></li>
-								<li class="tsd-kind-interface"><a href="interfaces/QueueBrowserProperties.html" class="tsd-kind-icon">Queue<wbr>Browser<wbr>Properties</a></li>
-								<li class="tsd-kind-interface"><a href="interfaces/QueueDescriptor.html" class="tsd-kind-icon">Queue<wbr>Descriptor</a></li>
-								<li class="tsd-kind-interface"><a href="interfaces/QueueProperties.html" class="tsd-kind-icon">Queue<wbr>Properties</a></li>
-								<li class="tsd-kind-interface"><a href="interfaces/ReplayStartLocation.html" class="tsd-kind-icon">Replay<wbr>Start<wbr>Location</a></li>
-								<li class="tsd-kind-interface"><a href="interfaces/RequestError.html" class="tsd-kind-icon">Request<wbr>Error</a></li>
-								<li class="tsd-kind-interface"><a href="interfaces/SDTField.html" class="tsd-kind-icon">SDTField</a></li>
-								<li class="tsd-kind-interface"><a href="interfaces/SDTMapContainer.html" class="tsd-kind-icon">SDTMap<wbr>Container</a></li>
-								<li class="tsd-kind-interface"><a href="interfaces/SDTStreamContainer.html" class="tsd-kind-icon">SDTStream<wbr>Container</a></li>
-								<li class="tsd-kind-interface"><a href="interfaces/SDTUnsupportedValueError.html" class="tsd-kind-icon">SDTUnsupported<wbr>Value<wbr>Error</a></li>
-								<li class="tsd-kind-interface"><a href="interfaces/Session.html" class="tsd-kind-icon">Session</a></li>
-								<li class="tsd-kind-interface"><a href="interfaces/SessionEvent.html" class="tsd-kind-icon">Session<wbr>Event</a></li>
-								<li class="tsd-kind-interface"><a href="interfaces/SessionProperties.html" class="tsd-kind-icon">Session<wbr>Properties</a></li>
-								<li class="tsd-kind-interface"><a href="interfaces/SolaceError.html" class="tsd-kind-icon">Solace<wbr>Error</a></li>
-							</ul>
-						</section>
-						<section class="tsd-index-section ">
-							<h3>Type aliases</h3>
-							<ul class="tsd-index-list">
-								<li class="tsd-kind-type-alias"><a href="modules.html#Data" class="tsd-kind-icon">Data</a></li>
-								<li class="tsd-kind-type-alias"><a href="modules.html#Params" class="tsd-kind-icon">Params</a></li>
-								<li class="tsd-kind-type-alias"><a href="modules.html#cacheRequestCallback" class="tsd-kind-icon">cache<wbr>Request<wbr>Callback</a></li>
-								<li class="tsd-kind-type-alias"><a href="modules.html#replyReceivedCallback" class="tsd-kind-icon">reply<wbr>Received<wbr>Callback</a></li>
-								<li class="tsd-kind-type-alias"><a href="modules.html#requestFailedCallback" class="tsd-kind-icon">request<wbr>Failed<wbr>Callback</a></li>
-							</ul>
-						</section>
-						<section class="tsd-index-section ">
-							<h3>Functions</h3>
-							<ul class="tsd-index-list">
-								<li class="tsd-kind-function tsd-has-type-parameter"><a href="modules.html#mapToBinary" class="tsd-kind-icon">map<wbr>ToBinary</a></li>
-								<li class="tsd-kind-function"><a href="modules.html#mapToText" class="tsd-kind-icon">map<wbr>ToText</a></li>
-							</ul>
-						</section>
-					</div>
-				</section>
-			</section>
-			<section class="tsd-panel-group tsd-member-group ">
-				<h2>Type aliases</h2>
-				<section class="tsd-panel tsd-member tsd-kind-type-alias">
-					<a name="Data" class="tsd-anchor"></a>
-					<h3>Data</h3>
-					<div class="tsd-signature tsd-kind-icon">Data<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">ArrayBufferLike</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">DataView</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><a href="interfaces/SDTField.html" class="tsd-signature-type" data-tsd-kind="Interface">SDTField</a></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/45b49e5/projects/solace-message-client/src/lib/solace-message-client.ts#L569">lib/solace-message-client.ts:569</a></li>
-						</ul>
-					</aside>
-					<div class="tsd-comment tsd-typography">
-						<div class="lead">
-							<p>Represents the payload of a message.</p>
-						</div>
-						<p>A message may contain unstructured byte data, or a structured container.</p>
-						<a href="#binary-data-message" id="binary-data-message" style="color: inherit; text-decoration: none;">
-							<h2>Binary Data Message</h2>
-						</a>
-						<p>By default, data is transported as unstructured bytes in the binary attachment message part.</p>
-						<p>Supported data types are:</p>
-						<ul>
-							<li>ArrayBufferLike, e.g. <code>ArrayBuffer</code>, <code>Uint8Array</code>, <code>Uint32Array</code>, or similar</li>
-							<li>DataView</li>
-							<li>string (latin1-encoded; only supported for backwards compatibility; use <code>new TextEncoder.encode(...)</code> instead)</li>
-						</ul>
-						<a href="#structured-data-message" id="structured-data-message" style="color: inherit; text-decoration: none;">
-							<h2>Structured Data Message</h2>
-						</a>
-						<p>Alternatively, you can exchange data using the structured data API by passing it as Structured Data Type (SDT) in the form of a <a href="interfaces/SDTField.html">SDTField</a>
-							of the type {@link SDTFieldType#STRING}, {@link SDTFieldType#MAP} or {@link SDTFieldType#STREAM}. Transporting data as structured message is useful
-							in a heterogeneous network that has clients that use different hardware architectures and programming languages, allowing exchanging binary data in
-						a structured, language- and architecture-independent way.</p>
-						<p>Example: <code>SolaceObjectFactory.createSDTField(SDTFieldType.STRING, &#39;payload&#39;)</code></p>
-						<p><a href="https://solace.com/blog/inside-solace-message-introduction/">https://solace.com/blog/inside-solace-message-introduction/</a></p>
-					</div>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-type-alias">
-					<a name="Params" class="tsd-anchor"></a>
-					<h3>Params</h3>
-					<div class="tsd-signature tsd-kind-icon">Params<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Map</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/45b49e5/projects/solace-message-client/src/lib/solace-message-client.ts#L507">lib/solace-message-client.ts:507</a></li>
-						</ul>
-					</aside>
-					<div class="tsd-comment tsd-typography">
-						<div class="lead">
-							<p>Container for substitued values of named wildcard topic segments.</p>
-						</div>
-					</div>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-type-alias">
-					<a name="cacheRequestCallback" class="tsd-anchor"></a>
-					<h3>cache<wbr>Request<wbr>Callback</h3>
-					<div class="tsd-signature tsd-kind-icon">cache<wbr>Request<wbr>Callback<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span>requestID<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, result<span class="tsd-signature-symbol">: </span><a href="interfaces/CacheRequestResult.html" class="tsd-signature-type" data-tsd-kind="Interface">CacheRequestResult</a>, userObject<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/45b49e5/projects/solace-message-client/src/lib/solace.model.ts#L3759">lib/solace.model.ts:3759</a></li>
-						</ul>
-					</aside>
-					<div class="tsd-type-declaration">
-						<h4>Type declaration</h4>
-						<ul class="tsd-parameters">
-							<li class="tsd-parameter-signature">
-								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-type-alias">
-									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>requestID<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, result<span class="tsd-signature-symbol">: </span><a href="interfaces/CacheRequestResult.html" class="tsd-signature-type" data-tsd-kind="Interface">CacheRequestResult</a>, userObject<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
-								</ul>
-								<ul class="tsd-descriptions">
-									<li class="tsd-description">
-										<div class="tsd-comment tsd-typography">
-											<div class="lead">
-												<p>This callback is called by a cache session when a cache completes.</p>
-											</div>
-										</div>
-										<h4 class="tsd-parameters-title">Parameters</h4>
-										<ul class="tsd-parameters">
-											<li>
-												<h5>requestID: <span class="tsd-signature-type">number</span></h5>
-												<div class="tsd-comment tsd-typography">
-													<div class="lead">
-														<p>The ID of the request on which the event is notified.</p>
-													</div>
-												</div>
-											</li>
-											<li>
-												<h5>result: <a href="interfaces/CacheRequestResult.html" class="tsd-signature-type" data-tsd-kind="Interface">CacheRequestResult</a></h5>
-												<div class="tsd-comment tsd-typography">
-													<div class="lead">
-														<p>The result of the cache request.</p>
-													</div>
-												</div>
-											</li>
-											<li>
-												<h5>userObject: <span class="tsd-signature-type">any</span></h5>
-												<div class="tsd-comment tsd-typography">
-													<div class="lead">
-														<p>The user object provided.</p>
-													</div>
-												</div>
-											</li>
-										</ul>
-										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
-									</li>
-								</ul>
-							</li>
-						</ul>
-					</div>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-type-alias">
-					<a name="replyReceivedCallback" class="tsd-anchor"></a>
-					<h3>reply<wbr>Received<wbr>Callback</h3>
-					<div class="tsd-signature tsd-kind-icon">reply<wbr>Received<wbr>Callback<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span>session<span class="tsd-signature-symbol">: </span><a href="interfaces/Session.html" class="tsd-signature-type" data-tsd-kind="Interface">Session</a>, message<span class="tsd-signature-symbol">: </span><a href="interfaces/Message.html" class="tsd-signature-type" data-tsd-kind="Interface">Message</a>, userObject<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/45b49e5/projects/solace-message-client/src/lib/solace.model.ts#L3257">lib/solace.model.ts:3257</a></li>
-						</ul>
-					</aside>
-					<div class="tsd-type-declaration">
-						<h4>Type declaration</h4>
-						<ul class="tsd-parameters">
-							<li class="tsd-parameter-signature">
-								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-type-alias">
-									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>session<span class="tsd-signature-symbol">: </span><a href="interfaces/Session.html" class="tsd-signature-type" data-tsd-kind="Interface">Session</a>, message<span class="tsd-signature-symbol">: </span><a href="interfaces/Message.html" class="tsd-signature-type" data-tsd-kind="Interface">Message</a>, userObject<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
-								</ul>
-								<ul class="tsd-descriptions">
-									<li class="tsd-description">
-										<div class="tsd-comment tsd-typography">
-											<div class="lead">
-												<p>A callback that returns replies to requests sent via {@link Session#sendRequest}.
-												The replyReceivedCallback <b>must</b> be provided to the API as the third argument of {@link Sesssion#sendRequest}.</p>
-											</div>
-										</div>
-										<h4 class="tsd-parameters-title">Parameters</h4>
-										<ul class="tsd-parameters">
-											<li>
-												<h5>session: <a href="interfaces/Session.html" class="tsd-signature-type" data-tsd-kind="Interface">Session</a></h5>
-												<div class="tsd-comment tsd-typography">
-													<div class="lead">
-														<p>The session object that received the reply.</p>
-													</div>
-												</div>
-											</li>
-											<li>
-												<h5>message: <a href="interfaces/Message.html" class="tsd-signature-type" data-tsd-kind="Interface">Message</a></h5>
-												<div class="tsd-comment tsd-typography">
-													<div class="lead">
-														<p>The reply message received.</p>
-													</div>
-												</div>
-											</li>
-											<li>
-												<h5>userObject: <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></h5>
-												<div class="tsd-comment tsd-typography">
-													<div class="lead">
-														<p>The user object associated with the callback. &#39;undefined&#39; when not provided to <i>sendRequest</i></p>
-													</div>
-												</div>
-											</li>
-										</ul>
-										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
-									</li>
-								</ul>
-							</li>
-						</ul>
-					</div>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-type-alias">
-					<a name="requestFailedCallback" class="tsd-anchor"></a>
-					<h3>request<wbr>Failed<wbr>Callback</h3>
-					<div class="tsd-signature tsd-kind-icon">request<wbr>Failed<wbr>Callback<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span>session<span class="tsd-signature-symbol">: </span><a href="interfaces/Session.html" class="tsd-signature-type" data-tsd-kind="Interface">Session</a>, error<span class="tsd-signature-symbol">: </span><a href="interfaces/RequestError.html" class="tsd-signature-type" data-tsd-kind="Interface">RequestError</a>, userObject<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/45b49e5/projects/solace-message-client/src/lib/solace.model.ts#L3269">lib/solace.model.ts:3269</a></li>
-						</ul>
-					</aside>
-					<div class="tsd-type-declaration">
-						<h4>Type declaration</h4>
-						<ul class="tsd-parameters">
-							<li class="tsd-parameter-signature">
-								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-type-alias">
-									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>session<span class="tsd-signature-symbol">: </span><a href="interfaces/Session.html" class="tsd-signature-type" data-tsd-kind="Interface">Session</a>, error<span class="tsd-signature-symbol">: </span><a href="interfaces/RequestError.html" class="tsd-signature-type" data-tsd-kind="Interface">RequestError</a>, userObject<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
-								</ul>
-								<ul class="tsd-descriptions">
-									<li class="tsd-description">
-										<div class="tsd-comment tsd-typography">
-											<div class="lead">
-												<p>A callback that returns errors associated with requests sent via {@link Session#sendRequest}.
-												The requestFailedCallback <b>must</b> be provided to the API as the fourth argument of {@link Sesssion#sendRequest}</p>
-											</div>
-										</div>
-										<h4 class="tsd-parameters-title">Parameters</h4>
-										<ul class="tsd-parameters">
-											<li>
-												<h5>session: <a href="interfaces/Session.html" class="tsd-signature-type" data-tsd-kind="Interface">Session</a></h5>
-												<div class="tsd-comment tsd-typography">
-													<div class="lead">
-														<p>The session object associated with the event.</p>
-													</div>
-												</div>
-											</li>
-											<li>
-												<h5>error: <a href="interfaces/RequestError.html" class="tsd-signature-type" data-tsd-kind="Interface">RequestError</a></h5>
-												<div class="tsd-comment tsd-typography">
-													<div class="lead">
-														<p>The event associated with the failure.</p>
-													</div>
-												</div>
-											</li>
-											<li>
-												<h5>userObject: <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></h5>
-												<div class="tsd-comment tsd-typography">
-													<div class="lead">
-														<p>The user object associated with the callback. &#39;undefined&#39; when not provided to <i>sendRequest</i></p>
-													</div>
-												</div>
-											</li>
-										</ul>
-										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
-									</li>
-								</ul>
-							</li>
-						</ul>
-					</div>
-				</section>
-			</section>
-			<section class="tsd-panel-group tsd-member-group ">
-				<h2>Functions</h2>
-				<section class="tsd-panel tsd-member tsd-kind-function tsd-has-type-parameter">
-					<a name="mapToBinary" class="tsd-anchor"></a>
-					<h3>map<wbr>ToBinary</h3>
-					<ul class="tsd-signatures tsd-kind-function tsd-has-type-parameter">
-						<li class="tsd-signature tsd-kind-icon">map<wbr>ToBinary&lt;T&gt;<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">OperatorFunction</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/MessageEnvelope.html" class="tsd-signature-type" data-tsd-kind="Interface">MessageEnvelope</a><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><a href="modules.html#Params" class="tsd-signature-type" data-tsd-kind="Type alias">Params</a><span class="tsd-signature-symbol">, </span><a href="interfaces/Message.html" class="tsd-signature-type" data-tsd-kind="Interface">Message</a><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/45b49e5/projects/solace-message-client/src/lib/solace-message-client.ts#L494">lib/solace-message-client.ts:494</a></li>
-								</ul>
-							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>RxJS operator for mapping a message into its binary representation.</p>
-								</div>
-								<p>Each message is mapped to a tuple of three elements:
-								[<binary>, Params, Message].</p>
-								<p>Backward compatibility note: Using the version10 factory profile or older, the binary attachment is returned as a &#39;latin1&#39; String:
-								Each character has a code in the range * 0-255 representing the value of a single received byte at that position.</p>
-								<p>Note: Messages must be published as <a href="enums/MessageType.html#BINARY">MessageType.BINARY</a> messages, otherwise an error is thrown.</p>
-							</div>
-							<h4 class="tsd-type-parameters-title">Type parameters</h4>
-							<ul class="tsd-type-parameters">
-								<li>
-									<h4>T<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Uint8Array</span> = <span class="tsd-signature-type">Uint8Array</span></h4>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">OperatorFunction</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/MessageEnvelope.html" class="tsd-signature-type" data-tsd-kind="Interface">MessageEnvelope</a><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><a href="modules.html#Params" class="tsd-signature-type" data-tsd-kind="Type alias">Params</a><span class="tsd-signature-symbol">, </span><a href="interfaces/Message.html" class="tsd-signature-type" data-tsd-kind="Interface">Message</a><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span></h4>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-function">
-					<a name="mapToText" class="tsd-anchor"></a>
-					<h3>map<wbr>ToText</h3>
-					<ul class="tsd-signatures tsd-kind-function">
-						<li class="tsd-signature tsd-kind-icon">map<wbr>ToText<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">OperatorFunction</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/MessageEnvelope.html" class="tsd-signature-type" data-tsd-kind="Interface">MessageEnvelope</a><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><a href="modules.html#Params" class="tsd-signature-type" data-tsd-kind="Type alias">Params</a><span class="tsd-signature-symbol">, </span><a href="interfaces/Message.html" class="tsd-signature-type" data-tsd-kind="Interface">Message</a><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/45b49e5/projects/solace-message-client/src/lib/solace-message-client.ts#L473">lib/solace-message-client.ts:473</a></li>
-								</ul>
-							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>RxJS operator for mapping a structured text message into its textual representation.</p>
-								</div>
-								<p>Each message is mapped to a tuple of three elements:
-								[<text>, Params, Message].</p>
-								<p>Note: Messages must be published as <a href="enums/MessageType.html#TEXT">MessageType.TEXT</a> messages, otherwise an error is thrown.</p>
-							</div>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">OperatorFunction</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/MessageEnvelope.html" class="tsd-signature-type" data-tsd-kind="Interface">MessageEnvelope</a><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><a href="modules.html#Params" class="tsd-signature-type" data-tsd-kind="Type alias">Params</a><span class="tsd-signature-symbol">, </span><a href="interfaces/Message.html" class="tsd-signature-type" data-tsd-kind="Interface">Message</a><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span></h4>
-						</li>
-					</ul>
-				</section>
-			</section>
-		</div>
-		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
-			<nav class="tsd-navigation primary">
-				<ul>
-					<li class="current ">
-						<a href="modules.html">Exports</a>
-					</li>
-					<li class=" tsd-kind-namespace">
-						<a href="modules/SolaceObjectFactory.html">Solace<wbr>Object<wbr>Factory</a>
-					</li>
-				</ul>
-			</nav>
-			<nav class="tsd-navigation secondary menu-sticky">
-				<ul class="before-current">
-					<li class=" tsd-kind-class">
-						<a href="classes/SolaceMessageClient.html" class="tsd-kind-icon">Solace<wbr>Message<wbr>Client</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="classes/SolaceMessageClientConfig.html" class="tsd-kind-icon">Solace<wbr>Message<wbr>Client<wbr>Config</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="classes/SolaceMessageClientModule.html" class="tsd-kind-icon">Solace<wbr>Message<wbr>Client<wbr>Module</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="classes/SolaceSessionProvider.html" class="tsd-kind-icon">Solace<wbr>Session<wbr>Provider</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="interfaces/MessageEnvelope.html" class="tsd-kind-icon">Message<wbr>Envelope</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="interfaces/SessionProperties.html" class="tsd-kind-icon">Session<wbr>Properties</a>
-					</li>
-					<li class=" tsd-kind-function tsd-has-type-parameter">
-						<a href="modules.html#mapToBinary" class="tsd-kind-icon">map<wbr>ToBinary</a>
-					</li>
-					<li class=" tsd-kind-function">
-						<a href="modules.html#mapToText" class="tsd-kind-icon">map<wbr>ToText</a>
-					</li>
-				</ul>
-			</nav>
-		</div>
-	</div>
-</div>
-<footer class="with-border-bottom">
-	<div class="container">
-		<h2>Legend</h2>
-		<div class="tsd-legend-group">
-			<ul class="tsd-legend">
-				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
-				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited property</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
-			</ul>
-		</div>
-	</div>
-</footer>
-<div class="container tsd-generator">
-	<p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a>, the 11/15/2021 at 4:53:59 PM</p>
-</div>
-<div class="overlay"></div>
-<script src="assets/js/main.js"></script>
-</body>
-</html>
+<!DOCTYPE html><html class="default"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>Angular Solace Message Client - v13.0.0</title><meta name="description" content="Documentation for Angular Solace Message Client - v13.0.0"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="assets/style.css"/><link rel="stylesheet" href="assets/highlight.css"/><script async src="assets/search.js" id="search-script"></script>	<link rel="icon" href="favicon.ico" />
+</head><body><script>document.body.classList.add(localStorage.getItem("tsd-theme") || "os")</script><header><div class="tsd-page-toolbar"><div class="container"><div class="table-wrap"><div class="table-cell" id="tsd-search" data-base="."><div class="field"><label for="tsd-search-field" class="tsd-widget search no-caption">Search</label><input type="text" id="tsd-search-field"/></div><ul class="results"><li class="state loading">Preparing search index...</li><li class="state failure">The search index is not available</li></ul><a href="index.html" class="title">Angular Solace Message Client - v13.0.0</a></div><div class="table-cell" id="tsd-widgets"><div id="tsd-filter"><a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a><div class="tsd-filter-group"><div class="tsd-select" id="tsd-filter-visibility"><span class="tsd-select-label">All</span><ul class="tsd-select-list"><li data-value="public">Public</li><li data-value="protected">Public/Protected</li><li data-value="private" class="selected">All</li></ul></div> <input type="checkbox" id="tsd-filter-inherited" checked/><label class="tsd-widget" for="tsd-filter-inherited">Inherited</label></div></div><a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a></div></div></div></div><div class="tsd-page-title"><div class="container"><h1>Angular Solace Message Client - v13.0.0</h1></div></div></header><div class="container container-main"><div class="row"><div class="col-8 col-content"><section class="tsd-panel-group tsd-index-group"><h2>Index</h2><section class="tsd-panel tsd-index-panel"><div class="tsd-index-content"><section class="tsd-index-section "><h3>Namespaces</h3><ul class="tsd-index-list"><li class="tsd-kind-namespace"><a href="modules/SolaceObjectFactory.html" class="tsd-kind-icon">Solace<wbr/>Object<wbr/>Factory</a></li></ul></section><section class="tsd-index-section "><h3>Enumerations</h3><ul class="tsd-index-list"><li class="tsd-kind-enum"><a href="enums/AuthenticationScheme.html" class="tsd-kind-icon">Authentication<wbr/>Scheme</a></li><li class="tsd-kind-enum"><a href="enums/CacheLiveDataAction.html" class="tsd-kind-icon">Cache<wbr/>Live<wbr/>Data<wbr/>Action</a></li><li class="tsd-kind-enum"><a href="enums/CacheReturnCode.html" class="tsd-kind-icon">Cache<wbr/>Return<wbr/>Code</a></li><li class="tsd-kind-enum"><a href="enums/CacheReturnSubcode.html" class="tsd-kind-icon">Cache<wbr/>Return<wbr/>Subcode</a></li><li class="tsd-kind-enum"><a href="enums/CapabilityType.html" class="tsd-kind-icon">Capability<wbr/>Type</a></li><li class="tsd-kind-enum"><a href="enums/DestinationType.html" class="tsd-kind-icon">Destination<wbr/>Type</a></li><li class="tsd-kind-enum"><a href="enums/ErrorSubcode.html" class="tsd-kind-icon">Error<wbr/>Subcode</a></li><li class="tsd-kind-enum"><a href="enums/MessageCacheStatus.html" class="tsd-kind-icon">Message<wbr/>Cache<wbr/>Status</a></li><li class="tsd-kind-enum"><a href="enums/MessageConsumerAcknowledgeMode.html" class="tsd-kind-icon">Message<wbr/>Consumer<wbr/>Acknowledge<wbr/>Mode</a></li><li class="tsd-kind-enum"><a href="enums/MessageConsumerEventName.html" class="tsd-kind-icon">Message<wbr/>Consumer<wbr/>Event<wbr/>Name</a></li><li class="tsd-kind-enum"><a href="enums/MessageDeliveryModeType.html" class="tsd-kind-icon">Message<wbr/>Delivery<wbr/>Mode<wbr/>Type</a></li><li class="tsd-kind-enum"><a href="enums/MessageDumpFlag.html" class="tsd-kind-icon">Message<wbr/>Dump<wbr/>Flag</a></li><li class="tsd-kind-enum"><a href="enums/MessagePublisherAcknowledgeMode.html" class="tsd-kind-icon">Message<wbr/>Publisher<wbr/>Acknowledge<wbr/>Mode</a></li><li class="tsd-kind-enum"><a href="enums/MessageType.html" class="tsd-kind-icon">Message<wbr/>Type</a></li><li class="tsd-kind-enum"><a href="enums/MessageUserCosType.html" class="tsd-kind-icon">Message<wbr/>User<wbr/>Cos<wbr/>Type</a></li><li class="tsd-kind-enum"><a href="enums/MutableSessionProperty.html" class="tsd-kind-icon">Mutable<wbr/>Session<wbr/>Property</a></li><li class="tsd-kind-enum"><a href="enums/QueueAccessType.html" class="tsd-kind-icon">Queue<wbr/>Access<wbr/>Type</a></li><li class="tsd-kind-enum"><a href="enums/QueueBrowserEventName.html" class="tsd-kind-icon">Queue<wbr/>Browser<wbr/>Event<wbr/>Name</a></li><li class="tsd-kind-enum"><a href="enums/QueueDiscardBehavior.html" class="tsd-kind-icon">Queue<wbr/>Discard<wbr/>Behavior</a></li><li class="tsd-kind-enum"><a href="enums/QueuePermissions.html" class="tsd-kind-icon">Queue<wbr/>Permissions</a></li><li class="tsd-kind-enum"><a href="enums/QueueType.html" class="tsd-kind-icon">Queue<wbr/>Type</a></li><li class="tsd-kind-enum"><a href="enums/SDTFieldType.html" class="tsd-kind-icon">SDTField<wbr/>Type</a></li><li class="tsd-kind-enum"><a href="enums/SessionEventCode.html" class="tsd-kind-icon">Session<wbr/>Event<wbr/>Code</a></li><li class="tsd-kind-enum"><a href="enums/StatType.html" class="tsd-kind-icon">Stat<wbr/>Type</a></li></ul></section><section class="tsd-index-section "><h3>Classes</h3><ul class="tsd-index-list"><li class="tsd-kind-class"><a href="classes/NullSolaceMessageClient.html" class="tsd-kind-icon">Null<wbr/>Solace<wbr/>Message<wbr/>Client</a></li><li class="tsd-kind-class"><a href="classes/SolaceMessageClient.html" class="tsd-kind-icon">Solace<wbr/>Message<wbr/>Client</a></li><li class="tsd-kind-class"><a href="classes/SolaceMessageClientConfig.html" class="tsd-kind-icon">Solace<wbr/>Message<wbr/>Client<wbr/>Config</a></li><li class="tsd-kind-class"><a href="classes/SolaceMessageClientModule.html" class="tsd-kind-icon">Solace<wbr/>Message<wbr/>Client<wbr/>Module</a></li><li class="tsd-kind-class"><a href="classes/SolaceSessionProvider.html" class="tsd-kind-icon">Solace<wbr/>Session<wbr/>Provider</a></li></ul></section><section class="tsd-index-section "><h3>Interfaces</h3><ul class="tsd-index-list"><li class="tsd-kind-interface"><a href="interfaces/BrowseOptions.html" class="tsd-kind-icon">Browse<wbr/>Options</a></li><li class="tsd-kind-interface"><a href="interfaces/CacheCBInfo.html" class="tsd-kind-icon">CacheCBInfo</a></li><li class="tsd-kind-interface"><a href="interfaces/CacheRequestResult.html" class="tsd-kind-icon">Cache<wbr/>Request<wbr/>Result</a></li><li class="tsd-kind-interface"><a href="interfaces/CacheSession.html" class="tsd-kind-icon">Cache<wbr/>Session</a></li><li class="tsd-kind-interface"><a href="interfaces/CacheSessionProperties.html" class="tsd-kind-icon">Cache<wbr/>Session<wbr/>Properties</a></li><li class="tsd-kind-interface"><a href="interfaces/ConsumeOptions.html" class="tsd-kind-icon">Consume<wbr/>Options</a></li><li class="tsd-kind-interface"><a href="interfaces/Destination.html" class="tsd-kind-icon">Destination</a></li><li class="tsd-kind-interface"><a href="interfaces/Message.html" class="tsd-kind-icon">Message</a></li><li class="tsd-kind-interface"><a href="interfaces/MessageConsumer.html" class="tsd-kind-icon">Message<wbr/>Consumer</a></li><li class="tsd-kind-interface"><a href="interfaces/MessageConsumerProperties.html" class="tsd-kind-icon">Message<wbr/>Consumer<wbr/>Properties</a></li><li class="tsd-kind-interface"><a href="interfaces/MessageEnvelope.html" class="tsd-kind-icon">Message<wbr/>Envelope</a></li><li class="tsd-kind-interface"><a href="interfaces/MessagePublisherProperties.html" class="tsd-kind-icon">Message<wbr/>Publisher<wbr/>Properties</a></li><li class="tsd-kind-interface"><a href="interfaces/ObserveOptions.html" class="tsd-kind-icon">Observe<wbr/>Options</a></li><li class="tsd-kind-interface"><a href="interfaces/OperationError.html" class="tsd-kind-icon">Operation<wbr/>Error</a></li><li class="tsd-kind-interface"><a href="interfaces/PublishOptions.html" class="tsd-kind-icon">Publish<wbr/>Options</a></li><li class="tsd-kind-interface"><a href="interfaces/QueueBrowser.html" class="tsd-kind-icon">Queue<wbr/>Browser</a></li><li class="tsd-kind-interface"><a href="interfaces/QueueBrowserProperties.html" class="tsd-kind-icon">Queue<wbr/>Browser<wbr/>Properties</a></li><li class="tsd-kind-interface"><a href="interfaces/QueueDescriptor.html" class="tsd-kind-icon">Queue<wbr/>Descriptor</a></li><li class="tsd-kind-interface"><a href="interfaces/QueueProperties.html" class="tsd-kind-icon">Queue<wbr/>Properties</a></li><li class="tsd-kind-interface"><a href="interfaces/ReplayStartLocation.html" class="tsd-kind-icon">Replay<wbr/>Start<wbr/>Location</a></li><li class="tsd-kind-interface"><a href="interfaces/RequestError.html" class="tsd-kind-icon">Request<wbr/>Error</a></li><li class="tsd-kind-interface"><a href="interfaces/SDTField.html" class="tsd-kind-icon">SDTField</a></li><li class="tsd-kind-interface"><a href="interfaces/SDTMapContainer.html" class="tsd-kind-icon">SDTMap<wbr/>Container</a></li><li class="tsd-kind-interface"><a href="interfaces/SDTStreamContainer.html" class="tsd-kind-icon">SDTStream<wbr/>Container</a></li><li class="tsd-kind-interface"><a href="interfaces/SDTUnsupportedValueError.html" class="tsd-kind-icon">SDTUnsupported<wbr/>Value<wbr/>Error</a></li><li class="tsd-kind-interface"><a href="interfaces/Session.html" class="tsd-kind-icon">Session</a></li><li class="tsd-kind-interface"><a href="interfaces/SessionEvent.html" class="tsd-kind-icon">Session<wbr/>Event</a></li><li class="tsd-kind-interface"><a href="interfaces/SessionProperties.html" class="tsd-kind-icon">Session<wbr/>Properties</a></li><li class="tsd-kind-interface"><a href="interfaces/SolaceError.html" class="tsd-kind-icon">Solace<wbr/>Error</a></li></ul></section><section class="tsd-index-section "><h3>Type aliases</h3><ul class="tsd-index-list"><li class="tsd-kind-type-alias"><a href="modules.html#Data" class="tsd-kind-icon">Data</a></li><li class="tsd-kind-type-alias"><a href="modules.html#Params" class="tsd-kind-icon">Params</a></li><li class="tsd-kind-type-alias"><a href="modules.html#cacheRequestCallback" class="tsd-kind-icon">cache<wbr/>Request<wbr/>Callback</a></li><li class="tsd-kind-type-alias"><a href="modules.html#replyReceivedCallback" class="tsd-kind-icon">reply<wbr/>Received<wbr/>Callback</a></li><li class="tsd-kind-type-alias"><a href="modules.html#requestFailedCallback" class="tsd-kind-icon">request<wbr/>Failed<wbr/>Callback</a></li></ul></section><section class="tsd-index-section "><h3>Functions</h3><ul class="tsd-index-list"><li class="tsd-kind-function tsd-has-type-parameter"><a href="modules.html#mapToBinary" class="tsd-kind-icon">map<wbr/>To<wbr/>Binary</a></li><li class="tsd-kind-function"><a href="modules.html#mapToText" class="tsd-kind-icon">map<wbr/>To<wbr/>Text</a></li></ul></section></div></section></section><section class="tsd-panel-group tsd-member-group "><h2>Type aliases</h2><section class="tsd-panel tsd-member tsd-kind-type-alias"><a id="Data" class="tsd-anchor"></a><h3 class="tsd-anchor-link">Data<a href="#Data" aria-label="Permalink" class="tsd-anchor-icon"><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5"></path><path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5"></path></svg></a></h3><div class="tsd-signature tsd-kind-icon">Data<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">ArrayBufferLike</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">DataView</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><a href="interfaces/SDTField.html" class="tsd-signature-type" data-tsd-kind="Interface">SDTField</a></div><aside class="tsd-sources"><ul><li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/8e13996/projects/solace-message-client/src/lib/solace-message-client.ts#L569">lib/solace-message-client.ts:569</a></li></ul></aside><div class="tsd-comment tsd-typography"><div class="lead">
+<p>Represents the payload of a message.</p>
+</div><div><p>A message may contain unstructured byte data, or a structured container.</p>
+
+<a href="#binary-data-message" id="binary-data-message" style="color: inherit; text-decoration: none;">
+  <h2>Binary Data Message</h2>
+</a>
+<p>By default, data is transported as unstructured bytes in the binary attachment message part.</p>
+<p>Supported data types are:</p>
+<ul>
+<li>ArrayBufferLike, e.g. <code>ArrayBuffer</code>, <code>Uint8Array</code>, <code>Uint32Array</code>, or similar</li>
+<li>DataView</li>
+<li>string (latin1-encoded; only supported for backwards compatibility; use <code>new TextEncoder.encode(...)</code> instead)</li>
+</ul>
+
+<a href="#structured-data-message" id="structured-data-message" style="color: inherit; text-decoration: none;">
+  <h2>Structured Data Message</h2>
+</a>
+<p>Alternatively, you can exchange data using the structured data API by passing it as Structured Data Type (SDT) in the form of a <a href="interfaces/SDTField.html">SDTField</a>
+of the type {@link SDTFieldType#STRING}, {@link SDTFieldType#MAP} or {@link SDTFieldType#STREAM}. Transporting data as structured message is useful
+in a heterogeneous network that has clients that use different hardware architectures and programming languages, allowing exchanging binary data in
+a structured, language- and architecture-independent way.</p>
+<p>Example: <code>SolaceObjectFactory.createSDTField(SDTFieldType.STRING, &#39;payload&#39;)</code></p>
+<p><a href="https://solace.com/blog/inside-solace-message-introduction/">https://solace.com/blog/inside-solace-message-introduction/</a></p>
+</div></div></section><section class="tsd-panel tsd-member tsd-kind-type-alias"><a id="Params" class="tsd-anchor"></a><h3 class="tsd-anchor-link">Params<a href="#Params" aria-label="Permalink" class="tsd-anchor-icon"><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5"></path><path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5"></path></svg></a></h3><div class="tsd-signature tsd-kind-icon">Params<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Map</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></div><aside class="tsd-sources"><ul><li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/8e13996/projects/solace-message-client/src/lib/solace-message-client.ts#L507">lib/solace-message-client.ts:507</a></li></ul></aside><div class="tsd-comment tsd-typography"><div class="lead">
+<p>Container for substitued values of named wildcard topic segments.</p>
+</div></div></section><section class="tsd-panel tsd-member tsd-kind-type-alias"><a id="cacheRequestCallback" class="tsd-anchor"></a><h3 class="tsd-anchor-link">cache<wbr/>Request<wbr/>Callback<a href="#cacheRequestCallback" aria-label="Permalink" class="tsd-anchor-icon"><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5"></path><path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5"></path></svg></a></h3><div class="tsd-signature tsd-kind-icon">cache<wbr/>Request<wbr/>Callback<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span>requestID<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, result<span class="tsd-signature-symbol">: </span><a href="interfaces/CacheRequestResult.html" class="tsd-signature-type" data-tsd-kind="Interface">CacheRequestResult</a>, userObject<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span></div><aside class="tsd-sources"><ul><li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/8e13996/projects/solace-message-client/src/lib/solace.model.ts#L3759">lib/solace.model.ts:3759</a></li></ul></aside><div class="tsd-type-declaration"><h4>Type declaration</h4><ul class="tsd-parameters"><li class="tsd-parameter-signature"><ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-type-alias"><li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>requestID<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, result<span class="tsd-signature-symbol">: </span><a href="interfaces/CacheRequestResult.html" class="tsd-signature-type" data-tsd-kind="Interface">CacheRequestResult</a>, userObject<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li></ul><ul class="tsd-descriptions"><li class="tsd-description"><div class="tsd-comment tsd-typography"><div class="lead">
+<p>This callback is called by a cache session when a cache completes.</p>
+</div><dl class="tsd-comment-tags"><dt>see</dt><dd><p>solace.CacheCBInfo.cacheRequestCallback</p>
+</dd></dl></div><h4 class="tsd-parameters-title">Parameters</h4><ul class="tsd-parameters"><li><h5>requestID: <span class="tsd-signature-type">number</span></h5><div class="tsd-comment tsd-typography"><div class="lead">
+<p>The ID of the request on which the event is notified.</p>
+</div></div></li><li><h5>result: <a href="interfaces/CacheRequestResult.html" class="tsd-signature-type" data-tsd-kind="Interface">CacheRequestResult</a></h5><div class="tsd-comment tsd-typography"><div class="lead">
+<p>The result of the cache request.</p>
+</div></div></li><li><h5>userObject: <span class="tsd-signature-type">any</span></h5><div class="tsd-comment tsd-typography"><div class="lead">
+<p>The user object provided.</p>
+</div></div></li></ul><h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4></li></ul></li></ul></div></section><section class="tsd-panel tsd-member tsd-kind-type-alias"><a id="replyReceivedCallback" class="tsd-anchor"></a><h3 class="tsd-anchor-link">reply<wbr/>Received<wbr/>Callback<a href="#replyReceivedCallback" aria-label="Permalink" class="tsd-anchor-icon"><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5"></path><path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5"></path></svg></a></h3><div class="tsd-signature tsd-kind-icon">reply<wbr/>Received<wbr/>Callback<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span>session<span class="tsd-signature-symbol">: </span><a href="interfaces/Session.html" class="tsd-signature-type" data-tsd-kind="Interface">Session</a>, message<span class="tsd-signature-symbol">: </span><a href="interfaces/Message.html" class="tsd-signature-type" data-tsd-kind="Interface">Message</a>, userObject<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span></div><aside class="tsd-sources"><ul><li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/8e13996/projects/solace-message-client/src/lib/solace.model.ts#L3257">lib/solace.model.ts:3257</a></li></ul></aside><div class="tsd-type-declaration"><h4>Type declaration</h4><ul class="tsd-parameters"><li class="tsd-parameter-signature"><ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-type-alias"><li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>session<span class="tsd-signature-symbol">: </span><a href="interfaces/Session.html" class="tsd-signature-type" data-tsd-kind="Interface">Session</a>, message<span class="tsd-signature-symbol">: </span><a href="interfaces/Message.html" class="tsd-signature-type" data-tsd-kind="Interface">Message</a>, userObject<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li></ul><ul class="tsd-descriptions"><li class="tsd-description"><div class="tsd-comment tsd-typography"><div class="lead">
+<p>A callback that returns replies to requests sent via {@link Session#sendRequest}.
+The replyReceivedCallback <b>must</b> be provided to the API as the third argument of {@link Sesssion#sendRequest}.</p>
+</div><dl class="tsd-comment-tags"><dt>see</dt><dd><p>solace.Session.replyReceivedCallback</p>
+</dd></dl></div><h4 class="tsd-parameters-title">Parameters</h4><ul class="tsd-parameters"><li><h5>session: <a href="interfaces/Session.html" class="tsd-signature-type" data-tsd-kind="Interface">Session</a></h5><div class="tsd-comment tsd-typography"><div class="lead">
+<p>The session object that received the reply.</p>
+</div></div></li><li><h5>message: <a href="interfaces/Message.html" class="tsd-signature-type" data-tsd-kind="Interface">Message</a></h5><div class="tsd-comment tsd-typography"><div class="lead">
+<p>The reply message received.</p>
+</div></div></li><li><h5>userObject: <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></h5><div class="tsd-comment tsd-typography"><div class="lead">
+<p>The user object associated with the callback. &#39;undefined&#39; when not provided to <i>sendRequest</i></p>
+</div></div></li></ul><h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4></li></ul></li></ul></div></section><section class="tsd-panel tsd-member tsd-kind-type-alias"><a id="requestFailedCallback" class="tsd-anchor"></a><h3 class="tsd-anchor-link">request<wbr/>Failed<wbr/>Callback<a href="#requestFailedCallback" aria-label="Permalink" class="tsd-anchor-icon"><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5"></path><path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5"></path></svg></a></h3><div class="tsd-signature tsd-kind-icon">request<wbr/>Failed<wbr/>Callback<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span>session<span class="tsd-signature-symbol">: </span><a href="interfaces/Session.html" class="tsd-signature-type" data-tsd-kind="Interface">Session</a>, error<span class="tsd-signature-symbol">: </span><a href="interfaces/RequestError.html" class="tsd-signature-type" data-tsd-kind="Interface">RequestError</a>, userObject<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span></div><aside class="tsd-sources"><ul><li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/8e13996/projects/solace-message-client/src/lib/solace.model.ts#L3269">lib/solace.model.ts:3269</a></li></ul></aside><div class="tsd-type-declaration"><h4>Type declaration</h4><ul class="tsd-parameters"><li class="tsd-parameter-signature"><ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-type-alias"><li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>session<span class="tsd-signature-symbol">: </span><a href="interfaces/Session.html" class="tsd-signature-type" data-tsd-kind="Interface">Session</a>, error<span class="tsd-signature-symbol">: </span><a href="interfaces/RequestError.html" class="tsd-signature-type" data-tsd-kind="Interface">RequestError</a>, userObject<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li></ul><ul class="tsd-descriptions"><li class="tsd-description"><div class="tsd-comment tsd-typography"><div class="lead">
+<p>A callback that returns errors associated with requests sent via {@link Session#sendRequest}.
+The requestFailedCallback <b>must</b> be provided to the API as the fourth argument of {@link Sesssion#sendRequest}</p>
+</div><dl class="tsd-comment-tags"><dt>see</dt><dd><p>solace.Session.requestFailedCallback</p>
+</dd></dl></div><h4 class="tsd-parameters-title">Parameters</h4><ul class="tsd-parameters"><li><h5>session: <a href="interfaces/Session.html" class="tsd-signature-type" data-tsd-kind="Interface">Session</a></h5><div class="tsd-comment tsd-typography"><div class="lead">
+<p>The session object associated with the event.</p>
+</div></div></li><li><h5>error: <a href="interfaces/RequestError.html" class="tsd-signature-type" data-tsd-kind="Interface">RequestError</a></h5><div class="tsd-comment tsd-typography"><div class="lead">
+<p>The event associated with the failure.</p>
+</div></div></li><li><h5>userObject: <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></h5><div class="tsd-comment tsd-typography"><div class="lead">
+<p>The user object associated with the callback. &#39;undefined&#39; when not provided to <i>sendRequest</i></p>
+</div></div></li></ul><h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4></li></ul></li></ul></div></section></section><section class="tsd-panel-group tsd-member-group "><h2>Functions</h2><section class="tsd-panel tsd-member tsd-kind-function tsd-has-type-parameter"><a id="mapToBinary" class="tsd-anchor"></a><h3 class="tsd-anchor-link">map<wbr/>To<wbr/>Binary<a href="#mapToBinary" aria-label="Permalink" class="tsd-anchor-icon"><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5"></path><path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5"></path></svg></a></h3><ul class="tsd-signatures tsd-kind-function tsd-has-type-parameter"><li class="tsd-signature tsd-kind-icon">map<wbr/>To<wbr/>Binary<span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">OperatorFunction</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/MessageEnvelope.html" class="tsd-signature-type" data-tsd-kind="Interface">MessageEnvelope</a><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><a href="modules.html#Params" class="tsd-signature-type" data-tsd-kind="Type alias">Params</a><span class="tsd-signature-symbol">, </span><a href="interfaces/Message.html" class="tsd-signature-type" data-tsd-kind="Interface">Message</a><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span></li></ul><ul class="tsd-descriptions"><li class="tsd-description"><aside class="tsd-sources"><ul><li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/8e13996/projects/solace-message-client/src/lib/solace-message-client.ts#L494">lib/solace-message-client.ts:494</a></li></ul></aside><div class="tsd-comment tsd-typography"><div class="lead">
+<p>RxJS operator for mapping a message into its binary representation.</p>
+</div><div><p>Each message is mapped to a tuple of three elements:
+[<binary>, Params, Message].</p>
+<p>Backward compatibility note: Using the version10 factory profile or older, the binary attachment is returned as a &#39;latin1&#39; String:
+Each character has a code in the range * 0-255 representing the value of a single received byte at that position.</p>
+<p>Note: Messages must be published as <a href="enums/MessageType.html#BINARY">MessageType.BINARY</a> messages, otherwise an error is thrown.</p>
+</div></div><h4 class="tsd-type-parameters-title">Type parameters</h4><ul class="tsd-type-parameters"><li><h4>T<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Uint8Array</span> = <span class="tsd-signature-type">Uint8Array</span></h4></li></ul><h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">OperatorFunction</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/MessageEnvelope.html" class="tsd-signature-type" data-tsd-kind="Interface">MessageEnvelope</a><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><a href="modules.html#Params" class="tsd-signature-type" data-tsd-kind="Type alias">Params</a><span class="tsd-signature-symbol">, </span><a href="interfaces/Message.html" class="tsd-signature-type" data-tsd-kind="Interface">Message</a><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span></h4></li></ul></section><section class="tsd-panel tsd-member tsd-kind-function"><a id="mapToText" class="tsd-anchor"></a><h3 class="tsd-anchor-link">map<wbr/>To<wbr/>Text<a href="#mapToText" aria-label="Permalink" class="tsd-anchor-icon"><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5"></path><path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5"></path></svg></a></h3><ul class="tsd-signatures tsd-kind-function"><li class="tsd-signature tsd-kind-icon">map<wbr/>To<wbr/>Text<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">OperatorFunction</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/MessageEnvelope.html" class="tsd-signature-type" data-tsd-kind="Interface">MessageEnvelope</a><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><a href="modules.html#Params" class="tsd-signature-type" data-tsd-kind="Type alias">Params</a><span class="tsd-signature-symbol">, </span><a href="interfaces/Message.html" class="tsd-signature-type" data-tsd-kind="Interface">Message</a><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span></li></ul><ul class="tsd-descriptions"><li class="tsd-description"><aside class="tsd-sources"><ul><li>Defined in <a href="https://github.com/solacecommunity/angular-solace-message-client/blob/8e13996/projects/solace-message-client/src/lib/solace-message-client.ts#L473">lib/solace-message-client.ts:473</a></li></ul></aside><div class="tsd-comment tsd-typography"><div class="lead">
+<p>RxJS operator for mapping a structured text message into its textual representation.</p>
+</div><div><p>Each message is mapped to a tuple of three elements:
+[<text>, Params, Message].</p>
+<p>Note: Messages must be published as <a href="enums/MessageType.html#TEXT">MessageType.TEXT</a> messages, otherwise an error is thrown.</p>
+</div></div><h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">OperatorFunction</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/MessageEnvelope.html" class="tsd-signature-type" data-tsd-kind="Interface">MessageEnvelope</a><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><a href="modules.html#Params" class="tsd-signature-type" data-tsd-kind="Type alias">Params</a><span class="tsd-signature-symbol">, </span><a href="interfaces/Message.html" class="tsd-signature-type" data-tsd-kind="Interface">Message</a><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">&gt;</span></h4></li></ul></section></section></div><div class="col-4 col-menu menu-sticky-wrap menu-highlight"><nav class="tsd-navigation primary"><ul><li class="current"><a href="modules.html">Exports</a></li><li class=" tsd-kind-namespace"><a href="modules/SolaceObjectFactory.html">Solace<wbr/>Object<wbr/>Factory</a></li></ul></nav><nav class="tsd-navigation secondary menu-sticky"><ul><li class="tsd-kind-enum"><a href="enums/AuthenticationScheme.html" class="tsd-kind-icon">Authentication<wbr/>Scheme</a></li><li class="tsd-kind-enum"><a href="enums/CacheLiveDataAction.html" class="tsd-kind-icon">Cache<wbr/>Live<wbr/>Data<wbr/>Action</a></li><li class="tsd-kind-enum"><a href="enums/CacheReturnCode.html" class="tsd-kind-icon">Cache<wbr/>Return<wbr/>Code</a></li><li class="tsd-kind-enum"><a href="enums/CacheReturnSubcode.html" class="tsd-kind-icon">Cache<wbr/>Return<wbr/>Subcode</a></li><li class="tsd-kind-enum"><a href="enums/CapabilityType.html" class="tsd-kind-icon">Capability<wbr/>Type</a></li><li class="tsd-kind-enum"><a href="enums/DestinationType.html" class="tsd-kind-icon">Destination<wbr/>Type</a></li><li class="tsd-kind-enum"><a href="enums/ErrorSubcode.html" class="tsd-kind-icon">Error<wbr/>Subcode</a></li><li class="tsd-kind-enum"><a href="enums/MessageCacheStatus.html" class="tsd-kind-icon">Message<wbr/>Cache<wbr/>Status</a></li><li class="tsd-kind-enum"><a href="enums/MessageConsumerAcknowledgeMode.html" class="tsd-kind-icon">Message<wbr/>Consumer<wbr/>Acknowledge<wbr/>Mode</a></li><li class="tsd-kind-enum"><a href="enums/MessageConsumerEventName.html" class="tsd-kind-icon">Message<wbr/>Consumer<wbr/>Event<wbr/>Name</a></li><li class="tsd-kind-enum"><a href="enums/MessageDeliveryModeType.html" class="tsd-kind-icon">Message<wbr/>Delivery<wbr/>Mode<wbr/>Type</a></li><li class="tsd-kind-enum"><a href="enums/MessageDumpFlag.html" class="tsd-kind-icon">Message<wbr/>Dump<wbr/>Flag</a></li><li class="tsd-kind-enum"><a href="enums/MessagePublisherAcknowledgeMode.html" class="tsd-kind-icon">Message<wbr/>Publisher<wbr/>Acknowledge<wbr/>Mode</a></li><li class="tsd-kind-enum"><a href="enums/MessageType.html" class="tsd-kind-icon">Message<wbr/>Type</a></li><li class="tsd-kind-enum"><a href="enums/MessageUserCosType.html" class="tsd-kind-icon">Message<wbr/>User<wbr/>Cos<wbr/>Type</a></li><li class="tsd-kind-enum"><a href="enums/MutableSessionProperty.html" class="tsd-kind-icon">Mutable<wbr/>Session<wbr/>Property</a></li><li class="tsd-kind-enum"><a href="enums/QueueAccessType.html" class="tsd-kind-icon">Queue<wbr/>Access<wbr/>Type</a></li><li class="tsd-kind-enum"><a href="enums/QueueBrowserEventName.html" class="tsd-kind-icon">Queue<wbr/>Browser<wbr/>Event<wbr/>Name</a></li><li class="tsd-kind-enum"><a href="enums/QueueDiscardBehavior.html" class="tsd-kind-icon">Queue<wbr/>Discard<wbr/>Behavior</a></li><li class="tsd-kind-enum"><a href="enums/QueuePermissions.html" class="tsd-kind-icon">Queue<wbr/>Permissions</a></li><li class="tsd-kind-enum"><a href="enums/QueueType.html" class="tsd-kind-icon">Queue<wbr/>Type</a></li><li class="tsd-kind-enum"><a href="enums/SDTFieldType.html" class="tsd-kind-icon">SDTField<wbr/>Type</a></li><li class="tsd-kind-enum"><a href="enums/SessionEventCode.html" class="tsd-kind-icon">Session<wbr/>Event<wbr/>Code</a></li><li class="tsd-kind-enum"><a href="enums/StatType.html" class="tsd-kind-icon">Stat<wbr/>Type</a></li><li class="tsd-kind-class"><a href="classes/NullSolaceMessageClient.html" class="tsd-kind-icon">Null<wbr/>Solace<wbr/>Message<wbr/>Client</a></li><li class="tsd-kind-class"><a href="classes/SolaceMessageClient.html" class="tsd-kind-icon">Solace<wbr/>Message<wbr/>Client</a></li><li class="tsd-kind-class"><a href="classes/SolaceMessageClientConfig.html" class="tsd-kind-icon">Solace<wbr/>Message<wbr/>Client<wbr/>Config</a></li><li class="tsd-kind-class"><a href="classes/SolaceMessageClientModule.html" class="tsd-kind-icon">Solace<wbr/>Message<wbr/>Client<wbr/>Module</a></li><li class="tsd-kind-class"><a href="classes/SolaceSessionProvider.html" class="tsd-kind-icon">Solace<wbr/>Session<wbr/>Provider</a></li><li class="tsd-kind-interface"><a href="interfaces/BrowseOptions.html" class="tsd-kind-icon">Browse<wbr/>Options</a></li><li class="tsd-kind-interface"><a href="interfaces/CacheCBInfo.html" class="tsd-kind-icon">CacheCBInfo</a></li><li class="tsd-kind-interface"><a href="interfaces/CacheRequestResult.html" class="tsd-kind-icon">Cache<wbr/>Request<wbr/>Result</a></li><li class="tsd-kind-interface"><a href="interfaces/CacheSession.html" class="tsd-kind-icon">Cache<wbr/>Session</a></li><li class="tsd-kind-interface"><a href="interfaces/CacheSessionProperties.html" class="tsd-kind-icon">Cache<wbr/>Session<wbr/>Properties</a></li><li class="tsd-kind-interface"><a href="interfaces/ConsumeOptions.html" class="tsd-kind-icon">Consume<wbr/>Options</a></li><li class="tsd-kind-interface"><a href="interfaces/Destination.html" class="tsd-kind-icon">Destination</a></li><li class="tsd-kind-interface"><a href="interfaces/Message.html" class="tsd-kind-icon">Message</a></li><li class="tsd-kind-interface"><a href="interfaces/MessageConsumer.html" class="tsd-kind-icon">Message<wbr/>Consumer</a></li><li class="tsd-kind-interface"><a href="interfaces/MessageConsumerProperties.html" class="tsd-kind-icon">Message<wbr/>Consumer<wbr/>Properties</a></li><li class="tsd-kind-interface"><a href="interfaces/MessageEnvelope.html" class="tsd-kind-icon">Message<wbr/>Envelope</a></li><li class="tsd-kind-interface"><a href="interfaces/MessagePublisherProperties.html" class="tsd-kind-icon">Message<wbr/>Publisher<wbr/>Properties</a></li><li class="tsd-kind-interface"><a href="interfaces/ObserveOptions.html" class="tsd-kind-icon">Observe<wbr/>Options</a></li><li class="tsd-kind-interface"><a href="interfaces/OperationError.html" class="tsd-kind-icon">Operation<wbr/>Error</a></li><li class="tsd-kind-interface"><a href="interfaces/PublishOptions.html" class="tsd-kind-icon">Publish<wbr/>Options</a></li><li class="tsd-kind-interface"><a href="interfaces/QueueBrowser.html" class="tsd-kind-icon">Queue<wbr/>Browser</a></li><li class="tsd-kind-interface"><a href="interfaces/QueueBrowserProperties.html" class="tsd-kind-icon">Queue<wbr/>Browser<wbr/>Properties</a></li><li class="tsd-kind-interface"><a href="interfaces/QueueDescriptor.html" class="tsd-kind-icon">Queue<wbr/>Descriptor</a></li><li class="tsd-kind-interface"><a href="interfaces/QueueProperties.html" class="tsd-kind-icon">Queue<wbr/>Properties</a></li><li class="tsd-kind-interface"><a href="interfaces/ReplayStartLocation.html" class="tsd-kind-icon">Replay<wbr/>Start<wbr/>Location</a></li><li class="tsd-kind-interface"><a href="interfaces/RequestError.html" class="tsd-kind-icon">Request<wbr/>Error</a></li><li class="tsd-kind-interface"><a href="interfaces/SDTField.html" class="tsd-kind-icon">SDTField</a></li><li class="tsd-kind-interface"><a href="interfaces/SDTMapContainer.html" class="tsd-kind-icon">SDTMap<wbr/>Container</a></li><li class="tsd-kind-interface"><a href="interfaces/SDTStreamContainer.html" class="tsd-kind-icon">SDTStream<wbr/>Container</a></li><li class="tsd-kind-interface"><a href="interfaces/SDTUnsupportedValueError.html" class="tsd-kind-icon">SDTUnsupported<wbr/>Value<wbr/>Error</a></li><li class="tsd-kind-interface"><a href="interfaces/Session.html" class="tsd-kind-icon">Session</a></li><li class="tsd-kind-interface"><a href="interfaces/SessionEvent.html" class="tsd-kind-icon">Session<wbr/>Event</a></li><li class="tsd-kind-interface"><a href="interfaces/SessionProperties.html" class="tsd-kind-icon">Session<wbr/>Properties</a></li><li class="tsd-kind-interface"><a href="interfaces/SolaceError.html" class="tsd-kind-icon">Solace<wbr/>Error</a></li><li class="tsd-kind-type-alias"><a href="modules.html#Data" class="tsd-kind-icon">Data</a></li><li class="tsd-kind-type-alias"><a href="modules.html#Params" class="tsd-kind-icon">Params</a></li><li class="tsd-kind-type-alias"><a href="modules.html#cacheRequestCallback" class="tsd-kind-icon">cache<wbr/>Request<wbr/>Callback</a></li><li class="tsd-kind-type-alias"><a href="modules.html#replyReceivedCallback" class="tsd-kind-icon">reply<wbr/>Received<wbr/>Callback</a></li><li class="tsd-kind-type-alias"><a href="modules.html#requestFailedCallback" class="tsd-kind-icon">request<wbr/>Failed<wbr/>Callback</a></li><li class="tsd-kind-function tsd-has-type-parameter"><a href="modules.html#mapToBinary" class="tsd-kind-icon">map<wbr/>To<wbr/>Binary</a></li><li class="tsd-kind-function"><a href="modules.html#mapToText" class="tsd-kind-icon">map<wbr/>To<wbr/>Text</a></li></ul></nav></div></div></div><footer class="with-border-bottom"><div class="container"><h2>Legend</h2><div class="tsd-legend-group"><ul class="tsd-legend"><li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li><li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li><li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li></ul><ul class="tsd-legend"><li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li><li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li></ul><ul class="tsd-legend"><li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited property</span></li></ul><ul class="tsd-legend"><li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li></ul></div><h2>Settings</h2><p>Theme <select id="theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></p></div></footer><div class="container tsd-generator"><p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></div><div class="overlay"></div><script src="assets/main.js"></script></body></html>
