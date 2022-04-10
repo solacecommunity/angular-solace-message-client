@@ -1,3 +1,21 @@
+# [13.0.0](https://github.com/solacecommunity/angular-solace-message-client/compare/12.0.1...13.0.0) (2022-04-10)
+
+
+### Dependencies
+
+* **solace-message-client:** update @solace-community/angular-solace-message-client to Angular 13 and migrate to RxJS 7.5 ([4d5029f](https://github.com/solacecommunity/angular-solace-message-client/commit/4d5029fc92d39721f35ad166eebd30b9da050683)), closes [#34](https://github.com/solacecommunity/angular-solace-message-client/issues/34)
+
+
+### BREAKING CHANGES
+
+* **solace-message-client:** updating `@solace-community/angular-solace-message-client` to Angular 13 and RxJS 7.5  introduced a breaking change.
+
+  To migrate:
+  - update your application to Angular 13; for detailed migration instructions, refer to https://github.com/angular/angular/blob/master/CHANGELOG.md.
+  - migrate your application to RxJS 7.5; for detailed migration instructions, refer to https://rxjs.dev/6-to-7-change-summary.
+  - update @scion/toolkit to version 13; for detailed migration instructions, refer to https://github.com/SchweizerischeBundesbahnen/scion-toolkit/blob/master/CHANGELOG.md.
+
+
 ## [12.0.1](https://github.com/solacecommunity/angular-solace-message-client/compare/12.0.0...12.0.1) (2021-11-15)
 
 
