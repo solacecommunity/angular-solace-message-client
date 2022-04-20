@@ -26,6 +26,14 @@
   </section>
 </sci-viewport>
 
-<button mat-mini-fab class="delete" color="primary" (click)="onDelete()">
-  <mat-icon>delete</mat-icon>
-</button>
+<section class="actions">
+  <button *ngIf="envelope.message.getReplyTo()"
+          mat-mini-fab class="reply" color="primary" title="Reply"
+          (click)="onReply(envelope.message)">
+    <mat-icon>reply</mat-icon>
+  </button>
+
+  <button mat-mini-fab class="delete" color="primary" title="Delete" (click)="onDelete()">
+    <mat-icon>delete</mat-icon>
+  </button>
+</section>

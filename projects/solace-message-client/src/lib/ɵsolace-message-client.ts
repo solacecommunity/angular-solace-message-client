@@ -2,12 +2,12 @@ import {Injectable, NgZone, OnDestroy, Optional} from '@angular/core';
 import {EMPTY, identity, merge, MonoTypeOperatorFunction, noop, Observable, Observer, of, OperatorFunction, ReplaySubject, share, Subject, TeardownLogic, throwError} from 'rxjs';
 import {distinctUntilChanged, filter, finalize, map, mergeMap, take, takeUntil, tap} from 'rxjs/operators';
 import {UUID} from '@scion/toolkit/uuid';
-import {BrowseOptions, ConsumeOptions, Data, MessageEnvelope, ObserveOptions, PublishOptions, SolaceMessageClient} from './solace-message-client';
+import {BrowseOptions, ConsumeOptions, Data, MessageEnvelope, ObserveOptions, PublishOptions, RequestOptions, SolaceMessageClient} from './solace-message-client';
 import {TopicMatcher} from './topic-matcher';
 import {observeInside} from '@scion/toolkit/operators';
 import {SolaceSessionProvider} from './solace-session-provider';
 import {SolaceMessageClientConfig} from './solace-message-client.config';
-import {Destination, LogLevel, Message, MessageConsumer, MessageConsumerEventName, MessageConsumerProperties, MessageDeliveryModeType, OperationError, QueueBrowser, QueueBrowserEventName, QueueBrowserProperties, QueueDescriptor, QueueType, SDTField, SDTFieldType, SDTMapContainer, Session, SessionEvent, SessionEventCode, SessionProperties as SolaceSessionProperties, SessionProperties, SolclientFactory, SolclientFactoryProfiles, SolclientFactoryProperties} from 'solclientjs';
+import {Destination, LogLevel, Message, MessageConsumer, MessageConsumerEventName, MessageConsumerProperties, MessageDeliveryModeType, OperationError, QueueBrowser, QueueBrowserEventName, QueueBrowserProperties, QueueDescriptor, QueueType, RequestError, SDTField, SDTFieldType, SDTMapContainer, Session, SessionEvent, SessionEventCode, SessionProperties as SolaceSessionProperties, SessionProperties, SolclientFactory, SolclientFactoryProfiles, SolclientFactoryProperties} from 'solclientjs';
 import {TopicSubscriptionCounter} from './topic-subscription-counter';
 import {SerialExecutor} from './serial-executor.service';
 import './solclientjs-typedef-augmentation';
@@ -146,32 +146,24 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
       const topicDestination = createSubscriptionTopicDestination(topic);
       const observeOutsideAngular = options?.emitOutsideAngularZone ?? false;
 
-      // Complete the Observable when the session died.
-      this._sessionDisposed$
-        .pipe(
-          take(1),
-          takeUntil(unsubscribe$),
-        )
-        .subscribe(() => observer.complete());
-
+      // Wait until initialized the session so that 'subscriptionExecutor' and 'subscriptionCounter' are initialized.
       this.session
         .then(() => {
-          // Create Observable that errors when failed to subscribe to the topic
+          const subscribeError$ = new Subject<never>();
           let subscriptionErrored = false;
-          const subscriptionError$ = new Subject<never>();
 
           // Filter messages sent to the given topic.
-          merge(this._message$, subscriptionError$)
+          merge(this._message$, subscribeError$)
             .pipe(
               assertNotInAngularZone(),
               filter(message => this._topicMatcher.matchesSubscriptionTopic(message.getDestination(), topicDestination)),
               mapToMessageEnvelope(topic),
               observeOutsideAngular ? identity : observeInside(continueFn => this._zone.run(continueFn)),
               takeUntil(merge(this._sessionDisposed$, unsubscribe$)),
-              finalize(async () => {
+              finalize(() => {
                 // Unsubscribe from the topic on the Solace session, but only if being the last subscription on that topic and if successfully subscribed to the Solace broker.
                 if (this._subscriptionCounter.decrementAndGet(topicDestination) === 0 && !subscriptionErrored) {
-                  this.unsubscribeFromTopic(topicDestination);
+                  this.unsubscribeFromTopic(topicDestination).then(noop);
                 }
               }),
             )
@@ -185,7 +177,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
               }
               else {
                 subscriptionErrored = true;
-                subscriptionError$.error(`[SolaceMessageClient] Failed to subscribe to topic ${topicDestination}.`);
+                subscribeError$.error(`[SolaceMessageClient] Failed to subscribe to topic ${topicDestination}.`);
               }
             });
           }
@@ -197,9 +189,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
           observer.error(error);
         });
 
-      return (): void => {
-        unsubscribe$.next();
-      };
+      return (): void => unsubscribe$.next();
     });
   }
 
@@ -230,7 +220,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
           topic,
           true,
           subscribeCorrelationKey,
-          observeOptions?.requestTimeout,
+          observeOptions?.subscribeTimeout ?? observeOptions?.requestTimeout,
         );
         return whenSubscribed;
       }
@@ -433,20 +423,65 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
       );
   }
 
-  public publish(topic: string, data?: Data | Message, options?: PublishOptions): Promise<void> {
-    const destination = SolclientFactory.createTopicDestination(topic);
-    return this.sendToDestination(destination, data, options);
+  public publish(destination: string | Destination, data?: Data | Message, options?: PublishOptions): Promise<void> {
+    const solaceDestination = typeof destination === 'string' ? SolclientFactory.createTopicDestination(destination) : destination;
+    const send: Send = (session: Session, message: Message) => session.send(message);
+    return this.sendMessage(solaceDestination, data, options, send);
+  }
+
+  public request$(destination: string | Destination, data?: Data | Message, options?: RequestOptions): Observable<MessageEnvelope> {
+    const observeOutsideAngular = options?.emitOutsideAngularZone ?? false;
+    const solaceDestination = typeof destination === 'string' ? SolclientFactory.createTopicDestination(destination) : destination;
+
+    return new Observable<MessageEnvelope>(observer => {
+      const unsubscribe$ = new Subject<void>();
+      const response$ = new Subject<Message>();
+      response$
+        .pipe(
+          assertNotInAngularZone(),
+          mapToMessageEnvelope(),
+          observeOutsideAngular ? identity : observeInside(continueFn => this._zone.run(continueFn)),
+          takeUntil(unsubscribe$),
+        )
+        .subscribe(observer);
+
+      const onResponse = (session: Session, message: Message) => {
+        response$.next(message);
+        response$.complete();
+      };
+      const onError = (session: Session, error: RequestError) => {
+        response$.error(error);
+      };
+
+      const send: Send = (session: Session, request: Message) => {
+        session.sendRequest(request, options?.requestTimeout, onResponse, onError);
+      };
+      this.sendMessage(solaceDestination, data, options, send).catch(error => response$.error(error));
+
+      return () => unsubscribe$.next();
+    });
+  }
+
+  public reply(request: Message, data?: Data | Message, options?: PublishOptions): Promise<void> {
+    // "solclientjs" marks the message as 'reply' and copies 'replyTo' destination and 'correlationId' from the request.
+    const send: Send = (session: Session, message: Message) => session.sendReply(request, message);
+    return this.sendMessage(null, data, options, send);
   }
 
   public enqueue(queue: string, data?: Data | Message, options?: PublishOptions): Promise<void> {
     const destination = SolclientFactory.createDurableQueueDestination(queue);
-    return this.sendToDestination(destination, data, options);
+    const send: Send = (session: Session, message: Message) => session.send(message);
+    return this.sendMessage(destination, data, options, send);
   }
 
-  private async sendToDestination(destination: Destination, data?: ArrayBufferLike | DataView | string | SDTField | Message, options?: PublishOptions): Promise<void> {
+  private async sendMessage(destination: Destination | null, data: ArrayBufferLike | DataView | string | SDTField | Message | undefined, options: PublishOptions | undefined, send: Send): Promise<void> {
     const message: Message = data instanceof Message ? data : SolclientFactory.createMessage();
-    message.setDestination(destination);
     message.setDeliveryMode(message.getDeliveryMode() ?? MessageDeliveryModeType.DIRECT);
+
+    // Set the destination. May not be set if replying to a request.
+    if (destination) {
+      message.setDestination(destination);
+    }
 
     // Set data, either as unstructured byte data, or as structured container if passed a structured data type (SDT).
     if (data !== undefined && data !== null && !(data instanceof Message)) {
@@ -461,11 +496,13 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
     // Apply publish options.
     if (options) {
       message.setDeliveryMode(options.deliveryMode ?? message.getDeliveryMode());
-      message.setCorrelationId(options.correlationId);
+      message.setCorrelationId(options.correlationId ?? message.getCorrelationId());
       message.setPriority(options.priority ?? message.getPriority());
       message.setTimeToLive(options.timeToLive ?? message.getTimeToLive());
       message.setDMQEligible(options.dmqEligible ?? message.isDMQEligible());
       message.setCorrelationKey(options.correlationKey ?? message.getCorrelationKey());
+      options.replyTo && message.setReplyTo(options.replyTo);
+      message.setAsReplyMessage(options.markAsReply ?? message.isReplyMessage());
     }
 
     // Add headers.
@@ -502,16 +539,16 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
 
     // Publish the message.
     if (message.getDeliveryMode() === MessageDeliveryModeType.DIRECT) {
-      session.send(message);
-      return;
+      send(session, message);
     }
-
-    // When publishing a message with a guaranteed message delivery strategy, resolve the Promise when acknowledged by the broker, or reject it otherwise.
-    const correlationKey = message.getCorrelationKey() || UUID.randomUUID();
-    const whenAcknowledged = this.whenEvent(SessionEventCode.ACKNOWLEDGED_MESSAGE, {rejectOnEvent: SessionEventCode.REJECTED_MESSAGE_ERROR, correlationKey: correlationKey});
-    message.setCorrelationKey(correlationKey);
-    session.send(message);
-    await whenAcknowledged;
+    else {
+      const correlationKey = message.getCorrelationKey() || UUID.randomUUID();
+      const whenAcknowledged = this.whenEvent(SessionEventCode.ACKNOWLEDGED_MESSAGE, {rejectOnEvent: SessionEventCode.REJECTED_MESSAGE_ERROR, correlationKey: correlationKey});
+      message.setCorrelationKey(correlationKey);
+      send(session, message);
+      // Resolve the Promise when acknowledged by the broker, or reject it otherwise.
+      await whenAcknowledged;
+    }
   }
 
   public get session(): Promise<Session> {
@@ -698,3 +735,8 @@ const CONNECTION_LOST_EVENTS = new Set<number>()
 function assertNotInAngularZone<T>(): MonoTypeOperatorFunction<T> {
   return tap(() => NgZone.assertNotInAngularZone());
 }
+
+/**
+ * Implements a strategy for sending a message.
+ */
+type Send = (session: Session, message: Message) => void;

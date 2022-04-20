@@ -14,13 +14,15 @@
     font-size: smaller;
   }
 
-  > button.delete {
+  > section.actions {
+    display: flex;
+    gap: .25em;
     position: absolute;
     right: 1em;
     align-self: center;
   }
 
-  &:not(:hover) > button.delete {
+  &:not(:hover) > section.actions {
     display: none;
   }
 

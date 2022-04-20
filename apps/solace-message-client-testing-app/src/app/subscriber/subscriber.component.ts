@@ -4,7 +4,7 @@ import {MessageEnvelope, SolaceMessageClient} from '@solace-community/angular-so
 import {Observable, Subject, Subscription} from 'rxjs';
 import {filter, finalize, takeUntil} from 'rxjs/operators';
 import {SciViewportComponent} from '@scion/toolkit/viewport';
-import {QueueDescriptor, QueueType} from 'solclientjs';
+import {Message, QueueDescriptor, QueueType} from 'solclientjs';
 
 export const DESTINATION = 'destination';
 export const DESTINATION_TYPE = 'destinationType';
@@ -45,7 +45,7 @@ export class SubscriberComponent implements OnDestroy {
 
   public SubscriptionDestinationType = SubscriptionDestinationType;
 
-  constructor(public solaceMessageClient: SolaceMessageClient,
+  constructor(private _solaceMessageClient: SolaceMessageClient,
               private _cd: ChangeDetectorRef) {
     this.form = new FormGroup({
       [SUBSCRIPTION]: new FormGroup({
@@ -68,20 +68,20 @@ export class SubscriberComponent implements OnDestroy {
       const message$: Observable<MessageEnvelope> = (() => {
         switch (destinationType) {
           case SubscriptionDestinationType.TOPIC: {
-            return this.solaceMessageClient.observe$(destination);
+            return this._solaceMessageClient.observe$(destination);
           }
           case SubscriptionDestinationType.QUEUE: {
-            return this.solaceMessageClient.consume$({
+            return this._solaceMessageClient.consume$({
               queueDescriptor: new QueueDescriptor({type: QueueType.QUEUE, name: destination}),
               // @ts-expect-error: typedef(solclientjs): remove 'queueProperties' when changed 'queueProperties' to optional
               queueProperties: undefined,
             });
           }
           case SubscriptionDestinationType.TOPIC_ENDPOINT: {
-            return this.solaceMessageClient.consume$(destination);
+            return this._solaceMessageClient.consume$(destination);
           }
           case SubscriptionDestinationType.QUEUE_BROWSER: {
-            return this.solaceMessageClient.browse$(destination);
+            return this._solaceMessageClient.browse$(destination);
           }
           default: {
             throw Error(`[UnsupportedDestinationError] Expected '${SubscriptionDestinationType.TOPIC}', '${SubscriptionDestinationType.QUEUE}', '${SubscriptionDestinationType.TOPIC_ENDPOINT}', or '${SubscriptionDestinationType.QUEUE_BROWSER}', but was ${destinationType}`);
@@ -123,6 +123,11 @@ export class SubscriberComponent implements OnDestroy {
 
   public onDelete(envelope: MessageEnvelope): void {
     this.envelopes = this.envelopes.filter(it => it !== envelope);
+  }
+
+  public onReply(messageToReplyTo: Message): void {
+    this._solaceMessageClient.reply(messageToReplyTo, 'this is a reply')
+      .catch(error => this.subscribeError = `${error}`);
   }
 
   public get isSubscribed(): boolean {

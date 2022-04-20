@@ -29,6 +29,11 @@
       > sci-viewport {
         flex: 1 1 0;
 
+        &.request-reply {
+          --sci-viewport-content-grid-template-rows: auto 1fr;
+          --sci-viewport-content-grid-gap: 1em 0;
+        }
+
         form {
           display: grid;
           grid-auto-rows: auto;
@@ -51,6 +56,29 @@
 
           > mat-form-field.destination-type, > mat-form-field.message-delivery-mode {
             grid-column: 2;
+          }
+        }
+
+        section.replies {
+          display: flex;
+          flex-direction: column;
+          padding: 1em;
+          border: 1px solid mat.get-color-from-palette(app-theme.$foreground, divider);
+          border-radius: 5px;
+
+          > sci-viewport {
+            flex: 1 1 0;
+            --sci-viewport-content-grid-auto-rows: max-content;
+            --sci-viewport-content-grid-gap: 1em 0;
+            min-height: 15em;
+
+            app-message-list-item {
+              border-bottom: 1px solid mat.get-color-from-palette(app-theme.$foreground, divider);
+            }
+          }
+
+          > button.replies.clear {
+            flex: none;
           }
         }
       }

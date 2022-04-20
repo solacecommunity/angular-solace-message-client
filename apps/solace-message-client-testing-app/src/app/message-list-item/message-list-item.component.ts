@@ -22,8 +22,15 @@ export class MessageListItemComponent implements OnChanges {
   @Output()
   public delete = new EventEmitter<void>();
 
+  @Output()
+  public reply = new EventEmitter<void>();
+
   public onDelete(): void {
     this.delete.emit();
+  }
+
+  public onReply(messageToReplyTo: Message): void {
+    this.reply.emit();
   }
 
   public ngOnChanges(changes: SimpleChanges): void {

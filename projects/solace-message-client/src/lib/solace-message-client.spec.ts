@@ -4,7 +4,7 @@ import {SolaceSessionProvider} from './solace-session-provider';
 import {ObserveCaptor} from '@scion/toolkit/testing';
 import {TestBed} from '@angular/core/testing';
 import {NgZone} from '@angular/core';
-import {Destination, DestinationType, Message, MessageConsumer, MessageConsumerEvent, MessageConsumerEventName, MessageConsumerProperties, MessageDeliveryModeType, MessageType, OperationError, QueueBrowser, QueueBrowserEventName, QueueBrowserProperties, QueueDescriptor, QueueType, SDTField, SDTFieldType, SDTMapContainer, Session, SessionEvent, SessionEventCode, SolclientFactory, SolclientFactoryProfiles, SolclientFactoryProperties} from 'solclientjs';
+import {Destination, DestinationType, Message, MessageConsumer, MessageConsumerEvent, MessageConsumerEventName, MessageConsumerProperties, MessageDeliveryModeType, MessageType, OperationError, QueueBrowser, QueueBrowserEventName, QueueBrowserProperties, QueueDescriptor, QueueType, RequestError, SDTField, SDTFieldType, SDTMapContainer, Session, SessionEvent, SessionEventCode, SolclientFactory, SolclientFactoryProfiles, SolclientFactoryProperties} from 'solclientjs';
 import {asyncScheduler, noop} from 'rxjs';
 import {UUID} from '@scion/toolkit/uuid';
 import './solclientjs-typedef-augmentation';
@@ -25,7 +25,7 @@ describe('SolaceMessageClient', () => {
     SolclientFactory.init(factoryProperties);
 
     // Mock Solace Session and provide it via `SolaceSessionProvider`
-    session = jasmine.createSpyObj('sessionClient', ['on', 'connect', 'subscribe', 'unsubscribe', 'send', 'dispose', 'disconnect', 'createMessageConsumer', 'createQueueBrowser']);
+    session = jasmine.createSpyObj('Session', ['on', 'connect', 'subscribe', 'unsubscribe', 'send', 'dispose', 'disconnect', 'createMessageConsumer', 'createQueueBrowser', 'sendRequest', 'sendReply']);
     sessionProvider = jasmine.createSpyObj('SolaceSessionProvider', ['provide']);
     sessionProvider.provide.and.returnValue(session);
 
@@ -1941,6 +1941,125 @@ describe('SolaceMessageClient', () => {
         })]);
       });
     });
+
+    describe('SolaceMessageClient#request$', () => {
+      it('should emit the reply and then complete', async () => {
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+
+        // Send a request
+        const sendRequestMock = installSendRequestMock();
+        const replyCaptor = new ObserveCaptor<MessageEnvelope>();
+        solaceMessageClient.request$('topic').subscribe(replyCaptor);
+        await drainMicrotaskQueue();
+
+        // Simulate to receive a reply
+        const reply = createTopicMessage('reply');
+        await sendRequestMock.simulateReply(reply);
+
+        expect(session.sendRequest).toHaveBeenCalledTimes(1);
+        expect(replyCaptor.getValues()).toEqual([jasmine.objectContaining<MessageEnvelope>({message: reply})]);
+        expect(replyCaptor.hasCompleted()).toBeTrue();
+      });
+
+      it('should error when the request failed (1/2)', async () => {
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+
+        // Send a request
+        const sendRequestMock = installSendRequestMock();
+        const replyCaptor = new ObserveCaptor<MessageEnvelope>();
+        solaceMessageClient.request$('topic').subscribe(replyCaptor);
+        await drainMicrotaskQueue();
+
+        // Simulate to receive a reply
+        const error = createRequestError();
+        await sendRequestMock.simulateError(error);
+
+        expect(session.sendRequest).toHaveBeenCalledTimes(1);
+        expect(replyCaptor.getValues()).toEqual([]);
+        expect(replyCaptor.hasErrored()).toBeTrue();
+        expect(replyCaptor.getError()).toBe(error);
+      });
+
+      it('should error when the request failed (2/2)', async () => {
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+
+        // Send a request
+        const sendRequestMock = installSendRequestMock();
+        sendRequestMock.throwErrorOnSend = true;
+        const replyCaptor = new ObserveCaptor<MessageEnvelope>();
+        solaceMessageClient.request$('topic').subscribe(replyCaptor);
+        await drainMicrotaskQueue();
+
+        expect(session.sendRequest).toHaveBeenCalledTimes(1);
+        expect(replyCaptor.getValues()).toEqual([]);
+        expect(replyCaptor.hasErrored()).toBeTrue();
+      });
+
+      it('should emit inside Angular (by default)', async () => {
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+
+        // Send a request
+        const sendRequestMock = installSendRequestMock();
+        const zoneCaptor = new ObserveCaptor<MessageEnvelope, boolean>(() => NgZone.isInAngularZone());
+        solaceMessageClient.request$('topic').subscribe(zoneCaptor);
+        await drainMicrotaskQueue();
+
+        // Simulate to receive a reply
+        await sendRequestMock.simulateReply(createTopicMessage('reply'));
+
+        expect(zoneCaptor.getValues()).toEqual([true]);
+      });
+
+      it('should emit outside Angular', async () => {
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+
+        // Send a request
+        const sendRequestMock = installSendRequestMock();
+        const zoneCaptor = new ObserveCaptor<MessageEnvelope, boolean>(() => NgZone.isInAngularZone());
+        solaceMessageClient.request$('topic', undefined, {emitOutsideAngularZone: true}).subscribe(zoneCaptor);
+        await drainMicrotaskQueue();
+
+        // Simulate to receive a reply
+        await sendRequestMock.simulateReply(createTopicMessage('reply'));
+
+        expect(zoneCaptor.getValues()).toEqual([false]);
+      });
+
+      it('should send the request to the specified topic', async () => {
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+
+        // Send a request
+        const sendRequestMock = installSendRequestMock();
+        solaceMessageClient.request$('topic').subscribe();
+        await drainMicrotaskQueue();
+
+        expect(sendRequestMock.requestMessage!.getDestination()).toEqual(SolclientFactory.createTopicDestination('topic'));
+      });
+
+      it('should send the request to the specified queue', async () => {
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+
+        // Send a request
+        const sendRequestMock = installSendRequestMock();
+        solaceMessageClient.request$(SolclientFactory.createDurableQueueDestination('queue')).subscribe();
+        await drainMicrotaskQueue();
+
+        expect(sendRequestMock.requestMessage!.getDestination()).toEqual(SolclientFactory.createDurableQueueDestination('queue'));
+      });
+    });
+
+    describe('SolaceMessageClient#reply', () => {
+      it('should send the reply', async () => {
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+
+        const requestMessage = SolclientFactory.createMessage();
+        await solaceMessageClient.reply(requestMessage, 'reply');
+
+        const replyMessage = SolclientFactory.createMessage();
+        replyMessage.setBinaryAttachment('reply');
+        expect(session.sendReply).toHaveBeenCalledOnceWith(requestMessage, replyMessage);
+      });
+    });
   }
 
   /**
@@ -2028,6 +2147,13 @@ describe('SolaceMessageClient', () => {
    */
   function installQueueBrowserMock(): QueueBrowserMock {
     return new QueueBrowserMock(session);
+  }
+
+  /**
+   * Installs a mock for sending a request.
+   */
+  function installSendRequestMock(): SendRequestMock {
+    return new SendRequestMock(session);
   }
 });
 
@@ -2203,6 +2329,50 @@ class QueueBrowserMock {
   }
 }
 
+class SendRequestMock {
+
+  private _onResponseCallback?: (session: Session, message: Message, userObject: object) => void;
+  private _onErrorCallback?: (session: Session, error: RequestError, userObject: object) => void;
+
+  public throwErrorOnSend = false;
+  public requestTimeout: number | undefined;
+  public requestMessage: Message | undefined;
+
+  constructor(private _session: jasmine.SpyObj<Session>) {
+    this._session.sendRequest.and.callFake((request, timeout, onResponseCallback, onErrorCallback) => {
+      this._onResponseCallback = onResponseCallback;
+      this._onErrorCallback = onErrorCallback;
+      this.requestMessage = request;
+      this.requestTimeout = timeout;
+      if (this.throwErrorOnSend) {
+        throw Error('Error while sending the request');
+      }
+    });
+  }
+
+  /**
+   * Simulates the Solace message broker to send a response.
+   */
+  public async simulateReply(message: Message): Promise<void> {
+    if (!this._onResponseCallback) {
+      throw Error('[SpecError] No \'replyReceivedCBFunction\' registered');
+    }
+
+    this._onResponseCallback(this._session, message, undefined!);
+  }
+
+  /**
+   * Simulates the Solace message broker to send an error.
+   */
+  public async simulateError(error: RequestError): Promise<void> {
+    if (!this._onErrorCallback) {
+      throw Error('[SpecError] No \'requestFailedCBFunction\' registered');
+    }
+
+    this._onErrorCallback(this._session, error, undefined!);
+  }
+}
+
 function createSessionEvent(sessionEventCode: SessionEventCode, correlationKey?: object | string): SessionEvent {
   // @ts-expect-error: constructor of {@link SessionEvent} is protected.
   return new SessionEvent(
@@ -2219,4 +2389,9 @@ function createSessionEvent(sessionEventCode: SessionEventCode, correlationKey?:
 function createOperationError(): OperationError {
   // @ts-expect-error: constructor of {@link OperationError} is protected.
   return new OperationError();
+}
+
+function createRequestError(): RequestError {
+  // @ts-expect-error: constructor of {@link RequestError} is protected.
+  return new RequestError();
 }

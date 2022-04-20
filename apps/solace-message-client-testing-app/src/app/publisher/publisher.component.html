@@ -3,7 +3,7 @@
     <header>Publisher</header>
     <span class="sub-title">Publish a message to a topic destination.</span>
 
-    <sci-viewport>
+    <sci-viewport [class.request-reply]="requestReply">
       <form [formGroup]="form">
         <!-- Destination -->
         <mat-form-field class="destination">
@@ -50,14 +50,35 @@
           <input matInput [formControlName]="HEADERS" placeholder="name->value;name->value">
         </mat-form-field>
 
-        <button mat-stroked-button color="primary" (click)="onPublish()" [disabled]="form.disabled || form.invalid">Publish</button>
+        <!-- Request/Reply -->
+        <mat-checkbox [formControlName]="REQUEST_REPLY">Request/Reply</mat-checkbox>
+
+        <button mat-stroked-button color="primary" (click)="onPublish()" *ngIf="!publishing" [disabled]="form.invalid">Publish</button>
+        <button mat-stroked-button color="primary" (click)="onCancelPublish()" *ngIf="publishing">Cancel</button>
       </form>
+
+      <!-- Replies -->
+      <section *ngIf="requestReply" class="replies">
+        <sci-viewport>
+          <app-message-list-item *ngFor="let envelope of replies"
+                                 [envelope]="envelope"
+                                 (delete)="onDeleteReply(envelope)">
+          </app-message-list-item>
+        </sci-viewport>
+        <button class="clear" mat-stroked-button color="primary" (click)="onClearReplies()" *ngIf="replies.length">Clear</button>
+      </section>
     </sci-viewport>
   </mat-card-content>
 
-  <mat-card-footer *ngIf="form.disabled">
+  <mat-card-footer *ngIf="publishing && !requestReply">
     <section class="sending">
       Waiting for the event broker to acknowledge the message.
+    </section>
+  </mat-card-footer>
+
+  <mat-card-footer *ngIf="publishing && requestReply">
+    <section class="sending">
+      Waiting for the reply to be received.
     </section>
   </mat-card-footer>
 
