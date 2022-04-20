@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
-import {BehaviorSubject, EMPTY, noop, Observable, OperatorFunction} from 'rxjs';
-import {Message, MessageConsumer, MessageConsumerProperties, MessageDeliveryModeType, MessageType, QueueBrowserProperties, SDTField, Session} from 'solclientjs';
+import {BehaviorSubject, NEVER, noop, Observable, OperatorFunction} from 'rxjs';
+import {Destination, Message, MessageConsumer, MessageConsumerProperties, MessageDeliveryModeType, MessageType, QueueBrowserProperties, SDTField, Session} from 'solclientjs';
 import {map} from 'rxjs/operators';
 import {SolaceMessageClientConfig} from './solace-message-client.config';
 
@@ -181,7 +181,7 @@ export abstract class SolaceMessageClient {
    * You can change the message delivery mode via the {@link PublishOptions.deliveryMode} property.
    * For more information, refer to the documentation of {@link PublishOptions.deliveryMode}.
    *
-   * @param  topic - Specifies the topic to which the message should be published.
+   * @param  destination - Specifies the destination where to send the message to. If of the type `string`, sends it to a topic destination.
    * @param  data - Specifies optional {@link Data transfer data} to be carried along with this message. A message may contain unstructured byte data,
    *         or structured data in the form of a {@link SDTField}. Alternatively, to have full control over the message to be published, pass the
    *         {@link Message} object instead, which you can construct using {@link SolclientFactory#createMessage}.
@@ -189,7 +189,44 @@ export abstract class SolaceMessageClient {
    * @param  options - Controls how to publish the message.
    * @return A Promise that resolves when dispatched the message, or that rejects if the message could not be dispatched.
    */
-  public abstract publish(topic: string, data?: Data | Message, options?: PublishOptions): Promise<void>;
+  public abstract publish(destination: string | Destination, data?: Data | Message, options?: PublishOptions): Promise<void>;
+
+  /**
+   * Sends a request to the specified destination and waits for the response to arrive.
+   *
+   * - If sending the request to a topic, the request is transported to all subscribers subscribed to the topic at the time of sending the request.
+   * - If sending the request to a queue, the request is transported to a single subscriber. The request is retained if there was no subscriber
+   *   at the time of sending the request.
+   * - If not receiving a reply within the specified (or globally set) timeout, then the Observable will error.
+   * - If not passing a 'replyTo' destination via options object, the API will generate a 'replyTo' destination where to send the reply to.
+   *
+   * Note:
+   * The implementation is based on "solclientjs" {@link Session#sendRequest} which does not support receiving multiple responses
+   * and requires the replier to include the requestor's `correlationId` in the reply message.
+   *
+   * @param  destination - Specifies the destination where to send the message to. If of the type `string`, sends it to a topic destination.
+   * @param  data - Specifies optional {@link Data transfer data} to be carried along with this request. The request may contain unstructured byte data,
+   *         or structured data in the form of a {@link SDTField}. Alternatively, to have full control over the message to be published, pass the
+   *         {@link Message} object instead, which you can construct using {@link SolclientFactory#createMessage}.
+   *         For more information, refer to the documentation of {@link Data}.
+   * @param  options - Controls how to publish the request, e.g., to pass a custom 'replyTo' destination.
+   * @return Observable that emits the received reply and then completes, or that errors if the request could not be dispatched or no reply was received
+   *         within the specified timeout.
+   */
+  public abstract request$(destination: string | Destination, data?: Data | Message, options?: RequestOptions): Observable<MessageEnvelope>;
+
+  /**
+   * Replies to the passed request.
+   *
+   * @param  request - Specifies the request to send a reply for.
+   * @param  data - Specifies optional {@link Data transfer data} to be carried along with the reply. The reply may contain unstructured byte data,
+   *         or structured data in the form of a {@link SDTField}. Alternatively, to have full control over the message to be published, pass the
+   *         {@link Message} object instead, which you can construct using {@link SolclientFactory#createMessage}.
+   *         For more information, refer to the documentation of {@link Data}.
+   * @param  options - Controls how to publish the reply.
+   * @return A Promise that resolves when dispatched the reply, or that rejects if the reply could not be dispatched.
+   */
+  public abstract reply(request: Message, data?: Data | Message, options?: PublishOptions): Promise<void>;
 
   /**
    * Sends a message to the given queue destination. A queue is typically used in a point-to-point (P2P) messaging environment.
@@ -247,18 +284,26 @@ export class NullSolaceMessageClient implements SolaceMessageClient {
   public readonly connected$ = new BehaviorSubject<boolean>(true);
 
   public observe$(topic: string, options?: ObserveOptions): Observable<MessageEnvelope> {
-    return EMPTY;
+    return NEVER;
   }
 
   public consume$(topicOrDescriptor: string | (MessageConsumerProperties & ConsumeOptions)): Observable<MessageEnvelope> {
-    return EMPTY;
+    return NEVER;
   }
 
   public browse$(queueOrDescriptor: string | (QueueBrowserProperties & BrowseOptions)): Observable<MessageEnvelope> {
-    return EMPTY;
+    return NEVER;
   }
 
-  public publish(topic: string, data?: ArrayBufferLike | DataView | string | SDTField | Message, options?: PublishOptions): Promise<void> {
+  public publish(destination: string | Destination, data?: ArrayBufferLike | DataView | string | SDTField | Message, options?: PublishOptions): Promise<void> {
+    return Promise.resolve();
+  }
+
+  public request$(destination: string | Destination, data?: Data | Message, options?: RequestOptions): Observable<MessageEnvelope> {
+    return NEVER;
+  }
+
+  public reply(request: Message, data?: ArrayBufferLike | DataView | string | SDTField | Message, options?: PublishOptions): Promise<void> {
     return Promise.resolve();
   }
 
@@ -284,10 +329,17 @@ export class NullSolaceMessageClient implements SolaceMessageClient {
  */
 export interface ObserveOptions {
   /**
-   * The request timeout period (in milliseconds).
-   * If specified, this value overwrites readTimeoutInMsecs property in {@link SessionProperties}.
+   * Specifies the maximum time (in milliseconds) to wait for the destination to be subscribed.
+   * If specified, overrides the global timeout as set via {@link SessionProperties#readTimeoutInMsecs}.
+   *
+   * @deprecated This API will be removed in a future release. Instead, use {@link #subscribeTimeout} instead.
    */
   requestTimeout?: number;
+  /**
+   * Specifies the maximum time (in milliseconds) to wait for the destination to be subscribed.
+   * If specified, overrides the global timeout as set via {@link SessionProperties#readTimeoutInMsecs}.
+   */
+  subscribeTimeout?: number;
 
   /**
    * Controls if to emit received messages inside or outside of the Angular zone.
@@ -451,6 +503,8 @@ export interface PublishOptions {
    * Sets the correlation ID which is carried in the message headers unmodified.
    *
    * A correlation ID is a unique identifier value that is attached to a message that allows referencing to a particular transaction or event chain.
+   *
+   * If replying to a request via {@link SolaceMessageClient#reply}, the API will copy the correlation id from the request, thus must not be set manually.
    */
   correlationId?: string;
   /**
@@ -460,6 +514,36 @@ export interface PublishOptions {
    * Note that the correlation key is not included in the transmitted message and is only used with the local API.
    */
   correlationKey?: string | object;
+  /**
+   * Sets the destination a replier can reply to in "request-response" communication.
+   *
+   * If not passed the API will generate a 'replyTo' destination where to send the reply to.
+   */
+  replyTo?: Destination;
+  /**
+   * Marks this message as a reply to a previous request in "request-response" communication.
+   *
+   * If replying to a request via {@link SolaceMessageClient#reply}, the API will mark the message as a reply, thus must not be set manually.
+   */
+  markAsReply?: boolean;
+}
+
+/**
+ * Control how to publish a request.
+ */
+export interface RequestOptions extends PublishOptions {
+  /**
+   * Specifies the maximum time (in milliseconds) to wait for a response to be received. The minimum value is 100ms.
+   * If specified, overrides the global timeout as set via {@link SessionProperties#readTimeoutInMsecs}.
+   */
+  requestTimeout?: number;
+  /**
+   * Controls if to emit received replies inside or outside of the Angular zone.
+   * If emitted outside of the Angular zone no change detection cycle is triggered.
+   *
+   * By default, if not specified, emits inside the Angular zone.
+   */
+  emitOutsideAngularZone?: boolean;
 }
 
 /**

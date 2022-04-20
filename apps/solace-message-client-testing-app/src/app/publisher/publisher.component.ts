@@ -1,7 +1,11 @@
-import {Component} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy} from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
-import {DestinationType, MessageDeliveryModeType, MessageType, SDTField, SDTFieldType} from 'solclientjs';
-import {Data, PublishOptions, SolaceMessageClient} from '@solace-community/angular-solace-message-client';
+import {DestinationType, MessageDeliveryModeType, MessageType, SDTField, SDTFieldType, SolclientFactory} from 'solclientjs';
+import {Data, MessageEnvelope, PublishOptions, SolaceMessageClient} from '@solace-community/angular-solace-message-client';
+import {defer, Observable, Subject, Subscription, tap, throwError} from 'rxjs';
+import {finalize, takeUntil} from 'rxjs/operators';
+import {Arrays} from '@scion/toolkit/util';
+import {observeInside} from '@scion/toolkit/operators';
 
 export const DESTINATION = 'destination';
 export const DESTINATION_TYPE = 'destinationType';
@@ -9,13 +13,18 @@ export const DELIVERY_MODE = 'deliveryMode';
 export const MESSAGE = 'message';
 export const MESSAGE_TYPE = 'messageType';
 export const HEADERS = 'headers';
+export const REQUEST_REPLY = 'request/reply';
 
 @Component({
   selector: 'app-publisher',
   templateUrl: './publisher.component.html',
   styleUrls: ['./publisher.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PublisherComponent {
+export class PublisherComponent implements OnDestroy {
+
+  private _destroy$ = new Subject<void>();
+  private _publishSubscription: Subscription | null = null;
 
   public readonly DESTINATION = DESTINATION;
   public readonly DESTINATION_TYPE = DESTINATION_TYPE;
@@ -23,6 +32,7 @@ export class PublisherComponent {
   public readonly MESSAGE = MESSAGE;
   public readonly MESSAGE_TYPE = MESSAGE_TYPE;
   public readonly HEADERS = HEADERS;
+  public readonly REQUEST_REPLY = REQUEST_REPLY;
 
   public form: FormGroup;
   public publishError: string | null = null;
@@ -30,8 +40,11 @@ export class PublisherComponent {
   public DestinationType = DestinationType;
   public MessageDeliveryModeType = MessageDeliveryModeType;
 
+  public replies: MessageEnvelope[] = [];
+
   constructor(formBuilder: FormBuilder,
-              public solaceMessageClient: SolaceMessageClient) {
+              private _solaceMessageClient: SolaceMessageClient,
+              private _cd: ChangeDetectorRef) {
     this.form = new FormGroup({
       [DESTINATION]: formBuilder.control('', Validators.required),
       [DESTINATION_TYPE]: formBuilder.control(DestinationType.TOPIC, Validators.required),
@@ -39,32 +52,88 @@ export class PublisherComponent {
       [MESSAGE]: formBuilder.control(''),
       [MESSAGE_TYPE]: formBuilder.control(MessageType.BINARY, Validators.required),
       [HEADERS]: formBuilder.control(''),
+      [REQUEST_REPLY]: formBuilder.control(false),
     });
   }
 
   public async onPublish(): Promise<void> {
-    const destination = this.form.get(DESTINATION)!.value;
-
     this.form.disable();
     this.publishError = null;
+    this._publishSubscription = this.publish$()
+      .pipe(
+        observeInside(continueFn => {
+          continueFn();
+          this._cd.markForCheck();
+        }),
+        finalize(() => {
+          this.form.enable();
+          this._publishSubscription = null;
+        }),
+        takeUntil(this._destroy$),
+      )
+      .subscribe({
+        error: error => this.publishError = error,
+      });
+  }
+
+  public onCancelPublish(): void {
+    this._publishSubscription?.unsubscribe();
+    this._publishSubscription = null;
+    this.replies.length = 0;
+  }
+
+  public onClearReplies(): void {
+    this.replies.length = 0;
+  }
+
+  private publish$(): Observable<any> {
     try {
-      switch (this.form.get(DESTINATION_TYPE)!.value) {
+      const destination = this.form.get(DESTINATION)!.value;
+      const destinationType: DestinationType = this.form.get(DESTINATION_TYPE)!.value;
+      const message: Data | undefined = this.readMessageFromUI();
+      const publishOptions: PublishOptions = this.readPublishOptionsFromUI();
+
+      switch (destinationType) {
         case DestinationType.TOPIC: {
-          await this.solaceMessageClient.publish(destination, this.readMessageFromUI(), this.readPublishOptionsFromUI());
-          return;
+          const topicDestination = SolclientFactory.createTopicDestination(destination);
+          if (this.requestReply) {
+            return this._solaceMessageClient.request$(topicDestination, message)
+              .pipe(tap(reply => this.replies.push(reply)));
+          }
+          else {
+            return defer(() => this._solaceMessageClient.publish(topicDestination, message, publishOptions));
+          }
         }
         case DestinationType.QUEUE: {
-          await this.solaceMessageClient.enqueue(destination, this.readMessageFromUI(), this.readPublishOptionsFromUI());
-          return;
+          const queueDestination = SolclientFactory.createDurableQueueDestination(destination);
+          if (this.requestReply) {
+            return this._solaceMessageClient.request$(queueDestination, message, publishOptions)
+              .pipe(tap(reply => this.replies.push(reply)));
+          }
+          else {
+            return defer(() => this._solaceMessageClient.publish(queueDestination, message, publishOptions));
+          }
+        }
+        default: {
+          return throwError(() => `Unsupported destination type: ${destinationType}`);
         }
       }
     }
     catch (error) {
-      this.publishError = `${error}`;
+      return throwError(() => error);
     }
-    finally {
-      this.form.enable();
-    }
+  }
+
+  public onDeleteReply(reply: MessageEnvelope): void {
+    Arrays.remove(this.replies, reply);
+  }
+
+  public get requestReply(): boolean {
+    return this.form.get(REQUEST_REPLY)!.value;
+  }
+
+  public get publishing(): boolean {
+    return this._publishSubscription !== null;
   }
 
   private readPublishOptionsFromUI(): PublishOptions {
@@ -108,5 +177,9 @@ export class PublisherComponent {
       }
     });
     return headerMap;
+  }
+
+  public ngOnDestroy(): void {
+    this._destroy$.next();
   }
 }

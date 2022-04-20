@@ -294,6 +294,53 @@ export class YourService {
 </details>
 
 <details>
+  <summary><strong>Request-Response Communication</strong></summary>
+  <br>
+The following snippet illustrates how to send a request and receive the response.
+
+```typescript
+import {Injectable} from '@angular/core';
+import {SolaceMessageClient} from '@solace-community/angular-solace-message-client';
+
+@Injectable()
+export class YourService {
+
+  constructor(private messageClient: SolaceMessageClient) {
+    this.installReplier();
+  }
+
+  /**
+   * Initiates a request-response communication.
+   */
+  public request(): void {
+    this.messageClient.request$('request-topic', 'request data').subscribe(reply => {
+      console.log('reply received', reply);
+    });
+  }
+
+  private installReplier(): void {
+    // Listen for requests sent to the request topic.
+    this.messageClient.observe$('request-topic').subscribe(request => {
+      // Reply to the request.
+      this.messageClient.reply(request.message, 'reply');
+
+      // Above code uses a convenience API to directly respond to a request.
+      // Alternatively, you could answer to the request as following.
+      this.messageClient.publish(request.message.getReplyTo(), 'reply', {
+        markAsReply: true,
+        correlationId: request.message.getCorrelationId(),
+      });
+    });
+  }
+}
+
+```
+
+> Refer to [SolaceMessageClient#request$](https://solacecommunity.github.io/angular-solace-message-client/api/classes/SolaceMessageClient.html#request_) for more information about the API.
+
+</details>
+
+<details>
   <summary><strong>Monitor connectivity to the message broker</strong></summary>
   <br>
 

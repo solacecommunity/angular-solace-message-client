@@ -26,6 +26,7 @@
   <sci-viewport class="messages">
     <app-message-list-item *ngFor="let envelope of envelopes"
                            [envelope]="envelope"
+                           (reply)="onReply(envelope.message)"
                            (delete)="onDelete(envelope)">
     </app-message-list-item>
   </sci-viewport>
