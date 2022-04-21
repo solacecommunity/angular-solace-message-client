@@ -9,7 +9,7 @@ This page gives you an overview of features provided by Angular Solace Message C
 of [SolaceMessageClient](https://solacecommunity.github.io/angular-solace-message-client/api/classes/SolaceMessageClient.html), or file a GitHub issue otherwise.
 
 <details>
-  <summary><strong>Publish message to a topic destination</strong></summary>
+  <summary><strong>Send message to a topic destination</strong></summary>
   <br>
 
 When publishing a message to a topic, it will be transported to all consumers subscribed to the topic. A message may contain unstructured byte data, or a structured container.
@@ -28,8 +28,10 @@ export class YourService {
   }
 
   public publishBinaryMessage(): void {
-    this.messageClient.publish('myhome/livingroom/temperature', '20°C') // `solclientjs` encodes `string` to latin1 encoded binary attachment
-    this.messageClient.publish('myhome/livingroom/temperature', new TextEncoder().encode('20°C')) // binary content in the form of a `Uint8Array`
+    this.messageClient.publish('myhome/livingroom/temperature', '20°C');
+
+    // `solclientjs` encodes `string` content to latin1 encoded binary attachment. Alternatively, you can directly pass binary content, as follows:
+    this.messageClient.publish('myhome/livingroom/temperature', new TextEncoder().encode('20°C'));
   }
 
   public publishStructuredTextMessage(): void {
@@ -175,7 +177,7 @@ A queue is typically used in a point-to-point (P2P) messaging environment. A que
 i.e., the message is load balanced to a single consumer in round‑robin fashion, or for exclusive queues, it is always transported to the same subscription. When sending a message to a
 queue, the broker retains the message until it is consumed, or until it expires.
 
-> Refer to [SolaceMessageClient#enqueue](https://solacecommunity.github.io/angular-solace-message-client/api/classes/SolaceMessageClient.html#enqueue) for more information about the API.
+> Refer to [SolaceMessageClient#publish](https://solacecommunity.github.io/angular-solace-message-client/api/classes/SolaceMessageClient.html#publish) for more information about the API.
 
 #### Example:
 
@@ -191,28 +193,35 @@ export class YourService {
   }
 
   public sendBinaryMessage(): void {
-    this.messageClient.enqueue('queue', '20°C'); // `solclientjs` encodes `string` to latin1 encoded binary attachment
-    this.messageClient.enqueue('queue', new TextEncoder().encode('20°C')); // binary content in the form of a `Uint8Array`
+    const queue = SolclientFactory.createDurableQueueDestination('queue');
+    this.messageClient.publish(queue, '20°C'); 
+    
+    // `solclientjs` encodes `string` content to latin1 encoded binary attachment. Alternatively, you can directly pass binary content, as follows:
+    this.messageClient.publish(queue, new TextEncoder().encode('20°C'));
   }
 
   public sendStructuredTextMessage(): void {
+    const queue = SolclientFactory.createDurableQueueDestination('queue');
     const sdtField = SDTField.create(SDTFieldType.STRING, '20°C');
 
-    this.messageClient.enqueue('queue', sdtField);
+    this.messageClient.publish(queue, sdtField);
   }
 
   public sendMessageWithHeaders(): void {
-    this.messageClient.enqueue('queue', '20°C', {headers: new Map().set('bearer', '<<ACCESS_TOKEN>>')});
+    const queue = SolclientFactory.createDurableQueueDestination('queue');
+    this.messageClient.publish(queue, '20°C', {headers: new Map().set('bearer', '<<ACCESS_TOKEN>>')});
   }
 
   public sendGuaranteedMessage(): void {
-    this.messageClient.enqueue('queue', '20°C', {
+    const queue = SolclientFactory.createDurableQueueDestination('queue');
+    this.messageClient.publish(queue, '20°C', {
       deliveryMode: MessageDeliveryModeType.PERSISTENT,
     });
   }
 
   public interceptMessageBeforeSend(): void {
-    this.messageClient.enqueue('queue', '20°C', {
+    const queue = SolclientFactory.createDurableQueueDestination('queue');
+    this.messageClient.publish(queue, '20°C', {
       intercept: (msg: Message) => {
         console.log('>>> msg to be sent', msg.dump(MessageDumpFlag.MSGDUMP_FULL));
       },
