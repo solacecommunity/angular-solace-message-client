@@ -470,8 +470,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
 
   public enqueue(queue: string, data?: Data | Message, options?: PublishOptions): Promise<void> {
     const destination = SolclientFactory.createDurableQueueDestination(queue);
-    const send: Send = (session: Session, message: Message) => session.send(message);
-    return this.sendMessage(destination, data, options, send);
+    return this.publish(destination, data, options);
   }
 
   private async sendMessage(destination: Destination | null, data: ArrayBufferLike | DataView | string | SDTField | Message | undefined, options: PublishOptions | undefined, send: Send): Promise<void> {

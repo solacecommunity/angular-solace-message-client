@@ -805,7 +805,7 @@ describe('SolaceMessageClient', () => {
       const sessionSendCaptor = installSessionSendCaptor();
 
       // publish the message to a queue
-      await expectAsync(solaceMessageClient.enqueue('queue', 'payload')).toBeResolved();
+      await expectAsync(solaceMessageClient.publish(SolclientFactory.createDurableQueueDestination('queue'), 'payload')).toBeResolved();
 
       expect(session.send).toHaveBeenCalledTimes(1);
       expect(sessionSendCaptor.destination!.getName()).toEqual('queue');

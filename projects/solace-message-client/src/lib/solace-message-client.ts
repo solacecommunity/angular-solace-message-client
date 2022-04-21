@@ -87,16 +87,14 @@ export abstract class SolaceMessageClient {
   public abstract observe$(topic: string, options?: ObserveOptions): Observable<MessageEnvelope>;
 
   /**
-   * Consumes messages from a given topic endpoint or queue endpoint. Endpoint names are case-sensitive and consist of one or more segments, each separated by a forward slash.
+   * Consumes messages from a given topic endpoint or queue endpoint.
    *
-   * If passing a `string` topic literal (that is, not a {@link MessageConsumerProperties} object), creates a private, non-durable topic endpoint on the broker that subscribes
+   * Endpoint names are case-sensitive and consist of one or more segments, each separated by a forward slash.
+   *
+   * When passing a `string` topic literal (that is, not a {@link MessageConsumerProperties} object), creates a private, non-durable topic endpoint on the broker that subscribes
    * to messages published to the given topic. From the consumer's point of view, this is similar to observe a topic using {@link SolaceMessageClient#observe$}, with the difference
    * that messages are not lost in the event of short connection interruptions as messages are retained on the broker until transported to the consumer. The lifecycle of a non-durable
    * topic endpoint is bound to the client that created it, with an additional 60s in case of unexpected disconnect.
-   *
-   * It is important to understand that a topic is not the same thing as a topic endpoint. A topic is a message property the event broker uses to route a message to its destination.
-   * Topic endpoints, unlike topics, are objects that define the storage of messages for a consuming application. Topic endpoints are more closely related to queues than to topics.
-   * Messages cannot be published directly to topic endpoints, but only indirectly via topics. For more information, refer to https://solace.com/blog/queues-vs-topic-endpoints.
    *
    * To subscribe to a queue, or to pass a more advanced endpoint configuration, pass a {@link MessageConsumerProperties} object instead.
    *
@@ -121,6 +119,12 @@ export abstract class SolaceMessageClient {
    *   },
    * });
    * ```
+   *
+   * ## Topic vs Topic Endpoint
+   * A topic is not the same thing as a topic endpoint. Messages cannot be published directly to topic endpoints, but only indirectly via topics.
+   * A topic is a message property the event broker uses to route a message to its destination. Topic endpoints, unlike topics, are objects that define the storage of messages
+   * for a consuming application. Topic endpoints are more closely related to queues than to topics.
+   * For more information, refer to https://solace.com/blog/queues-vs-topic-endpoints.
    *
    * For topic endpoints, you can subscribe to multiple topics simultaneously by using wildcard segments in the topic.
    *
@@ -160,15 +164,25 @@ export abstract class SolaceMessageClient {
   public abstract browse$(queueOrDescriptor: string | (QueueBrowserProperties & BrowseOptions)): Observable<MessageEnvelope>;
 
   /**
-   * Publishes a message to the given topic destination. The message is transported to all consumers subscribed to the topic.
+   * Publishes a message to the given topic or queue destination.
    *
-   * It is important to understand that a topic is not the same thing as a topic endpoint. A topic is a message property the event broker uses to route a message to its destination.
-   * Topic endpoints, unlike topics, are objects that define the storage of messages for a consuming application and need administratively configured on the event broker. Topic endpoints
-   * are more closely related to queues than to topics. Messages cannot be published directly to topic endpoints, but only indirectly via topics.
+   * ## Topic Destination
+   * When sending the message to a topic destination, the broker will transport the message to all subscribers subscribed to the topic at the time of sending the message.
+   *
+   * ## Queue Destination
+   * A queue differs from the topic distribution mechanism that the message is transported to exactly a single consumer, i.e., the message is load balanced to a single consumer
+   * in round‑robin fashion, or for exclusive queues, it is always transported to the same subscription. When sending a message to a queue, the broker retains the message until
+   * it is consumed, or until it expires. Refer to the subsequent chapter 'Durability of Endpoints' for more information.
+   * A queue is typically used in a point-to-point (P2P) messaging environment.
+   *
+   * ## Topic vs Topic Endpoint
+   * A topic is not the same thing as a topic endpoint. Messages cannot be published directly to topic endpoints, but only indirectly via topics.
+   * A topic is a message property the event broker uses to route a message to its destination. Topic endpoints, unlike topics, are objects that define the storage of messages
+   * for a consuming application. Topic endpoints are more closely related to queues than to topics.
    * For more information, refer to https://solace.com/blog/queues-vs-topic-endpoints.
    *
-   * ## Topic destination name
-   * Topics are case-sensitive and consist of one or more segments, each separated by a forward slash. The topic name must be exact, thus not contain wildcards.
+   * ## Destination Name
+   * Destinations case-sensitive and consist of one or more segments, each separated by a forward slash. The destination must be exact, thus not contain wildcards.
    *
    * ## Payload
    * A message may contain unstructured byte data, or a structured container. See {@link Data} for further information.
@@ -180,6 +194,21 @@ export abstract class SolaceMessageClient {
    *
    * You can change the message delivery mode via the {@link PublishOptions.deliveryMode} property.
    * For more information, refer to the documentation of {@link PublishOptions.deliveryMode}.
+   *
+   * ## Durability of Queue Endpoints
+   * Solace distinguishes between durable und non-durable queues.
+   *
+   * When sending the message to a durable queue, the broker retains the message until it is consumed (and also acknowledged) by the consumer, or until
+   * it expires. In constract, a non-durable queue, also known as a temporary queue, has a shorter lifecycle than a durable queue. It has the lifespan
+   * of the client that created it, with an additional 60 seconds in case of unexpected disconnect. The 60 seconds provides the client with some time to
+   * reconnect to the endpoint before it and its contents are deleted from the Solace broker.
+   *
+   * Although the terms durable and persistent are related, keep in mind that the concept 'durability' applies to endpoints, whereas 'persistence'
+   * applies to event messages.
+   *
+   * For further information refer to:
+   * - https://docs.solace.com/PubSub-Basics/Endpoints.htm
+   * - https://solace.com/blog/solace-endpoints-durable-vs-non-durable
    *
    * @param  destination - Specifies the destination where to send the message to. If of the type `string`, sends it to a topic destination.
    * @param  data - Specifies optional {@link Data transfer data} to be carried along with this message. A message may contain unstructured byte data,
@@ -271,6 +300,8 @@ export abstract class SolaceMessageClient {
    *         For more information, refer to the documentation of {@link Data}.
    * @param  options - Controls how to publish the message.
    * @return A Promise that resolves when dispatched the message, or that rejects if the message could not be dispatched.
+   *
+   * @deprecated This API will be removed in version 14.0.0. Instead, use {@link #publish} passing a queue destination, as follows: `solaceMessageClient.publish(SolclientFactory.createDurableQueueDestination('queue'))`
    */
   public abstract enqueue(queue: string, data?: Data | Message, options?: PublishOptions): Promise<void>;
 }
