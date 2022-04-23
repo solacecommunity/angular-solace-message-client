@@ -9,9 +9,8 @@ import {SciSashboxModule} from '@scion/toolkit/sashbox';
 import {PublisherComponent} from './publisher/publisher.component';
 import {SubscriberComponent} from './subscriber/subscriber.component';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
-import {ConnectComponent} from './connect/connect.component';
+import {LoginComponent} from './login/login.component';
 import {TryMeComponent} from './try-me/try-me.component';
-import {LocalStorageKeys} from './local-storage-keys';
 import {ClipboardModule} from '@angular/cdk/clipboard';
 import {MatButtonModule} from '@angular/material/button';
 import {MAT_FORM_FIELD_DEFAULT_OPTIONS, MatFormFieldModule} from '@angular/material/form-field';
@@ -31,8 +30,10 @@ import {SubscribersComponent} from './subscribers/subscribers.component';
 import {MatDividerModule} from '@angular/material/divider';
 import {MatTooltipModule} from '@angular/material/tooltip';
 import {AutofocusDirective} from './autofocus.directive';
-
-const connectConfig = localStorage.getItem(LocalStorageKeys.SOLACE_CONNECT_CONFIG);
+import {SessionConfigStore} from './session-config-store';
+import {EnterAccessTokenComponent} from './enter-access-token/enter-access-token.component';
+import {MatDialogModule} from '@angular/material/dialog';
+import {A11yModule} from '@angular/cdk/a11y';
 
 @NgModule({
   declarations: [
@@ -40,12 +41,13 @@ const connectConfig = localStorage.getItem(LocalStorageKeys.SOLACE_CONNECT_CONFI
     PublisherComponent,
     SubscriberComponent,
     SubscribersComponent,
-    ConnectComponent,
+    LoginComponent,
     MessageListItemComponent,
     TryMeComponent,
     SessionPropertiesComponent,
     StringifyMapPipe,
     AutofocusDirective,
+    EnterAccessTokenComponent,
   ],
   imports: [
     CommonModule,
@@ -54,7 +56,7 @@ const connectConfig = localStorage.getItem(LocalStorageKeys.SOLACE_CONNECT_CONFI
     AppRoutingModule,
     ReactiveFormsModule,
     FormsModule,
-    SolaceMessageClientModule.forRoot(connectConfig && JSON.parse(connectConfig)),
+    SolaceMessageClientModule.forRoot(SessionConfigStore.load()),
     ClipboardModule,
     MatButtonModule,
     MatCheckboxModule,
@@ -69,6 +71,8 @@ const connectConfig = localStorage.getItem(LocalStorageKeys.SOLACE_CONNECT_CONFI
     MatTabsModule,
     MatDividerModule,
     MatTooltipModule,
+    MatDialogModule,
+    A11yModule,
   ],
   providers: [
     {provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: {floatLabel: 'always', appearance: 'outline'}},

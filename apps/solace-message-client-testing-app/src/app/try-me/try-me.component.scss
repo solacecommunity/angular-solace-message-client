@@ -7,10 +7,9 @@
 
   > header {
     flex: none;
-    align-self: flex-end;
-    display: grid;
-    grid-template-columns: auto max-content max-content;
-    column-gap: .5em;
+    display: flex;
+    gap: .5em;
+    justify-content: flex-end;
 
     > div.connection-state {
       border-radius: 3px;

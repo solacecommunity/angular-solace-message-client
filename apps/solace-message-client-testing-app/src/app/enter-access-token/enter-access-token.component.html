@@ -1,0 +1,16 @@
+<h1 mat-dialog-title>Enter OAuth 2.0 Access Token</h1>
+<div mat-dialog-content>
+  <mat-form-field>
+    <textarea [formControl]="accessTokenFormControl"
+              matInput cdkFocusInitial
+              class="access-token"
+              placeholder="Paste an OAuth 2.0 access token here."
+              rows="20">
+    </textarea>
+  </mat-form-field>
+</div>
+
+<mat-dialog-actions>
+  <button mat-stroked-button (click)="onCancel()">Cancel</button>
+  <button mat-flat-button (click)="onOk()" color="primary" [disabled]="accessTokenFormControl.invalid">OK</button>
+</mat-dialog-actions>

@@ -10,7 +10,7 @@ $theme: mat.define-light-theme((
     )
 ));
 
-@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined');
 @include cdk.a11y-visually-hidden();
 @include cdk.overlay();
 @include mat.core();

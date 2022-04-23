@@ -1,46 +1,53 @@
 import {Component} from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
-import {LocalStorageKeys} from '../local-storage-keys';
 import {LocationService} from '../location.service';
 import {SolaceMessageClientConfig} from '@solace-community/angular-solace-message-client';
+import {SessionConfigStore} from '../session-config-store';
+import {AuthenticationScheme} from 'solclientjs';
+import {PromptAccessTokenProvider} from '../prompt-access-token.provider';
 
 export const URL = 'url';
 export const VPN_NAME = 'vpnName';
+export const AUTHENTICATION_SCHEME = 'authenticationScheme';
 export const USER_NAME = 'userName';
 export const PASSWORD = 'password';
 export const REAPPLY_SUBSCRIPTIONS = 'reapplySubscriptions';
 export const RECONNECT_RETRIES = 'reconnectRetries';
 
 @Component({
-  selector: 'app-connect',
-  templateUrl: './connect.component.html',
-  styleUrls: ['./connect.component.scss'],
+  selector: 'app-login',
+  templateUrl: './login.component.html',
+  styleUrls: ['./login.component.scss'],
 })
-export class ConnectComponent {
+export class LoginComponent {
 
   public readonly URL = URL;
   public readonly VPN_NAME = VPN_NAME;
+  public readonly AUTHENTICATION_SCHEME = AUTHENTICATION_SCHEME;
   public readonly USER_NAME = USER_NAME;
   public readonly PASSWORD = PASSWORD;
   public readonly REAPPLY_SUBSCRIPTIONS = REAPPLY_SUBSCRIPTIONS;
   public readonly RECONNECT_RETRIES = RECONNECT_RETRIES;
 
   public form: FormGroup;
+  public AuthenticationScheme = AuthenticationScheme;
 
   constructor(formBuilder: FormBuilder,
               private _locationService: LocationService) {
     this.form = new FormGroup({
-      [URL]: formBuilder.control('wss://mr-xxxxxxx.messaging.solace.cloud:443', Validators.required),
-      [VPN_NAME]: formBuilder.control('default', Validators.required),
-      [USER_NAME]: formBuilder.control('default', Validators.required),
-      [PASSWORD]: formBuilder.control('default', Validators.required),
+      [URL]: formBuilder.control('', Validators.required),
+      [VPN_NAME]: formBuilder.control('', Validators.required),
+      [AUTHENTICATION_SCHEME]: formBuilder.control(AuthenticationScheme.BASIC),
+      [USER_NAME]: formBuilder.control('', Validators.required),
+      [PASSWORD]: formBuilder.control('', Validators.required),
       [REAPPLY_SUBSCRIPTIONS]: formBuilder.control(true),
       [RECONNECT_RETRIES]: formBuilder.control(-1),
     });
   }
 
-  public onConnect(): void {
-    const solaceConnectProperties: SolaceMessageClientConfig = {
+  public onLogin(): void {
+    const useOAuth = this.form.get(AUTHENTICATION_SCHEME)!.value === AuthenticationScheme.OAUTH2;
+    const sessionConfig: SolaceMessageClientConfig = {
       url: this.form.get(URL)!.value ?? undefined,
       vpnName: this.form.get(VPN_NAME)!.value ?? undefined,
       userName: this.form.get(USER_NAME)!.value ?? undefined,
@@ -48,10 +55,11 @@ export class ConnectComponent {
       reapplySubscriptions: this.form.get(REAPPLY_SUBSCRIPTIONS)!.value ?? undefined,
       reconnectRetries: this.form.get(RECONNECT_RETRIES)!.value ?? undefined,
       connectRetries: this.form.get(RECONNECT_RETRIES)!.value ?? undefined,
-      generateReceiveTimestamps: true,
+      authenticationScheme: this.form.get(AUTHENTICATION_SCHEME)!.value ?? undefined,
+      accessToken: useOAuth ? PromptAccessTokenProvider : undefined,
     };
 
-    localStorage.setItem(LocalStorageKeys.SOLACE_CONNECT_CONFIG, JSON.stringify(solaceConnectProperties));
+    SessionConfigStore.store(sessionConfig);
     this._locationService.navigateToAppRoot({clearConnectProperties: false});
   }
 

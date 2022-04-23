@@ -5,8 +5,7 @@
 
 ## Features
 
-This page gives you an overview of features provided by Angular Solace Message Client library. If a feature you need is not listed here, please check the API
-of [SolaceMessageClient](https://solacecommunity.github.io/angular-solace-message-client/api/classes/SolaceMessageClient.html), or file a GitHub issue otherwise.
+This page gives you an overview of features provided by Angular Solace Message Client library. If a feature you need is not listed here, please check the API of [SolaceMessageClient](https://solacecommunity.github.io/angular-solace-message-client/api/classes/SolaceMessageClient.html), or file a GitHub issue otherwise.
 
 <details>
   <summary><strong>Send message to a topic destination</strong></summary>
@@ -74,7 +73,7 @@ You can subscribe to multiple topics simultaneously by using wildcard segments i
 #### Example:
 
 ```typescript
-import { SolaceMessageClient } from '@solace-community/angular-solace-message-client';
+import {SolaceMessageClient} from '@solace-community/angular-solace-message-client';
 import {Injectable, NgZone} from '@angular/core';
 
 @Injectable()
@@ -125,10 +124,7 @@ export class YourService {
   <summary><strong>Consume messages published to a topic via a non-durable topic endpoint</strong></summary>
   <br>
 
-Instead of observing messages published to a topic
-via [SolaceMessageClient#observe$](https://solacecommunity.github.io/angular-solace-message-client/api/classes/SolaceMessageClient.html#observe_), you can consume messages via a temporary,
-non-durable topic endpoint, so that messages are not lost even in the event of short connection interruptions as messages are retained on the broker until consumed by the consumer. The
-lifecycle of a non-durable topic endpoint is bound to the client that created it, with an additional 60s in case of unexpected disconnect.
+Instead of observing messages published to a topic via [SolaceMessageClient#observe$](https://solacecommunity.github.io/angular-solace-message-client/api/classes/SolaceMessageClient.html#observe_), you can consume messages via a temporary, non-durable topic endpoint, so that messages are not lost even in the event of short connection interruptions as messages are retained on the broker until consumed by the consumer. The lifecycle of a non-durable topic endpoint is bound to the client that created it, with an additional 60s in case of unexpected disconnect.
 
 ```typescript
 import {SolaceMessageClient} from '@solace-community/angular-solace-message-client';
@@ -159,13 +155,12 @@ export class YourService {
   }
 }
 ```
+
 > Refer to [SolaceMessageClient#consume$](https://solacecommunity.github.io/angular-solace-message-client/api/classes/SolaceMessageClient.html#consume_) for more information about the API.
 
 > Refer to [issue/37](https://github.com/solacecommunity/angular-solace-message-client/issues/37#issuecomment-1094693407) for more information about the `typedef(solclientjs)` comment.
 
-It is important to understand that a topic is not the same thing as a topic endpoint. A topic is a message property the event broker uses to route a message to its destination. Topic
-endpoints, unlike topics, are objects that define the storage of messages for a consuming application. Topic endpoints are more closely related to queues than to topics. Messages cannot be
-published directly to topic endpoints, but only indirectly via topics. For more information, refer to https://solace.com/blog/queues-vs-topic-endpoints.
+It is important to understand that a topic is not the same thing as a topic endpoint. A topic is a message property the event broker uses to route a message to its destination. Topic endpoints, unlike topics, are objects that define the storage of messages for a consuming application. Topic endpoints are more closely related to queues than to topics. Messages cannot be published directly to topic endpoints, but only indirectly via topics. For more information, refer to https://solace.com/blog/queues-vs-topic-endpoints.
 
 </details>
 
@@ -173,9 +168,7 @@ published directly to topic endpoints, but only indirectly via topics. For more 
   <summary><strong>Send message to a queue endpoint</strong></summary>
   <br>
 
-A queue is typically used in a point-to-point (P2P) messaging environment. A queue differs from the topic distribution mechanism that the message is transported to exactly a single consumer,
-i.e., the message is load balanced to a single consumer in round‑robin fashion, or for exclusive queues, it is always transported to the same subscription. When sending a message to a
-queue, the broker retains the message until it is consumed, or until it expires.
+A queue is typically used in a point-to-point (P2P) messaging environment. A queue differs from the topic distribution mechanism that the message is transported to exactly a single consumer, i.e., the message is load balanced to a single consumer in round‑robin fashion, or for exclusive queues, it is always transported to the same subscription. When sending a message to a queue, the broker retains the message until it is consumed, or until it expires.
 
 > Refer to [SolaceMessageClient#publish](https://solacecommunity.github.io/angular-solace-message-client/api/classes/SolaceMessageClient.html#publish) for more information about the API.
 
@@ -194,8 +187,8 @@ export class YourService {
 
   public sendBinaryMessage(): void {
     const queue = SolclientFactory.createDurableQueueDestination('queue');
-    this.messageClient.publish(queue, '20°C'); 
-    
+    this.messageClient.publish(queue, '20°C');
+
     // `solclientjs` encodes `string` content to latin1 encoded binary attachment. Alternatively, you can directly pass binary content, as follows:
     this.messageClient.publish(queue, new TextEncoder().encode('20°C'));
   }
@@ -261,7 +254,7 @@ export class YourService {
 ```
 
 > Refer to [SolaceMessageClient#consume$](https://solacecommunity.github.io/angular-solace-message-client/api/classes/SolaceMessageClient.html#consume_) for more information about the API.
- 
+
 > Refer to [issue/37](https://github.com/solacecommunity/angular-solace-message-client/issues/37#issuecomment-1094693407) for more information about the `typedef(solclientjs)` comment.
 
 </details>
@@ -385,7 +378,6 @@ import {Injectable} from '@angular/core';
 import {Session} from 'solclientjs';
 
 @Injectable()
-
 export class YourService {
 
   constructor(messageClient: SolaceMessageClient) {
@@ -401,6 +393,64 @@ export class YourService {
 
 </details>
 
+<details>
+  <summary><strong>Enable OAUTH2 authentication</strong></summary>
+  <br>
+
+OAuth 2.0 enables secure login to the broker while protecting user credentials. Follow these steps to enable OAuth authentication:
+- Create an access token provider:
+  - Create a class that implements `OAuthAccessTokenProvider`.
+  - Register the class as Angular provider, either via `providers` array of the `@NgModule` or via the `providedIn` property of the `@Injectable` decorator.
+  - Implement the method `provide$` in your `OAuthAccessTokenProvider`.
+    The method should return an Observable that, when being subscribed, emits the user's access token, and then emits continuously when the token is renewed. It should never complete. Otherwise, the connection to the broker cannot be re-established in the event of a network interruption. 
+- Enable OAUTH and configure the access token in the config passed to `SolaceMessageClientModule.forRoot` or `SolaceMessageClient.connect`, as follows:
+  - Set `SolaceMessageClientConfig.authenticationScheme` to `AuthenticationScheme.OAUTH2`.
+  - Set `SolaceMessageClientConfig.accessToken` to the above provider class.
+
+#### Example of an `OAuthAccessTokenProvider`
+
+```ts
+import {Injectable} from '@angular/core';
+import {OAuthAccessTokenProvider} from '@solace-community/angular-solace-message-client';
+
+@Injectable({providedIn: 'root'})
+export class YourAccessTokenProvider implements OAuthAccessTokenProvider {
+
+  constructor(private authService: YourAuthService) {
+  }
+
+  public provide$(): Observable<string> {
+    return this.authService.accessToken$();
+  }
+}
+```
+
+#### Example for the configuration of the Solace Message Client
+
+```ts
+import {NgModule} from '@angular/core';
+import {SolaceMessageClientModule} from '@solace-community/angular-solace-message-client';
+
+@NgModule({
+  imports: [
+    ...
+      SolaceMessageClientModule.forRoot({
+        url: 'wss://YOUR-SOLACE-BROKER-URL:443',
+        vpnName: 'YOUR VPN',
+        authenticationScheme: AuthenticationScheme.OAUTH2, // enables OAUTH
+        accessToken: YourAccessTokenProvider, // sets the access token provider
+      }),
+  ],
+  ...
+})
+export class AppModule {
+}
+```
+
+> Refer to [SolaceMessageClientConfig#accessToken](https://solacecommunity.github.io/angular-solace-message-client/api/classes/SolaceMessageClientConfig.html#accessToken) for more information about the API.
+
+</details>
+
 [menu-overview]: /README.md
 
 [menu-getting-started]: /docs/site/getting-started.md
@@ -412,4 +462,3 @@ export class YourService {
 [menu-contributing]: /CONTRIBUTING.md
 
 [menu-changelog]: /docs/site/changelog/changelog.md
-

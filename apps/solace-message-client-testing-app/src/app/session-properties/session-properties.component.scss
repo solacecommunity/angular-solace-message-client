@@ -24,3 +24,6 @@
   }
 }
 
+::ng-deep snack-bar-container.session-properties {
+  max-width: unset;
+}

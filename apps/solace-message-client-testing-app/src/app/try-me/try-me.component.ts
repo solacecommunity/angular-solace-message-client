@@ -1,9 +1,12 @@
 import {Component} from '@angular/core';
 import {SolaceMessageClient, SolaceMessageClientConfig} from '@solace-community/angular-solace-message-client';
-import {LocalStorageKeys} from '../local-storage-keys';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {SessionPropertiesComponent} from '../session-properties/session-properties.component';
 import {LocationService} from '../location.service';
+import {SessionConfigStore} from '../session-config-store';
+import {EnterAccessTokenComponent} from '../enter-access-token/enter-access-token.component';
+import {MatDialog} from '@angular/material/dialog';
+import {AuthenticationScheme} from 'solclientjs';
 
 @Component({
   selector: 'app-try-me',
@@ -12,15 +15,17 @@ import {LocationService} from '../location.service';
 })
 export class TryMeComponent {
 
-  public connectConfig: SolaceMessageClientConfig;
+  public sessionConfig: SolaceMessageClientConfig;
+  public AuthenticationScheme = AuthenticationScheme;
 
   constructor(public solaceMessageClient: SolaceMessageClient,
               private _snackBar: MatSnackBar,
-              private _locationService: LocationService) {
-    this.connectConfig = JSON.parse(localStorage.getItem(LocalStorageKeys.SOLACE_CONNECT_CONFIG)!);
+              private _locationService: LocationService,
+              private _matDialog: MatDialog) {
+    this.sessionConfig = SessionConfigStore.load()!;
   }
 
-  public onLogout(): void {
+  public onLoginPage(): void {
     this._locationService.navigateToAppRoot({clearConnectProperties: true});
   }
 
@@ -29,7 +34,7 @@ export class TryMeComponent {
   }
 
   public onConnect(): void {
-    this.solaceMessageClient.connect(this.connectConfig).then(
+    this.solaceMessageClient.connect(this.sessionConfig).then(
       () => console.log('Connected to Solace message broker'),
       error => console.error('Failed to connect to Solace message broker', error),
     );
@@ -37,8 +42,13 @@ export class TryMeComponent {
 
   public onSessionPropertiesOpen(): void {
     this._snackBar.openFromComponent(SessionPropertiesComponent, {
-      data: this.connectConfig,
+      data: this.sessionConfig,
       verticalPosition: 'top',
+      panelClass: 'session-properties',
     });
+  }
+
+  public onUpdateAccessToken(): void {
+    this._matDialog.open(EnterAccessTokenComponent);
   }
 }

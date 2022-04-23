@@ -6,9 +6,18 @@
     <ng-container *ngIf="solaceMessageClient.connected$ | async; then connected_template; else disconnected_template"></ng-container>
   </div>
 
-  <button mat-stroked-button (click)="onDisconnect()" *ngIf="solaceMessageClient.connected$ | async">Disconnect</button>
-  <button mat-stroked-button (click)="onConnect()" *ngIf="(solaceMessageClient.connected$ | async) === false">Connect</button>
-  <button mat-stroked-button (click)="onLogout()">Logout</button>
+  <button mat-stroked-button (click)="onDisconnect()" *ngIf="solaceMessageClient.connected$ | async" matTooltip="Disconnect">
+    <mat-icon>wifi</mat-icon>
+  </button>
+  <button mat-stroked-button (click)="onConnect()" *ngIf="(solaceMessageClient.connected$ | async) === false" matTooltip="Connect">
+    <mat-icon>wifi_off</mat-icon>
+  </button>
+  <button mat-stroked-button (click)="onUpdateAccessToken()" *ngIf="sessionConfig.authenticationScheme === AuthenticationScheme.OAUTH2">
+    <mat-icon matTooltip="Provide OAuth 2.0 access token" class="material-icons-outlined">pin</mat-icon>
+  </button>
+  <button mat-stroked-button (click)="onLoginPage()" matTooltip="Go to the login page">
+    <mat-icon>login</mat-icon>
+  </button>
 </header>
 
 <sci-sashbox>
@@ -22,7 +31,7 @@
 </sci-sashbox>
 
 <ng-template #connected_template>
-  Connected to {{connectConfig.url}} / {{connectConfig.vpnName}}
+  Connected to {{sessionConfig.url}} / {{sessionConfig.vpnName}}
 </ng-template>
 <ng-template #disconnected_template>
   Disconnected from the Solace Message Broker
