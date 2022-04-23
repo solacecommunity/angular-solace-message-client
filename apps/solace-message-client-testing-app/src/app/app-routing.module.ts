@@ -1,13 +1,13 @@
 import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
-import {ConnectComponent} from './connect/connect.component';
+import {LoginComponent} from './login/login.component';
 import {TryMeComponent} from './try-me/try-me.component';
 import {TryMeActivateGuard} from './try-me/try-me-activate.guard';
 
 const routes: Routes = [
   {
-    path: 'connect',
-    component: ConnectComponent,
+    path: 'login',
+    component: LoginComponent,
   },
   {
     path: '',

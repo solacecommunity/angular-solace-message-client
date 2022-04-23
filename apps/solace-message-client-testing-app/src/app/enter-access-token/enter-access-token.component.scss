@@ -1,0 +1,27 @@
+@use '@angular/material' as mat;
+@use 'solace-client-theme' as app-theme;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  min-width: 500px;
+
+  > h1 {
+    flex: none;
+  }
+
+  > div[mat-dialog-content] {
+    flex: auto;
+    display: grid;
+
+    textarea.access-token {
+      font-family: monospace;
+    }
+  }
+
+  > mat-dialog-actions {
+    flex: none;
+    align-self: flex-end;
+  }
+}
+

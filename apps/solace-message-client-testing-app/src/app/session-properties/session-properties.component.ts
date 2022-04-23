@@ -10,10 +10,12 @@ import {SessionProperties} from 'solclientjs';
 })
 export class SessionPropertiesComponent {
 
-  constructor(@Inject(MAT_SNACK_BAR_DATA)
-              public sessionProperties: SessionProperties,
+  public sessionProperties: SessionProperties;
+
+  constructor(@Inject(MAT_SNACK_BAR_DATA) sessionProperties: SessionProperties,
               private _snackbar: MatSnackBar,
               private _clipboard: Clipboard) {
+    this.sessionProperties = obfuscateSecrets(sessionProperties);
   }
 
   public onClose(): void {
@@ -23,5 +25,16 @@ export class SessionPropertiesComponent {
   public onCopyToClipboard(): void {
     this._clipboard.copy(JSON.stringify(this.sessionProperties));
   }
+}
+
+function obfuscateSecrets(sessionProperties: SessionProperties): SessionProperties {
+  const obfuscated = {...sessionProperties};
+  if (obfuscated.password) {
+    obfuscated.password = '***';
+  }
+  if (obfuscated.accessToken) {
+    obfuscated.accessToken = '***';
+  }
+  return obfuscated;
 }
 

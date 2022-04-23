@@ -33,10 +33,10 @@ import { SolaceMessageClientModule } from '@solace-community/angular-solace-mess
   imports: [
     ...
     SolaceMessageClientModule.forRoot({
-      url:      'wss://<your broker url>:443',
-      vpnName:  '<your vpn>',
-      userName: '<your username>',
-      password: '<your password>',
+      url:      'wss://YOUR-SOLACE-BROKER-URL:443',
+      vpnName:  'YOUR VPN',
+      userName: 'YOUR USERNAME',
+      password: 'YOUR PASSWORD',
     })
   ],
   ...
@@ -47,6 +47,8 @@ export class AppModule { }
 Note to call `forRoot` only in a root injector, e.g., in app module. Calling it in a lazy-loaded module will throw a runtime error.
 
 If you provide the config via `forRoot`, the first time you inject `SolaceMessageClient`, it connects to the Solace Message Broker. To be more flexible in providing the config, invoke this method without config. Then, programmatically connect to the Solace Message Broker by calling `SolaceMessageClient.connect` and passing the config. Typically, you would do this in an app initializer or the app component.
+
+> See [feature overview][menu-features] section **Enable OAUTH2 authentication** for an example how to enable OAUTH authentication.
 
 </details>
 

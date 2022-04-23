@@ -33,10 +33,10 @@ export abstract class SolaceMessageClient {
    * Do not forget to invoke this method if you import {@link SolaceMessageClientModule} without configuration in the root injector.
    * Typically, you would connect to the broker in an app initializer.
    *
-   * @return Promise that resolves when connected to the broker, or that rejects if the connection attempt failed.
+   * @return Promise that resolves to the {@link Session} when connected to the broker, or that rejects if the connection attempt failed.
    *         If already connected, the Promise resolves immediately.
    */
-  public abstract connect(config: SolaceMessageClientConfig): Promise<void>;
+  public abstract connect(config: SolaceMessageClientConfig): Promise<Session>;
 
   /**
    * Disconnects this client from the Solace message broker. Has no effect if already disconnected.
@@ -346,8 +346,8 @@ export class NullSolaceMessageClient implements SolaceMessageClient {
     return new Promise(noop);
   }
 
-  public connect(config: SolaceMessageClientConfig): Promise<void> {
-    return Promise.resolve();
+  public connect(config: SolaceMessageClientConfig): Promise<Session> {
+    return new Promise(noop);
   }
 
   public disconnect(): Promise<void> {

@@ -3,10 +3,11 @@ import {mapToBinary, mapToText, MessageEnvelope, Params, PublishOptions, SolaceM
 import {SolaceSessionProvider} from './solace-session-provider';
 import {ObserveCaptor} from '@scion/toolkit/testing';
 import {TestBed} from '@angular/core/testing';
-import {NgZone} from '@angular/core';
-import {Destination, DestinationType, Message, MessageConsumer, MessageConsumerEvent, MessageConsumerEventName, MessageConsumerProperties, MessageDeliveryModeType, MessageType, OperationError, QueueBrowser, QueueBrowserEventName, QueueBrowserProperties, QueueDescriptor, QueueType, RequestError, SDTField, SDTFieldType, SDTMapContainer, Session, SessionEvent, SessionEventCode, SolclientFactory, SolclientFactoryProfiles, SolclientFactoryProperties} from 'solclientjs';
-import {asyncScheduler, noop} from 'rxjs';
+import {Injectable, NgZone} from '@angular/core';
+import {AuthenticationScheme, Destination, DestinationType, Message, MessageConsumer, MessageConsumerEvent, MessageConsumerEventName, MessageConsumerProperties, MessageDeliveryModeType, MessageType, OperationError, QueueBrowser, QueueBrowserEventName, QueueBrowserProperties, QueueDescriptor, QueueType, RequestError, SDTField, SDTFieldType, SDTMapContainer, Session, SessionEvent, SessionEventCode, SolclientFactory, SolclientFactoryProfiles, SolclientFactoryProperties} from 'solclientjs';
+import {asyncScheduler, BehaviorSubject, EMPTY, NEVER, noop, Observable, of, Subject} from 'rxjs';
 import {UUID} from '@scion/toolkit/uuid';
+import {OAuthAccessTokenProvider} from './oauth-access-token-provider';
 import './solclientjs-typedef-augmentation';
 
 type SessionEventListener = (() => void) | ((event: SessionEvent) => void) | ((error: OperationError) => void) | ((message: Message) => void);
@@ -25,7 +26,7 @@ describe('SolaceMessageClient', () => {
     SolclientFactory.init(factoryProperties);
 
     // Mock Solace Session and provide it via `SolaceSessionProvider`
-    session = jasmine.createSpyObj('Session', ['on', 'connect', 'subscribe', 'unsubscribe', 'send', 'dispose', 'disconnect', 'createMessageConsumer', 'createQueueBrowser', 'sendRequest', 'sendReply']);
+    session = jasmine.createSpyObj('Session', ['on', 'connect', 'subscribe', 'unsubscribe', 'send', 'dispose', 'disconnect', 'createMessageConsumer', 'createQueueBrowser', 'sendRequest', 'sendReply', 'updateAuthenticationOnReconnect']);
     sessionProvider = jasmine.createSpyObj('SolaceSessionProvider', ['provide']);
     sessionProvider.provide.and.returnValue(session);
 
@@ -38,9 +39,12 @@ describe('SolaceMessageClient', () => {
 
     // Fire 'DISCONNECTED' event when invoking 'disconnect'.
     session.disconnect.and.callFake(() => simulateLifecycleEvent(SessionEventCode.DISCONNECTED));
+
+    spyOn(console, 'warn');
+    spyOn(console, 'error');
   });
 
-  describe('initialize library with broker config: SolaceMessageClientModule.forRoot({...})', () => {
+  describe('SolaceMessageClientModule.forRoot(CONFIG)', () => {
 
     beforeEach(() => {
       TestBed.configureTestingModule({
@@ -104,7 +108,7 @@ describe('SolaceMessageClient', () => {
     });
   });
 
-  describe('initialize library without broker config: SolaceMessageClientModule.forRoot()', () => {
+  describe('SolaceMessageClientModule.forRoot() [manual connect]', () => {
     beforeEach(() => {
       TestBed.configureTestingModule({
         providers: [
@@ -127,8 +131,9 @@ describe('SolaceMessageClient', () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
       // Connect
-      expectAsync(solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'})).toBeResolved();
+      const connected1 = solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
       await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+      await expectAsync(connected1).toBeResolved();
       await expectAsync(solaceMessageClient.session).toBeResolved();
 
       expect(session.connect).toHaveBeenCalledTimes(1);
@@ -144,8 +149,9 @@ describe('SolaceMessageClient', () => {
       session.disconnect.calls.reset();
 
       // Connect
-      expectAsync(solaceMessageClient.connect({url: 'some-other-url', vpnName: 'some-other-vpn'})).toBeResolved();
+      const connected2 = solaceMessageClient.connect({url: 'some-other-url', vpnName: 'some-other-vpn'});
       await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+      await expectAsync(connected2).toBeResolved();
       await expectAsync(solaceMessageClient.session).toBeResolved();
 
       expect(session.connect).toHaveBeenCalledTimes(1);
@@ -155,8 +161,9 @@ describe('SolaceMessageClient', () => {
     it('should reject the connect Promise when the connect attempt fails', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
-      expectAsync(solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'})).toBeRejected();
+      const connected = solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
       await simulateLifecycleEvent(SessionEventCode.CONNECT_FAILED_ERROR, undefined);
+      await expectAsync(connected).toBeRejected();
       expect(session.connect).toHaveBeenCalledTimes(1);
       expect(sessionProvider.provide).toHaveBeenCalledWith(jasmine.objectContaining({url: 'some-url', vpnName: 'some-vpn'}));
     });
@@ -196,8 +203,9 @@ describe('SolaceMessageClient', () => {
       await simulateLifecycleEvent(SessionEventCode.DOWN_ERROR);
 
       // Reconnect to the broker
-      solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
+      const connected = solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
       await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+      await expectAsync(connected).toBeResolved();
       session.subscribe.calls.reset();
 
       // Subscribe to topic-3 (success)
@@ -2062,6 +2070,686 @@ describe('SolaceMessageClient', () => {
     });
   }
 
+  describe('OAUTH 2.0 authentication', () => {
+
+    describe('SolaceMessageClientModule.forRoot(CONFIG)', () => {
+      it('should support configuring a "one-time" access token', async () => {
+        TestBed.configureTestingModule({
+          providers: [
+            {provide: SolaceSessionProvider, useValue: sessionProvider},
+          ],
+          imports: [
+            SolaceMessageClientModule.forRoot({
+              url: 'url:forRoot',
+              vpnName: 'vpn:forRoot',
+              authenticationScheme: AuthenticationScheme.OAUTH2,
+              accessToken: 'one-time-access-token',
+            }),
+          ],
+        });
+
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+        await expectAsync(solaceMessageClient.session).toBeResolved();
+
+        // expect "solclientjs" to be initialized with the "one-time" access time
+        expect(sessionProvider.provide).toHaveBeenCalledWith(jasmine.objectContaining({
+          authenticationScheme: AuthenticationScheme.OAUTH2,
+          accessToken: 'one-time-access-token',
+        }));
+        expect(session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
+        expect(console.warn).toHaveBeenCalledWith(jasmine.stringMatching(/\[AccessTokenProviderCompletedWarning]/));
+      });
+
+      it('should inject the access token into the Solace session', async () => {
+        const accessToken$ = new Subject<string>();
+
+        @Injectable({providedIn: 'root'})
+        class TestAccessTokenProvider implements OAuthAccessTokenProvider {
+          public provide$(): Observable<string> {
+            return accessToken$;
+          }
+        }
+
+        TestBed.configureTestingModule({
+          providers: [
+            {provide: SolaceSessionProvider, useValue: sessionProvider},
+          ],
+          imports: [
+            SolaceMessageClientModule.forRoot({
+              url: 'url:forRoot',
+              vpnName: 'vpn:forRoot',
+              authenticationScheme: AuthenticationScheme.OAUTH2,
+              accessToken: TestAccessTokenProvider,
+            }),
+          ],
+        });
+
+        // WHEN injected the message client
+        TestBed.inject(SolaceMessageClient);
+        // THEN expect "solclientjs" not to be initialized yet, but only after having emitted the access token
+        expect(sessionProvider.provide).toHaveBeenCalledTimes(0);
+        expect(session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
+
+        // WHEN emitted the initial access token
+        accessToken$.next('access-token-1');
+        await drainMicrotaskQueue();
+        // THEN
+        // expect "solclientjs" to be initialized with the "one-time" access time
+        expect(sessionProvider.provide).toHaveBeenCalledWith(jasmine.objectContaining({
+          authenticationScheme: AuthenticationScheme.OAUTH2,
+          accessToken: 'access-token-1',
+        }));
+        // expect the access token not to be updated
+        expect(session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
+
+        sessionProvider.provide.calls.reset();
+        session.updateAuthenticationOnReconnect.calls.reset();
+
+        // WHEN emitted a renewed access token
+        accessToken$.next('access-token-2');
+        // THEN
+        // expect "solclientjs" not to be initialized anew
+        expect(sessionProvider.provide).toHaveBeenCalledTimes(0);
+        // expect the access token to be updated
+        expect(session.updateAuthenticationOnReconnect).toHaveBeenCalledWith(jasmine.objectContaining({accessToken: 'access-token-2'}));
+
+        sessionProvider.provide.calls.reset();
+        session.updateAuthenticationOnReconnect.calls.reset();
+
+        // WHEN emitted a renewed access token
+        accessToken$.next('access-token-3');
+        // THEN
+        // expect "solclientjs" not to be initialized anew
+        expect(sessionProvider.provide).toHaveBeenCalledTimes(0);
+        // expect the access token to be updated
+        expect(session.updateAuthenticationOnReconnect).toHaveBeenCalledWith(jasmine.objectContaining({accessToken: 'access-token-3'}));
+      });
+
+      it('should error if not configured an access token or an `OAuthAccessTokenProvider` [NullAccessTokenConfigError]', async () => {
+        TestBed.configureTestingModule({
+          providers: [
+            {provide: SolaceSessionProvider, useValue: sessionProvider},
+          ],
+          imports: [
+            SolaceMessageClientModule.forRoot({
+              url: 'url:forRoot',
+              vpnName: 'vpn:forRoot',
+              authenticationScheme: AuthenticationScheme.OAUTH2,
+            }),
+          ],
+        });
+
+        TestBed.inject(SolaceMessageClient);
+        await drainMicrotaskQueue();
+
+        expect(console.error).toHaveBeenCalledWith(jasmine.stringMatching(/\[SolaceMessageClient]/), jasmine.stringMatching(/\[NullAccessTokenConfigError]/));
+        expect(sessionProvider.provide).toHaveBeenCalledTimes(0);
+        expect(session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
+      });
+
+      it('should error if forgotten to register `OAuthAccessTokenProvider` as Angular provider [NullAccessTokenProviderError]', async () => {
+        // Create a provider, but forget to register it as Angular provider
+        @Injectable()
+        class TestAccessTokenProvider implements OAuthAccessTokenProvider {
+          public provide$(): Observable<string> {
+            return NEVER;
+          }
+        }
+
+        TestBed.configureTestingModule({
+          providers: [
+            {provide: SolaceSessionProvider, useValue: sessionProvider},
+          ],
+          imports: [
+            SolaceMessageClientModule.forRoot({
+              url: 'url:forRoot',
+              vpnName: 'vpn:forRoot',
+              authenticationScheme: AuthenticationScheme.OAUTH2,
+              accessToken: TestAccessTokenProvider,
+            }),
+          ],
+        });
+
+        TestBed.inject(SolaceMessageClient);
+        await drainMicrotaskQueue();
+
+        expect(console.error).toHaveBeenCalledWith(jasmine.stringMatching(/\[SolaceMessageClient]/), jasmine.stringMatching(/\[NullAccessTokenProviderError]/));
+        expect(sessionProvider.provide).toHaveBeenCalledTimes(0);
+        expect(session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
+      });
+
+      it('should error when emitting `null` as the initial access token [NullAccessTokenError]', async () => {
+        @Injectable({providedIn: 'root'})
+        class TestAccessTokenProvider implements OAuthAccessTokenProvider {
+          public provide$(): Observable<string> {
+            return of(null! as string);
+          }
+        }
+
+        TestBed.configureTestingModule({
+          providers: [
+            {provide: SolaceSessionProvider, useValue: sessionProvider},
+          ],
+          imports: [
+            SolaceMessageClientModule.forRoot({
+              url: 'url:forRoot',
+              vpnName: 'vpn:forRoot',
+              authenticationScheme: AuthenticationScheme.OAUTH2,
+              accessToken: TestAccessTokenProvider,
+            }),
+          ],
+        });
+
+        TestBed.inject(SolaceMessageClient);
+        await drainMicrotaskQueue();
+
+        expect(console.error).toHaveBeenCalledWith(jasmine.stringMatching(/\[SolaceMessageClient]/), jasmine.stringMatching(/\[NullAccessTokenError]/));
+        expect(sessionProvider.provide).toHaveBeenCalledTimes(0);
+        expect(session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
+      });
+
+      it('should error when emitting `undefined` as the initial access token [NullAccessTokenError]', async () => {
+        @Injectable({providedIn: 'root'})
+        class TestAccessTokenProvider implements OAuthAccessTokenProvider {
+          public provide$(): Observable<string> {
+            return of(undefined! as string);
+          }
+        }
+
+        TestBed.configureTestingModule({
+          providers: [
+            {provide: SolaceSessionProvider, useValue: sessionProvider},
+          ],
+          imports: [
+            SolaceMessageClientModule.forRoot({
+              url: 'url:forRoot',
+              vpnName: 'vpn:forRoot',
+              authenticationScheme: AuthenticationScheme.OAUTH2,
+              accessToken: TestAccessTokenProvider,
+            }),
+          ],
+        });
+
+        TestBed.inject(SolaceMessageClient);
+        await drainMicrotaskQueue();
+
+        expect(console.error).toHaveBeenCalledWith(jasmine.stringMatching(/\[SolaceMessageClient]/), jasmine.stringMatching(/\[NullAccessTokenError]/));
+        expect(sessionProvider.provide).toHaveBeenCalledTimes(0);
+        expect(session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
+      });
+
+      it('should error when the access token Observable completes without having having emitted an access token [EmptyAccessTokenError]', async () => {
+        @Injectable({providedIn: 'root'})
+        class TestAccessTokenProvider implements OAuthAccessTokenProvider {
+          public provide$(): Observable<string> {
+            return EMPTY;
+          }
+        }
+
+        TestBed.configureTestingModule({
+          providers: [
+            {provide: SolaceSessionProvider, useValue: sessionProvider},
+          ],
+          imports: [
+            SolaceMessageClientModule.forRoot({
+              url: 'url:forRoot',
+              vpnName: 'vpn:forRoot',
+              authenticationScheme: AuthenticationScheme.OAUTH2,
+              accessToken: TestAccessTokenProvider,
+            }),
+          ],
+        });
+
+        TestBed.inject(SolaceMessageClient);
+        await drainMicrotaskQueue();
+
+        expect(console.error).toHaveBeenCalledWith(jasmine.stringMatching(/\[SolaceMessageClient]/), jasmine.stringMatching(/\[EmptyAccessTokenError]/));
+        expect(sessionProvider.provide).toHaveBeenCalledTimes(0);
+        expect(session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
+      });
+
+      it('should warn when the access token Observable completes [AccessTokenProviderCompletedWarning] (1/2)', async () => {
+        @Injectable({providedIn: 'root'})
+        class TestAccessTokenProvider implements OAuthAccessTokenProvider {
+          public provide$(): Observable<string> {
+            return of('access token'); // completes after emitted the initial access token
+          }
+        }
+
+        TestBed.configureTestingModule({
+          providers: [
+            {provide: SolaceSessionProvider, useValue: sessionProvider},
+          ],
+          imports: [
+            SolaceMessageClientModule.forRoot({
+              url: 'url:forRoot',
+              vpnName: 'vpn:forRoot',
+              authenticationScheme: AuthenticationScheme.OAUTH2,
+              accessToken: TestAccessTokenProvider,
+            }),
+          ],
+        });
+
+        TestBed.inject(SolaceMessageClient);
+        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+
+        expect(console.warn).toHaveBeenCalledWith(jasmine.stringMatching(/\[AccessTokenProviderCompletedWarning]/));
+      });
+
+      it('should warn when the access token Observable completes [AccessTokenProviderCompletedWarning] (2/2)', async () => {
+        @Injectable({providedIn: 'root'})
+        class TestAccessTokenProvider implements OAuthAccessTokenProvider {
+          public provide$(): Observable<string> {
+            return of('access token 1', 'access token 2', 'access token 3'); // completes after 3 emissions
+          }
+        }
+
+        TestBed.configureTestingModule({
+          providers: [
+            {provide: SolaceSessionProvider, useValue: sessionProvider},
+          ],
+          imports: [
+            SolaceMessageClientModule.forRoot({
+              url: 'url:forRoot',
+              vpnName: 'vpn:forRoot',
+              authenticationScheme: AuthenticationScheme.OAUTH2,
+              accessToken: TestAccessTokenProvider,
+            }),
+          ],
+        });
+
+        TestBed.inject(SolaceMessageClient);
+        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+
+        expect(console.warn).toHaveBeenCalledWith(jasmine.stringMatching(/\[AccessTokenProviderCompletedWarning]/));
+      });
+
+      it('should error when emitting `null` as access token [NullAccessTokenError]', async () => {
+        const accessToken$ = new BehaviorSubject<string>('access-token-1');
+
+        @Injectable({providedIn: 'root'})
+        class TestAccessTokenProvider implements OAuthAccessTokenProvider {
+          public provide$(): Observable<string> {
+            return accessToken$;
+          }
+        }
+
+        TestBed.configureTestingModule({
+          providers: [
+            {provide: SolaceSessionProvider, useValue: sessionProvider},
+          ],
+          imports: [
+            SolaceMessageClientModule.forRoot({
+              url: 'url:forRoot',
+              vpnName: 'vpn:forRoot',
+              authenticationScheme: AuthenticationScheme.OAUTH2,
+              accessToken: TestAccessTokenProvider,
+            }),
+          ],
+        });
+
+        TestBed.inject(SolaceMessageClient);
+        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+
+        accessToken$.next('access-token-2');
+        accessToken$.next('access-token-3');
+        expect(console.error).not.toHaveBeenCalledWith(jasmine.stringMatching(/\[NullAccessTokenError]/));
+
+        accessToken$.next(null!);
+        expect(console.error).toHaveBeenCalledWith(jasmine.stringMatching(/\[NullAccessTokenError]/));
+      });
+    });
+
+    describe('SolaceMessageClientModule.forRoot() [manual connect]', () => {
+      it('should support configuring a "one-time" access token', async () => {
+        TestBed.configureTestingModule({
+          providers: [
+            {provide: SolaceSessionProvider, useValue: sessionProvider},
+          ],
+          imports: [
+            SolaceMessageClientModule.forRoot(),
+          ],
+        });
+
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+
+        const connected = solaceMessageClient.connect({
+          url: 'url:forRoot',
+          vpnName: 'vpn:forRoot',
+          authenticationScheme: AuthenticationScheme.OAUTH2,
+          accessToken: 'one-time-access-token',
+        });
+
+        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+        await expectAsync(connected).toBeResolved();
+
+        // expect "solclientjs" to be initialized with the "one-time" access time
+        expect(sessionProvider.provide).toHaveBeenCalledWith(jasmine.objectContaining({
+          authenticationScheme: AuthenticationScheme.OAUTH2,
+          accessToken: 'one-time-access-token',
+        }));
+        expect(session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
+        expect(console.warn).toHaveBeenCalledWith(jasmine.stringMatching(/\[AccessTokenProviderCompletedWarning]/));
+      });
+
+      it('should inject the access token into the Solace session', async () => {
+        const accessToken$ = new Subject<string>();
+
+        @Injectable({providedIn: 'root'})
+        class TestAccessTokenProvider implements OAuthAccessTokenProvider {
+          public provide$(): Observable<string> {
+            return accessToken$;
+          }
+        }
+
+        TestBed.configureTestingModule({
+          providers: [
+            {provide: SolaceSessionProvider, useValue: sessionProvider},
+          ],
+          imports: [
+            SolaceMessageClientModule.forRoot(),
+          ],
+        });
+
+        // WHEN injected the message client
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+        // THEN expect "solclientjs" not to be initialized yet, but only after having emitted the access token
+        expect(sessionProvider.provide).toHaveBeenCalledTimes(0);
+        expect(session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
+
+        // WHEN connected to the Solace broker
+        const connected = solaceMessageClient.connect({
+          url: 'url:forRoot',
+          vpnName: 'vpn:forRoot',
+          authenticationScheme: AuthenticationScheme.OAUTH2,
+          accessToken: TestAccessTokenProvider,
+        });
+        await drainMicrotaskQueue();
+
+        // THEN expect "solclientjs" not to be initialized yet, but only after having emitted the access token
+        expect(sessionProvider.provide).toHaveBeenCalledTimes(0);
+        expect(session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
+
+        // WHEN emitted the initial access token
+        accessToken$.next('access-token-1');
+        await drainMicrotaskQueue();
+        // THEN expect "solclientjs" to be connected to the broker
+        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+        await connected;
+        // expect "solclientjs" to be initialized with the "one-time" access time
+        expect(sessionProvider.provide).toHaveBeenCalledWith(jasmine.objectContaining({
+          authenticationScheme: AuthenticationScheme.OAUTH2,
+          accessToken: 'access-token-1',
+        }));
+        // expect the access token not to be updated
+        expect(session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
+
+        sessionProvider.provide.calls.reset();
+        session.updateAuthenticationOnReconnect.calls.reset();
+
+        // WHEN emitted a renewed access token
+        accessToken$.next('access-token-2');
+        // THEN
+        // expect "solclientjs" not to be initialized anew
+        expect(sessionProvider.provide).toHaveBeenCalledTimes(0);
+        // expect the access token to be updated
+        expect(session.updateAuthenticationOnReconnect).toHaveBeenCalledWith(jasmine.objectContaining({accessToken: 'access-token-2'}));
+
+        sessionProvider.provide.calls.reset();
+        session.updateAuthenticationOnReconnect.calls.reset();
+
+        // WHEN emitted a renewed access token
+        accessToken$.next('access-token-3');
+        // THEN
+        // expect "solclientjs" not to be initialized anew
+        expect(sessionProvider.provide).toHaveBeenCalledTimes(0);
+        // expect the access token to be updated
+        expect(session.updateAuthenticationOnReconnect).toHaveBeenCalledWith(jasmine.objectContaining({accessToken: 'access-token-3'}));
+      });
+
+      it('should error if not configured an access token or an `OAuthAccessTokenProvider` [NullAccessTokenConfigError]', async () => {
+        TestBed.configureTestingModule({
+          providers: [
+            {provide: SolaceSessionProvider, useValue: sessionProvider},
+          ],
+          imports: [
+            SolaceMessageClientModule.forRoot(),
+          ],
+        });
+
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+        const connected = solaceMessageClient.connect({
+          url: 'url:forRoot',
+          vpnName: 'vpn:forRoot',
+          authenticationScheme: AuthenticationScheme.OAUTH2,
+        });
+
+        await expectAsync(connected).toBeRejectedWithError(/\[NullAccessTokenConfigError]/);
+        expect(sessionProvider.provide).toHaveBeenCalledTimes(0);
+        expect(session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
+      });
+
+      it('should error if forgotten to register `OAuthAccessTokenProvider` as Angular provider [NullAccessTokenProviderError]', async () => {
+        TestBed.configureTestingModule({
+          providers: [
+            {provide: SolaceSessionProvider, useValue: sessionProvider},
+          ],
+          imports: [
+            SolaceMessageClientModule.forRoot(),
+          ],
+        });
+
+        // Create a provider, but forget to register it as Angular provider
+        @Injectable()
+        class TestAccessTokenProvider implements OAuthAccessTokenProvider {
+          public provide$(): Observable<string> {
+            return NEVER;
+          }
+        }
+
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+        const connected = solaceMessageClient.connect({
+          url: 'url:forRoot',
+          vpnName: 'vpn:forRoot',
+          authenticationScheme: AuthenticationScheme.OAUTH2,
+          accessToken: TestAccessTokenProvider,
+        });
+
+        await expectAsync(connected).toBeRejectedWithError(/\[NullAccessTokenProviderError]/);
+        expect(sessionProvider.provide).toHaveBeenCalledTimes(0);
+        expect(session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
+      });
+
+      it('should error when emitting `null` as the initial access token [NullAccessTokenError]', async () => {
+        TestBed.configureTestingModule({
+          providers: [
+            {provide: SolaceSessionProvider, useValue: sessionProvider},
+          ],
+          imports: [
+            SolaceMessageClientModule.forRoot(),
+          ],
+        });
+
+        @Injectable({providedIn: 'root'})
+        class TestAccessTokenProvider implements OAuthAccessTokenProvider {
+          public provide$(): Observable<string> {
+            return of(null! as string);
+          }
+        }
+
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+        const connected = solaceMessageClient.connect({
+          url: 'url:forRoot',
+          vpnName: 'vpn:forRoot',
+          authenticationScheme: AuthenticationScheme.OAUTH2,
+          accessToken: TestAccessTokenProvider,
+        });
+
+        await expectAsync(connected).toBeRejectedWithError(/\[NullAccessTokenError]/);
+        expect(sessionProvider.provide).toHaveBeenCalledTimes(0);
+        expect(session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
+      });
+
+      it('should error when emitting `undefined` as the initial access token [NullAccessTokenError]', async () => {
+        TestBed.configureTestingModule({
+          providers: [
+            {provide: SolaceSessionProvider, useValue: sessionProvider},
+          ],
+          imports: [
+            SolaceMessageClientModule.forRoot(),
+          ],
+        });
+
+        @Injectable({providedIn: 'root'})
+        class TestAccessTokenProvider implements OAuthAccessTokenProvider {
+          public provide$(): Observable<string> {
+            return of(undefined! as string);
+          }
+        }
+
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+        const connected = solaceMessageClient.connect({
+          url: 'url:forRoot',
+          vpnName: 'vpn:forRoot',
+          authenticationScheme: AuthenticationScheme.OAUTH2,
+          accessToken: TestAccessTokenProvider,
+        });
+
+        await expectAsync(connected).toBeRejectedWithError(/\[NullAccessTokenError]/);
+        expect(sessionProvider.provide).toHaveBeenCalledTimes(0);
+        expect(session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
+      });
+
+      it('should error when the access token Observable completes without having emitted an access token [EmptyAccessTokenError]', async () => {
+        TestBed.configureTestingModule({
+          providers: [
+            {provide: SolaceSessionProvider, useValue: sessionProvider},
+          ],
+          imports: [
+            SolaceMessageClientModule.forRoot(),
+          ],
+        });
+
+        @Injectable({providedIn: 'root'})
+        class TestAccessTokenProvider implements OAuthAccessTokenProvider {
+          public provide$(): Observable<string> {
+            return EMPTY;
+          }
+        }
+
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+        const connected = solaceMessageClient.connect({
+          url: 'url:forRoot',
+          vpnName: 'vpn:forRoot',
+          authenticationScheme: AuthenticationScheme.OAUTH2,
+          accessToken: TestAccessTokenProvider,
+        });
+
+        await expectAsync(connected).toBeRejectedWithError(/\[EmptyAccessTokenError]/);
+        expect(sessionProvider.provide).toHaveBeenCalledTimes(0);
+        expect(session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
+      });
+
+      it('should warn when the access token Observable completes [AccessTokenProviderCompletedWarning] (1/2)', async () => {
+        TestBed.configureTestingModule({
+          providers: [
+            {provide: SolaceSessionProvider, useValue: sessionProvider},
+          ],
+          imports: [
+            SolaceMessageClientModule.forRoot(),
+          ],
+        });
+
+        @Injectable({providedIn: 'root'})
+        class TestAccessTokenProvider implements OAuthAccessTokenProvider {
+          public provide$(): Observable<string> {
+            return of('access token'); // completes after emitted the initial access token
+          }
+        }
+
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+        const connected = solaceMessageClient.connect({
+          url: 'url:forRoot',
+          vpnName: 'vpn:forRoot',
+          authenticationScheme: AuthenticationScheme.OAUTH2,
+          accessToken: TestAccessTokenProvider,
+        });
+        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+        await connected;
+
+        expect(console.warn).toHaveBeenCalledWith(jasmine.stringMatching(/\[AccessTokenProviderCompletedWarning]/));
+      });
+
+      it('should warn when the access token Observable completes [AccessTokenProviderCompletedWarning] (2/2)', async () => {
+        TestBed.configureTestingModule({
+          providers: [
+            {provide: SolaceSessionProvider, useValue: sessionProvider},
+          ],
+          imports: [
+            SolaceMessageClientModule.forRoot(),
+          ],
+        });
+
+        @Injectable({providedIn: 'root'})
+        class TestAccessTokenProvider implements OAuthAccessTokenProvider {
+          public provide$(): Observable<string> {
+            return of('access token 1', 'access token 2', 'access token 3'); // completes after 3 emissions
+          }
+        }
+
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+        const connected = solaceMessageClient.connect({
+          url: 'url:forRoot',
+          vpnName: 'vpn:forRoot',
+          authenticationScheme: AuthenticationScheme.OAUTH2,
+          accessToken: TestAccessTokenProvider,
+        });
+        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+        await connected;
+
+        expect(console.warn).toHaveBeenCalledWith(jasmine.stringMatching(/\[AccessTokenProviderCompletedWarning]/));
+      });
+
+      it('should error when emitting `null` as access token [NullAccessTokenError]', async () => {
+        TestBed.configureTestingModule({
+          providers: [
+            {provide: SolaceSessionProvider, useValue: sessionProvider},
+          ],
+          imports: [
+            SolaceMessageClientModule.forRoot(),
+          ],
+        });
+
+        const accessToken$ = new BehaviorSubject<string>('access-token-1');
+
+        @Injectable({providedIn: 'root'})
+        class TestAccessTokenProvider implements OAuthAccessTokenProvider {
+          public provide$(): Observable<string> {
+            return accessToken$;
+          }
+        }
+
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+        const connected = solaceMessageClient.connect({
+          url: 'url:forRoot',
+          vpnName: 'vpn:forRoot',
+          authenticationScheme: AuthenticationScheme.OAUTH2,
+          accessToken: TestAccessTokenProvider,
+        });
+        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+        await connected;
+
+        accessToken$.next('access-token-2');
+        accessToken$.next('access-token-3');
+        expect(console.error).not.toHaveBeenCalledWith(jasmine.stringMatching(/\[NullAccessTokenError]/));
+
+        accessToken$.next(null!);
+        expect(console.error).toHaveBeenCalledWith(jasmine.stringMatching(/\[NullAccessTokenError]/));
+      });
+    });
+  });
+
   /**
    * Simulates the Solace message broker to publish a message to the Solace session.
    */
@@ -2078,6 +2766,8 @@ describe('SolaceMessageClient', () => {
    * Simulates the Solace message broker to send a message to the Solace session.
    */
   async function simulateLifecycleEvent(eventCode: SessionEventCode, correlationKey?: object | string): Promise<void> {
+    await drainMicrotaskQueue();
+
     const callback = sessionEventCallbacks.get(eventCode) as (event: SessionEvent) => void;
     if (!callback) {
       throw Error(`[SpecError] No callback registered for event '${eventCode}'`);

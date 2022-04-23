@@ -1,4 +1,4 @@
-<h3>Connect to the Solace Messaging Broker</h3>
+<h3>Login to the Solace Messaging Broker</h3>
 
 <mat-card>
   <mat-card-content>
@@ -16,15 +16,24 @@
       </mat-form-field>
 
       <!-- Username -->
-      <mat-form-field>
+      <mat-form-field *ngIf="form.get(AUTHENTICATION_SCHEME)!.value === AuthenticationScheme.BASIC">
         <mat-label>Username</mat-label>
         <input matInput [formControlName]="USER_NAME">
       </mat-form-field>
 
       <!-- Password -->
-      <mat-form-field>
+      <mat-form-field *ngIf="form.get(AUTHENTICATION_SCHEME)!.value === AuthenticationScheme.BASIC">
         <mat-label>Password</mat-label>
         <input matInput [formControlName]="PASSWORD" type="password">
+      </mat-form-field>
+
+      <!-- Authentication Scheme -->
+      <mat-form-field>
+        <mat-label>Authentication Scheme</mat-label>
+        <mat-select [formControlName]="AUTHENTICATION_SCHEME">
+          <mat-option [value]="AuthenticationScheme.BASIC">BASIC</mat-option>
+          <mat-option [value]="AuthenticationScheme.OAUTH2">OAUTH2</mat-option>
+        </mat-select>
       </mat-form-field>
 
       <!-- Reapply Subscription -->
@@ -38,7 +47,7 @@
 
       <!-- Buttons -->
       <button mat-stroked-button (click)="onReset()" class="reset">Reset</button>
-      <button mat-flat-button color="primary" (click)="onConnect()" class="connect" [disabled]="form.invalid">Connect</button>
+      <button mat-flat-button color="primary" (click)="onLogin()" class="login" [disabled]="form.invalid">Login</button>
     </form>
   </mat-card-content>
 </mat-card>

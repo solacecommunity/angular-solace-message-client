@@ -1,13 +1,14 @@
-import {Injectable, NgZone, OnDestroy, Optional} from '@angular/core';
-import {EMPTY, identity, merge, MonoTypeOperatorFunction, noop, Observable, Observer, of, OperatorFunction, ReplaySubject, share, Subject, TeardownLogic, throwError} from 'rxjs';
+import {Injectable, Injector, NgZone, OnDestroy, Optional} from '@angular/core';
+import {EMPTY, EmptyError, firstValueFrom, identity, merge, MonoTypeOperatorFunction, noop, Observable, Observer, of, OperatorFunction, ReplaySubject, share, shareReplay, skip, Subject, TeardownLogic, throwError} from 'rxjs';
 import {distinctUntilChanged, filter, finalize, map, mergeMap, take, takeUntil, tap} from 'rxjs/operators';
 import {UUID} from '@scion/toolkit/uuid';
 import {BrowseOptions, ConsumeOptions, Data, MessageEnvelope, ObserveOptions, PublishOptions, RequestOptions, SolaceMessageClient} from './solace-message-client';
 import {TopicMatcher} from './topic-matcher';
 import {observeInside} from '@scion/toolkit/operators';
 import {SolaceSessionProvider} from './solace-session-provider';
+import {OAuthAccessTokenProvider} from './oauth-access-token-provider';
 import {SolaceMessageClientConfig} from './solace-message-client.config';
-import {Destination, LogLevel, Message, MessageConsumer, MessageConsumerEventName, MessageConsumerProperties, MessageDeliveryModeType, OperationError, QueueBrowser, QueueBrowserEventName, QueueBrowserProperties, QueueDescriptor, QueueType, RequestError, SDTField, SDTFieldType, SDTMapContainer, Session, SessionEvent, SessionEventCode, SessionProperties as SolaceSessionProperties, SessionProperties, SolclientFactory, SolclientFactoryProfiles, SolclientFactoryProperties} from 'solclientjs';
+import {AuthenticationScheme, Destination, LogLevel, Message, MessageConsumer, MessageConsumerEventName, MessageConsumerProperties, MessageDeliveryModeType, OperationError, QueueBrowser, QueueBrowserEventName, QueueBrowserProperties, QueueDescriptor, QueueType, RequestError, SDTField, SDTFieldType, SDTMapContainer, Session, SessionEvent, SessionEventCode, SessionProperties as SolaceSessionProperties, SessionProperties, SolclientFactory, SolclientFactoryProfiles, SolclientFactoryProperties} from 'solclientjs';
 import {TopicSubscriptionCounter} from './topic-subscription-counter';
 import {SerialExecutor} from './serial-executor.service';
 import './solclientjs-typedef-augmentation';
@@ -22,14 +23,15 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
   private _destroy$ = new Subject<void>();
   private _sessionDisposed$ = new Subject<void>();
 
-  private _subscriptionExecutor!: SerialExecutor;
-  private _subscriptionCounter!: TopicSubscriptionCounter;
+  private _subscriptionExecutor: SerialExecutor | null = null;
+  private _subscriptionCounter: TopicSubscriptionCounter | null = null;
 
   public connected$: Observable<boolean>;
 
   constructor(@Optional() config: SolaceMessageClientConfig,
               private _sessionProvider: SolaceSessionProvider,
               private _topicMatcher: TopicMatcher,
+              private _injector: Injector,
               private _zone: NgZone) {
     this.initSolaceClientFactory();
     this.disposeWhenSolaceSessionDied();
@@ -42,12 +44,12 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
     }
   }
 
-  public async connect(config: SolaceMessageClientConfig): Promise<void> {
+  public async connect(config: SolaceMessageClientConfig): Promise<Session> {
     if (!config) {
       throw Error('[SolaceMessageClient] Missing required config for connecting to the Solace message broker.');
     }
 
-    await (this._session || (this._session = new Promise((resolve, reject) => {
+    return (this._session || (this._session = new Promise((resolve, reject) => {
       // Apply session defaults.
       const sessionProperties: SessionProperties = {
         reapplySubscriptions: true, // remember subscriptions after a network interruption (default value if not set)
@@ -57,64 +59,124 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
         ...config,
       };
 
-      this._zone.runOutsideAngular(() => {
-        try {
-          console.log('[SolaceMessageClient] Connecting to Solace message broker: ', {...sessionProperties, password: '***'});
-          this._subscriptionExecutor = new SerialExecutor();
-          this._subscriptionCounter = new TopicSubscriptionCounter();
+      console.debug?.('[SolaceMessageClient] Connecting to Solace message broker:', obfuscateSecrets(sessionProperties));
 
-          const session: Session = this._sessionProvider.provide(new SolaceSessionProperties(sessionProperties));
+      this._zone.runOutsideAngular(async () => {
+        this._subscriptionExecutor = new SerialExecutor();
+        this._subscriptionCounter = new TopicSubscriptionCounter();
 
-          // When the Session is ready to send/receive messages and perform control operations.
-          session.on(SessionEventCode.UP_NOTICE, (event: SessionEvent) => {
-            this._event$.next(event);
-            resolve(session);
+        // If using OAUTH2 authentication scheme, create access token Observable to continuously inject a valid access token into the Solace session.
+        const oAuth2Scheme = config.authenticationScheme === AuthenticationScheme.OAUTH2;
+        const accessToken$: Observable<string> | null = oAuth2Scheme ? this.provideOAuthAccessToken$(config).pipe(shareReplay({bufferSize: 1, refCount: false})) : null;
+
+        // If using OAUTH2 authentication scheme, set the initial access token via session properties.
+        if (accessToken$) {
+          sessionProperties.accessToken = await firstValueFrom(accessToken$).catch(mapEmptyError(() => Error('[SolaceMessageClient][EmptyAccessTokenError] Access token Observable has completed without emitted an access token.')));
+        }
+
+        // Create the Solace session.
+        const session: Session = this._sessionProvider.provide(new SolaceSessionProperties(sessionProperties));
+
+        // Provide the session with a valid "OAuth 2.0 Access Token".
+        // The Observable is expected to never complete and continuously emit a renewed token short before expiration of the previously emitted token.
+        accessToken$ && accessToken$
+          .pipe(
+            skip(1), // initial access token is set via session properties
+            takeUntil(this._sessionDisposed$),
+          )
+          .subscribe({
+            next: accessToken => {
+              console.debug?.('[SolaceMessageClient] Injecting "OAuth 2.0 Access Token" into Solace session.', accessToken);
+              session.updateAuthenticationOnReconnect({accessToken});
+            },
+            complete: () => {
+              if (this._session) {
+                console.warn?.('[SolaceMessageClient][AccessTokenProviderCompletedWarning] Observable providing access token(s) to the Solace session has completed. The Observable should NEVER complete and continuously emit the renewed token short before expiration of the previously emitted token. Otherwise, the connection to the broker cannot be re-established in the event of a network interruption.');
+              }
+            },
+            error: error => {
+              console.error?.(error);
+            },
           });
 
-          // When the session has gone down, and an automatic reconnection attempt is in progress.
-          session.on(SessionEventCode.RECONNECTED_NOTICE, (event: SessionEvent) => this._event$.next(event));
+        // When the Session is ready to send/receive messages and perform control operations.
+        session.on(SessionEventCode.UP_NOTICE, (event: SessionEvent) => {
+          this._event$.next(event);
+          console.debug?.('[SolaceMessageClient] Connected to Solace message broker.', obfuscateSecrets(config as SessionProperties));
+          resolve(session);
+        });
 
-          // Emits when the session was established and then went down.
-          session.on(SessionEventCode.DOWN_ERROR, (event: SessionEvent) => this._event$.next(event));
+        // When the session has gone down, and an automatic reconnection attempt is in progress.
+        session.on(SessionEventCode.RECONNECTED_NOTICE, (event: SessionEvent) => this._event$.next(event));
 
-          // Emits when the session attempted to connect but was unsuccessful.
-          session.on(SessionEventCode.CONNECT_FAILED_ERROR, (event: SessionEvent) => {
-            this._event$.next(event);
-            reject(event);
-          });
+        // Emits when the session was established and then went down.
+        session.on(SessionEventCode.DOWN_ERROR, (event: SessionEvent) => this._event$.next(event));
 
-          // When the session connect operation failed, or the session that was once up, is now disconnected.
-          session.on(SessionEventCode.DISCONNECTED, (event: SessionEvent) => this._event$.next(event));
+        // Emits when the session attempted to connect but was unsuccessful.
+        session.on(SessionEventCode.CONNECT_FAILED_ERROR, (event: SessionEvent) => {
+          this._event$.next(event);
+          reject(event);
+        });
 
-          // When the session has gone down, and an automatic reconnection attempt is in progress.
-          session.on(SessionEventCode.RECONNECTING_NOTICE, (event: SessionEvent) => this._event$.next(event));
+        // When the session connect operation failed, or the session that was once up, is now disconnected.
+        session.on(SessionEventCode.DISCONNECTED, (event: SessionEvent) => this._event$.next(event));
 
-          // When a direct message was received on the session.
-          session.on(SessionEventCode.MESSAGE, (message: Message): void => this._message$.next(message));
+        // When the session has gone down, and an automatic reconnection attempt is in progress.
+        session.on(SessionEventCode.RECONNECTING_NOTICE, (event: SessionEvent) => this._event$.next(event));
 
-          // When a subscribe or unsubscribe operation succeeded.
-          session.on(SessionEventCode.SUBSCRIPTION_OK, (event: SessionEvent) => this._event$.next(event));
+        // When a direct message was received on the session.
+        session.on(SessionEventCode.MESSAGE, (message: Message): void => this._message$.next(message));
 
-          // When a subscribe or unsubscribe operation was rejected by the broker.
-          session.on(SessionEventCode.SUBSCRIPTION_ERROR, (event: SessionEvent) => this._event$.next(event));
+        // When a subscribe or unsubscribe operation succeeded.
+        session.on(SessionEventCode.SUBSCRIPTION_OK, (event: SessionEvent) => this._event$.next(event));
 
-          // When a message published with a guaranteed message delivery strategy, that is {@link MessageDeliveryModeType.PERSISTENT} or {@link MessageDeliveryModeType.NON_PERSISTENT}, was acknowledged by the router.
-          session.on(SessionEventCode.ACKNOWLEDGED_MESSAGE, (event: SessionEvent) => this._event$.next(event));
+        // When a subscribe or unsubscribe operation was rejected by the broker.
+        session.on(SessionEventCode.SUBSCRIPTION_ERROR, (event: SessionEvent) => this._event$.next(event));
 
-          // When a message published with a guaranteed message delivery strategy, that is {@link MessageDeliveryModeType.PERSISTENT} or {@link MessageDeliveryModeType.NON_PERSISTENT}, was rejected by the router.
-          session.on(SessionEventCode.REJECTED_MESSAGE_ERROR, (event: SessionEvent) => this._event$.next(event));
+        // When a message published with a guaranteed message delivery strategy, that is {@link MessageDeliveryModeType.PERSISTENT} or {@link MessageDeliveryModeType.NON_PERSISTENT}, was acknowledged by the router.
+        session.on(SessionEventCode.ACKNOWLEDGED_MESSAGE, (event: SessionEvent) => this._event$.next(event));
 
-          session.connect();
-        }
-        catch (e) {
-          reject(e);
-        }
-      });
+        // When a message published with a guaranteed message delivery strategy, that is {@link MessageDeliveryModeType.PERSISTENT} or {@link MessageDeliveryModeType.NON_PERSISTENT}, was rejected by the router.
+        session.on(SessionEventCode.REJECTED_MESSAGE_ERROR, (event: SessionEvent) => this._event$.next(event));
+
+        session.connect();
+      }).catch(error => reject(error));
     })));
   }
 
+  /**
+   * Provides the OAuth access token as configured in {@link SolaceMessageClientConfig#accessToken} as Observable.
+   * The Observable errors if not using OAUTH2 authentication scheme, or if no token/provider is configured.
+   */
+  private provideOAuthAccessToken$(config: SolaceMessageClientConfig): Observable<string> {
+    if (config.authenticationScheme !== AuthenticationScheme.OAUTH2) {
+      return throwError(() => `[SolaceMessageClient] Expected authentication scheme to be  ${AuthenticationScheme.OAUTH2}, but was ${config.authenticationScheme}.`);
+    }
+
+    const accessTokenOrAccessTokenProvider = config.accessToken;
+    const accessToken$ = (() => {
+      switch (typeof accessTokenOrAccessTokenProvider) {
+        case 'string': {
+          return of(accessTokenOrAccessTokenProvider);
+        }
+        case 'function': {
+          const provider = this._injector.get<OAuthAccessTokenProvider | null>(accessTokenOrAccessTokenProvider, null);
+          if (!provider) {
+            return throwError(() => Error(`[SolaceMessageClient][NullAccessTokenProviderError] No provider for ${accessTokenOrAccessTokenProvider.name} found. Did you forget to register it? You can register it as follows: "@Injectable({providedIn: 'root'})"`));
+          }
+          return provider.provide$();
+        }
+        default: {
+          return throwError(() => Error('[SolaceMessageClient][NullAccessTokenConfigError] No access token or provider configured in \'SolaceMessageClientConfig.accessToken\'. An access token is required for OAUTH2 authentication. It is recommended to provide the token via `OAuthAccessTokenProvider`.'));
+        }
+      }
+    })();
+
+    return accessToken$.pipe(mergeMap(accessToken => accessToken ? of(accessToken) : throwError(() => Error('[SolaceMessageClient][NullAccessTokenError] Invalid "OAuth 2.0 Access Token". Token must not be `null` or `undefined`.'))));
+  }
+
   public async disconnect(): Promise<void> {
-    const session = await this._session;
+    const session = await this._session?.catch(noop); // do not error on disconnect
     if (!session) {
       return; // already disconnected
     }
@@ -127,16 +189,16 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
     await whenDisconnected;
   }
 
-  private async dispose(): Promise<void> {
-    const session = await this._session;
-    if (!session) {
-      return; // already disposed
-    }
-
+  public dispose(): void {
+    this._session?.then(session => session.dispose()).catch(noop); // do not error on dispose
     this._session = null;
-    this._subscriptionExecutor.destroy();
-    this._subscriptionCounter.destroy();
-    session.dispose();
+
+    this._subscriptionExecutor?.destroy();
+    this._subscriptionExecutor = null;
+
+    this._subscriptionCounter?.destroy();
+    this._subscriptionCounter = null;
+
     this._sessionDisposed$.next();
   }
 
@@ -162,7 +224,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
               takeUntil(merge(this._sessionDisposed$, unsubscribe$)),
               finalize(() => {
                 // Unsubscribe from the topic on the Solace session, but only if being the last subscription on that topic and if successfully subscribed to the Solace broker.
-                if (this._subscriptionCounter.decrementAndGet(topicDestination) === 0 && !subscriptionErrored) {
+                if (this._subscriptionCounter?.decrementAndGet(topicDestination) === 0 && !subscriptionErrored) {
                   this.unsubscribeFromTopic(topicDestination).then(noop);
                 }
               }),
@@ -170,7 +232,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
             .subscribe(observer);
 
           // Subscribe to the topic on the Solace session, but only if being the first subscription on that topic.
-          if (this._subscriptionCounter.incrementAndGet(topicDestination) === 1) {
+          if (this._subscriptionCounter!.incrementAndGet(topicDestination) === 1) {
             this.subscribeToTopic(topicDestination, options).then(success => {
               if (success) {
                 options?.onSubscribed?.();
@@ -199,7 +261,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
   private subscribeToTopic(topic: Destination, observeOptions?: ObserveOptions): Promise<boolean> {
     // Calls to `solace.Session.subscribe` and `solace.Session.unsubscribe` must be executed one after the other until the Solace Broker confirms
     // the operation. Otherwise a previous unsubscribe may cancel a later subscribe on the same topic.
-    return this._subscriptionExecutor.scheduleSerial(async () => {
+    return this._subscriptionExecutor!.scheduleSerial(async () => {
       try {
         // IMPORTANT: Do not subscribe when the session is down, that is, after received a DOWN_ERROR. Otherwise, solclientjs would crash.
         // When the session is down, the session Promise resolves to `null`.
@@ -236,7 +298,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
   private unsubscribeFromTopic(topic: Destination): Promise<boolean> {
     // Calls to `solace.Session.subscribe` and `solace.Session.unsubscribe` must be executed one after the other until the Solace Broker confirms
     // the operation. Otherwise a previous unsubscribe may cancel a later subscribe on the same topic.
-    return this._subscriptionExecutor.scheduleSerial(async () => {
+    return this._subscriptionExecutor!.scheduleSerial(async () => {
       try {
         // IMPORTANT: Do not unsubscribe when the session is down, that is, after received a DOWN_ERROR. Otherwise, solclientjs would crash.
         // When the session is down, the session Promise resolves to `null`.
@@ -580,7 +642,6 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
             }
           }),
           take(1),
-          takeUntil(this._sessionDisposed$),
         )
         .subscribe({
           next: (event: SessionEvent) => resolve(event),
@@ -644,7 +705,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
 
   public ngOnDestroy(): void {
     this._destroy$.next();
-    this.disconnect().then();
+    this.dispose();
   }
 }
 
@@ -739,3 +800,28 @@ function assertNotInAngularZone<T>(): MonoTypeOperatorFunction<T> {
  * Implements a strategy for sending a message.
  */
 type Send = (session: Session, message: Message) => void;
+
+function obfuscateSecrets(sessionProperties: SessionProperties): SessionProperties {
+  const obfuscated = {...sessionProperties};
+  if (obfuscated.password) {
+    obfuscated.password = '***';
+  }
+  if (obfuscated.accessToken) {
+    obfuscated.accessToken = '***';
+  }
+  return obfuscated;
+}
+
+/**
+ * Maps RxJS {@link EmptyError} to the given error. Other errors are re-thrown unchanged.
+ */
+function mapEmptyError(errorFactory: () => Error): (error: any) => Promise<never> {
+  return (error: any): any => {
+    if (error instanceof EmptyError) {
+      return Promise.reject(errorFactory());
+    }
+    else {
+      return Promise.reject(error);
+    }
+  };
+}
