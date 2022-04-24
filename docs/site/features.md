@@ -451,6 +451,32 @@ export class AppModule {
 
 </details>
 
+<details>
+  <summary><strong>Change Log Level</strong></summary>
+  <br>
+
+The default log level is set to 'WARN' so that only warnings and errors are logged.
+
+The default log level can be changed as follows:
+- Change the log level programmatically by providing it under the DI token `LogLevel`:
+  ```ts
+  import {LogLevel} from 'solclientjs';
+  
+  @NgModule({
+    providers: [
+      {provide: LogLevel, useValue: LogLevel.WARN},
+    ],
+    ...
+  })
+  export class AppModule {
+  }
+  ```
+- Change the log level at runtime via session storage by adding the following entry and then reloading the application:\
+  key:   `angular-solace-message-client#loglevel`\
+  value: `debug` // supported values are: trace | debug | info | warn | error | fatal
+
+</details>
+
 [menu-overview]: /README.md
 
 [menu-getting-started]: /docs/site/getting-started.md

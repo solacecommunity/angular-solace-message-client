@@ -1,10 +1,14 @@
 import {SerialExecutor} from './serial-executor.service';
 import {noop} from 'rxjs';
+import {Logger} from './logger';
+import {LogLevel} from 'solclientjs';
 
 describe('SerialExecutor', () => {
 
+  const logger = new Logger(LogLevel.WARN);
+
   it('should execute tasks sequentially', async () => {
-    const serialExecutor = new SerialExecutor();
+    const serialExecutor = new SerialExecutor(logger);
     const capture: string[] = [];
 
     const task1 = serialExecutor.scheduleSerial(async () => {
@@ -41,7 +45,7 @@ describe('SerialExecutor', () => {
   });
 
   it('should not terminate the executor when a task rejects', async () => {
-    const serialExecutor = new SerialExecutor();
+    const serialExecutor = new SerialExecutor(logger);
     const capture: string[] = [];
 
     const task1 = serialExecutor.scheduleSerial(() => {
@@ -72,7 +76,7 @@ describe('SerialExecutor', () => {
   });
 
   it('should resolve to the task\'s value', async () => {
-    const serialExecutor = new SerialExecutor();
+    const serialExecutor = new SerialExecutor(logger);
 
     const task1 = serialExecutor.scheduleSerial(() => Promise.resolve('task-1 (success)'));
     const task2 = serialExecutor.scheduleSerial(() => Promise.reject('task-2 (failed)'));

@@ -4,6 +4,7 @@ import {ɵSolaceMessageClient} from './ɵsolace-message-client';
 import {TopicMatcher} from './topic-matcher';
 import {SolaceSessionProvider, ɵSolaceSessionProvider} from './solace-session-provider';
 import {SolaceMessageClientConfig} from './solace-message-client.config';
+import {provideLogger} from './logger';
 
 /**
  * Allows clients to communicate with a Solace messaging broker for sending and receiving messages using the native SMF protocol (Solace Message Format).
@@ -60,6 +61,16 @@ import {SolaceMessageClientConfig} from './solace-message-client.config';
  *   }
  * }
  * ```
+ *
+ * #### Log Level
+ * The default log level is set to 'WARN' so that only warnings and errors are logged.
+ *
+ * The default log level can be changed as follows:
+ * - Change the log level programmatically by providing it under the DI token {@link LogLevel}:
+ *   `{provide: LogLevel, useValue: LogLevel.DEBUG}`
+ * - Change the log level at runtime via session storage by adding the following entry and then reloading the application:
+ *   key:   `angular-solace-message-client#loglevel`
+ *   value: `debug` // supported values are: trace | debug | info | warn | error | fatal
  */
 @NgModule({})
 export class SolaceMessageClientModule {
@@ -106,6 +117,7 @@ export class SolaceMessageClientModule {
         {provide: SolaceMessageClient, useClass: ɵSolaceMessageClient},
         {provide: SolaceSessionProvider, useClass: ɵSolaceSessionProvider},
         TopicMatcher,
+        provideLogger(),
         {
           provide: FORROOT_GUARD,
           useFactory: provideForRootGuard,

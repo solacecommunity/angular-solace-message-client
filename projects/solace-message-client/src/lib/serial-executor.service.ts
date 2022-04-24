@@ -1,5 +1,6 @@
 import {Subject} from 'rxjs';
 import {catchError, mergeMap, takeUntil} from 'rxjs/operators';
+import {Logger} from './logger';
 
 export type Task<T> = () => Promise<T>;
 
@@ -14,12 +15,12 @@ export class SerialExecutor {
   private _destroy$ = new Subject<void>();
   private _tasks$ = new Subject<Task<any>>();
 
-  constructor() {
+  constructor(logger: Logger) {
     this._tasks$
       .pipe(
         mergeMap(task => task(), 1), // serialize execution
         catchError((error, caught) => {
-          console.error('[SolaceMessageClient] Unexpected: ', error);
+          logger.error('Unexpected: ', error);
           return caught;
         }),
         takeUntil(this._destroy$),
