@@ -93,7 +93,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
             },
             complete: () => {
               if (this._session) {
-                this._logger.warn('[AccessTokenProviderCompletedWarning] Observable providing access token(s) to the Solace session has completed. The Observable should NEVER complete and continuously emit the renewed token short before expiration of the previously emitted token. Otherwise, the connection to the broker cannot be re-established in the event of a network interruption.');
+                this._logger.warn('[AccessTokenProviderCompletedWarning] Observable providing access token(s) to the Solace session has completed. The Observable should NEVER complete and continuously emit the renewed token short before expiration of the previously emitted token. Otherwise, the connection to the broker could not be re-established in the event of a network interruption.');
               }
             },
             error: error => {
