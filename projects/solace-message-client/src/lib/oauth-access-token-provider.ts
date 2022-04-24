@@ -12,7 +12,7 @@ import {Observable} from 'rxjs';
  *     the `@Injectable` decorator.
  *   - Implement the method `provide$` in your `OAuthAccessTokenProvider`.
  *     The method should return an Observable that, when being subscribed, emits the user's access token, and then emits continuously when
- *     the token is renewed. It should never complete. Otherwise, the connection to the broker cannot be re-established in the event
+ *     the token is renewed. It should never complete. Otherwise, the connection to the broker could not be re-established in the event
  *     of a network interruption.
  * - Enable OAUTH and configure the access token in the config passed to {@link SolaceMessageClientModule#forRoot} or {@link SolaceMessageClient#connect}, as follows:
  *   - Set {@link SolaceMessageClientConfig#authenticationScheme} to {@link AuthenticationScheme.OAUTH2}.
@@ -28,7 +28,7 @@ import {Observable} from 'rxjs';
  *   }
  *
  *   public provide$(): Observable<string> {
- *     return this.authService.accessToken$();
+ *     return this.authService.accessToken$;
  *   }
  * }
  * ```
@@ -58,7 +58,7 @@ export interface OAuthAccessTokenProvider {
    * Provides the Solace {@link Session} continuously with a valid "OAuth 2.0 Access Token".
    *
    * Returns an Observable that, when being subscribed, emits the user's access token, and then emits continuously when the token is renewed.
-   * It should never complete. Otherwise, the connection to the broker cannot be re-established in the event of a network interruption.
+   * It should never complete. Otherwise, the connection to the broker could not be re-established in the event of a network interruption.
    */
   provide$(): Observable<string>;
 }
