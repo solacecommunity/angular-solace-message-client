@@ -150,7 +150,7 @@ Each commit message consists of a **header**, a **summary** and a **footer**.  T
 The scope should be the name of the NPM package or application affected by the change.
 
 - `solace-message-client`: If the change affects the `@solace-community/angular-solace-message-client` NPM package.
-- `testapp`: If the change affects the test application.
+- `tryme`: If the change affects the test application.
 </details>
 
 <details>

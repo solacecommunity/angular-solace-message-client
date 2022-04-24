@@ -1,3 +1,48 @@
+# [13.1.0](https://github.com/solacecommunity/angular-solace-message-client/compare/13.0.0...13.1.0) (2022-04-24)
+
+
+### Bug Fixes
+
+* **tryme:** do not require username and password when authenticating via OAUTH ([478d2b3](https://github.com/solacecommunity/angular-solace-message-client/commit/478d2b3e901117e93de3d56227146ea0895eea8e))
+
+
+### Features
+
+* **solace-message-client:** add API for OAUTH 2 authentication ([8090648](https://github.com/solacecommunity/angular-solace-message-client/commit/80906488e800ad00f3e80599470c5bddb12b1969)), closes [#39](https://github.com/solacecommunity/angular-solace-message-client/issues/39)
+* **solace-message-client:** add API for request-response communication ([dcd831d](https://github.com/solacecommunity/angular-solace-message-client/commit/dcd831dcd3bbf3c8afce61c3480785ee3fd9dbf6)), closes [#38](https://github.com/solacecommunity/angular-solace-message-client/issues/38)
+* **solace-message-client:** allow changing the log level ([7ee0155](https://github.com/solacecommunity/angular-solace-message-client/commit/7ee01556cd84f1b21755b8aac8b6db39718c7858))
+* **solace-message-client:** migrate to "solclientjs" type definitions ([7ce7212](https://github.com/solacecommunity/angular-solace-message-client/commit/7ce7212223299894bb8ea6a447337da4f172a442)), closes [#37](https://github.com/solacecommunity/angular-solace-message-client/issues/37)
+
+
+### BREAKING CHANGES
+
+* **solace-message-client:** migrating to "solclientjs" type definitions introduced a breaking change.
+
+  To migrate:
+  - install `solclientjs@10.10.0` using the NPM command line, as follows: `npm install solclientjs@10.10.0 --save`
+  - install `@types/events` using the NPM command line since required by solclientjs typings, as follows:  `npm install @types/events --save-dev`
+  - install `@types/longs` using the NPM command line since required by solclientjs typings, as follows: `npm install @types/longs --save-dev`
+  - import solclientjs specific types from `solclientjs` instead of `@solace-community/angular-solace-message-client`
+  - construct solclientjs specific objects via `SolclientFactory` instead of `SolaceObjectFactory`
+  - construct `SDTField` via `SDTField.create(...)` instead of `SolaceObjectFactory.createSDTField(...)` factory method;
+  - construct `SDTMapContainer` via `new SDTMapContainer()` instead of `SolaceObjectFactory.createSDTMapContainer()` factory method
+  - when subscribing to a queue, you need to pass the queue spec via `QueueDescriptor` instance instead of an object literal, as follows:
+    ```ts
+    messageClient.consume$({
+     queueDescriptor: new QueueDescriptor({type: QueueType.QUEUE, name: 'queue'}),
+     queueProperties: undefined, // necessary until solclientjs changes it to optional
+    });
+    ```
+  - when browsing a queue, you need to pass the queue spec via `QueueDescriptor` instance instead of an object literal, as follows:
+    ```ts
+    messageClient.browse$({
+      queueDescriptor: new QueueDescriptor({type: QueueType.QUEUE, name: 'queue'}),
+    });
+    ```
+  - For more information about known typedef issues, see [issue/37](https://github.com/solacecommunity/angular-solace-message-client/issues/37#issuecomment-1094693407)
+
+
+
 # [13.0.0](https://github.com/solacecommunity/angular-solace-message-client/compare/12.0.1...13.0.0) (2022-04-10)
 
 
