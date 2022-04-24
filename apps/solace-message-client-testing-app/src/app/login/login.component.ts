@@ -1,10 +1,12 @@
-import {Component} from '@angular/core';
+import {Component, OnDestroy} from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {LocationService} from '../location.service';
 import {SolaceMessageClientConfig} from '@solace-community/angular-solace-message-client';
 import {SessionConfigStore} from '../session-config-store';
 import {AuthenticationScheme} from 'solclientjs';
 import {PromptAccessTokenProvider} from '../prompt-access-token.provider';
+import {startWith, Subject} from 'rxjs';
+import {takeUntil} from 'rxjs/operators';
 
 export const URL = 'url';
 export const VPN_NAME = 'vpnName';
@@ -19,7 +21,7 @@ export const RECONNECT_RETRIES = 'reconnectRetries';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 })
-export class LoginComponent {
+export class LoginComponent implements OnDestroy {
 
   public readonly URL = URL;
   public readonly VPN_NAME = VPN_NAME;
@@ -32,21 +34,24 @@ export class LoginComponent {
   public form: FormGroup;
   public AuthenticationScheme = AuthenticationScheme;
 
+  private _destroy$ = new Subject<void>();
+
   constructor(formBuilder: FormBuilder,
               private _locationService: LocationService) {
     this.form = new FormGroup({
       [URL]: formBuilder.control('', Validators.required),
       [VPN_NAME]: formBuilder.control('', Validators.required),
       [AUTHENTICATION_SCHEME]: formBuilder.control(AuthenticationScheme.BASIC),
-      [USER_NAME]: formBuilder.control('', Validators.required),
-      [PASSWORD]: formBuilder.control('', Validators.required),
+      [USER_NAME]: formBuilder.control(''),
+      [PASSWORD]: formBuilder.control(''),
       [REAPPLY_SUBSCRIPTIONS]: formBuilder.control(true),
       [RECONNECT_RETRIES]: formBuilder.control(-1),
     });
+    this.installAuthenticationSchemeChangeListener();
   }
 
   public onLogin(): void {
-    const useOAuth = this.form.get(AUTHENTICATION_SCHEME)!.value === AuthenticationScheme.OAUTH2;
+    const oAuthEnabled = this.form.get(AUTHENTICATION_SCHEME)!.value === AuthenticationScheme.OAUTH2;
     const sessionConfig: SolaceMessageClientConfig = {
       url: this.form.get(URL)!.value ?? undefined,
       vpnName: this.form.get(VPN_NAME)!.value ?? undefined,
@@ -56,7 +61,7 @@ export class LoginComponent {
       reconnectRetries: this.form.get(RECONNECT_RETRIES)!.value ?? undefined,
       connectRetries: this.form.get(RECONNECT_RETRIES)!.value ?? undefined,
       authenticationScheme: this.form.get(AUTHENTICATION_SCHEME)!.value ?? undefined,
-      accessToken: useOAuth ? PromptAccessTokenProvider : undefined,
+      accessToken: oAuthEnabled ? PromptAccessTokenProvider : undefined,
     };
 
     SessionConfigStore.store(sessionConfig);
@@ -65,6 +70,27 @@ export class LoginComponent {
 
   public onReset(): void {
     this.form.reset();
+  }
+
+  private installAuthenticationSchemeChangeListener(): void {
+    this.form.get(AUTHENTICATION_SCHEME)!.valueChanges
+      .pipe(
+        startWith(undefined),
+        takeUntil(this._destroy$),
+      )
+      .subscribe(() => {
+        const basicAuthFormControls = [this.form.get(USER_NAME)!, this.form.get(PASSWORD)!];
+        const basicAuthEnabled = this.form.get(AUTHENTICATION_SCHEME)!.value === AuthenticationScheme.BASIC;
+
+        basicAuthFormControls.forEach(formControl => {
+          basicAuthEnabled ? formControl.addValidators(Validators.required) : formControl.removeValidators(Validators.required);
+          formControl.updateValueAndValidity();
+        });
+      });
+  }
+
+  public ngOnDestroy(): void {
+    this._destroy$.next();
   }
 }
 
