@@ -67,8 +67,8 @@ jobs:
         with:
           name: solace-message-client-api
           path: dist/solace-message-client-api
-  build-testing-app:
-    name: 'Building Testing App'
+  build-tryme-app:
+    name: 'Building TryMe App'
     needs: build-solace-message-client
     runs-on: ubuntu-latest
     steps:
@@ -86,11 +86,11 @@ jobs:
         with:
           name: solace-message-client
           path: dist/@solace-community/angular-solace-message-client
-      - name: 'Building solace-message-client-testing-app'
+      - name: 'Building TryMe App'
         run: npm run solace-message-client-testing-app:build
       - uses: actions/upload-artifact@v2
         with:
-          name: solace-message-client-testing-app
+          name: tryme-app
           path: dist/solace-message-client-testing-app/angular-solace-message-client/tryme
   test:
     name: 'Unit Testing'
@@ -109,7 +109,7 @@ jobs:
       - run: npm run test:headless
   e2e:
     name: 'E2E Testing'
-    needs: [build-testing-app]
+    needs: [build-tryme-app]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -121,10 +121,10 @@ jobs:
         with:
           path: ./node_modules
           key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
-      - name: 'Downloading solace-message-client-testing-app'
+      - name: 'Downloading TryMe App'
         uses: actions/download-artifact@v2
         with:
-          name: solace-message-client-testing-app
+          name: tryme-app
           path: dist/solace-message-client-testing-app/angular-solace-message-client/tryme
       - run: npm run e2e:ci
   release-guard:
@@ -132,7 +132,7 @@ jobs:
     if: github.ref == 'refs/heads/master'
     needs:
       - build-solace-message-client
-      - build-testing-app
+      - build-tryme-app
       - lint
       - test
       - e2e
@@ -147,29 +147,53 @@ jobs:
         with:
           release-commit-message-pattern: 'release\(solace-message-client\): v(.*)'
           expected-version: ${{ needs.build-solace-message-client.outputs.version }}
-  deploy:
-    name: 'Deploying TypeDoc and TryMe application to GitHub pages'
+  deploy-api:
+    name: 'Deploying API (TypeDoc) to GitHub Pages'
     if: ${{ needs.release-guard.outputs.should-release == 'true' }}
     needs: [ release-guard ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: 'Downloading solace-message-client-testing-app'
-        uses: actions/download-artifact@v2
-        with:
-          name: solace-message-client-testing-app
-          path: dist/tryme
-      - name: 'Downloading api'
+      - name: 'Downloading API'
         uses: actions/download-artifact@v2
         with:
           name: solace-message-client-api
           path: dist/api
-      - name: 'Deploying testing app to GitHub pages'
+      - name: 'Deploying API to GitHub Pages'
         uses: JamesIves/github-pages-deploy-action@4.1.0
         with:
           branch: gh-pages
+          commit-message: 'release(api): publish API documentation'
           folder: dist
           clean: true
+          clean-exclude: |
+            tryme
+  deploy-tryme-app:
+    name: 'Deploying TryMe App to GitHub Pages'
+    if: github.ref == 'refs/heads/master'
+    needs:
+      - build-solace-message-client
+      - build-tryme-app
+      - lint
+      - test
+      - e2e
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: 'Downloading TryMe App'
+        uses: actions/download-artifact@v2
+        with:
+          name: tryme-app
+          path: dist/tryme
+      - name: 'Deploying TryMe App to GitHub Pages'
+        uses: JamesIves/github-pages-deploy-action@4.1.0
+        with:
+          branch: gh-pages
+          commit-message: 'release(tryme): publish TryMe application'
+          folder: dist
+          clean: true
+          clean-exclude: |
+            api
   release:
     name: 'Releasing @solace-community/angular-solace-message-client'
     if: ${{ needs.release-guard.outputs.should-release == 'true' }}
