@@ -39,11 +39,11 @@ export class LoginComponent implements OnDestroy {
   constructor(formBuilder: FormBuilder,
               private _locationService: LocationService) {
     this.form = new FormGroup({
-      [URL]: formBuilder.control('', Validators.required),
-      [VPN_NAME]: formBuilder.control('', Validators.required),
+      [URL]: formBuilder.control('wss://public.messaging.solace.cloud:443', Validators.required),
+      [VPN_NAME]: formBuilder.control('public', Validators.required),
       [AUTHENTICATION_SCHEME]: formBuilder.control(AuthenticationScheme.BASIC),
-      [USER_NAME]: formBuilder.control(''),
-      [PASSWORD]: formBuilder.control(''),
+      [USER_NAME]: formBuilder.control('angular'),
+      [PASSWORD]: formBuilder.control('public'),
       [REAPPLY_SUBSCRIPTIONS]: formBuilder.control(true),
       [RECONNECT_RETRIES]: formBuilder.control(-1),
     });
