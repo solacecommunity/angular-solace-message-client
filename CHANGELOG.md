@@ -21,7 +21,7 @@
   To migrate:
   - install `solclientjs@10.10.0` using the NPM command line, as follows: `npm install solclientjs@10.10.0 --save`
   - install `@types/events` using the NPM command line since required by solclientjs typings, as follows:  `npm install @types/events --save-dev`
-  - install `@types/longs` using the NPM command line since required by solclientjs typings, as follows: `npm install @types/longs --save-dev`
+  - install `@types/long` using the NPM command line since required by solclientjs typings, as follows: `npm install @types/long --save-dev`
   - import solclientjs specific types from `solclientjs` instead of `@solace-community/angular-solace-message-client`
   - construct solclientjs specific objects via `SolclientFactory` instead of `SolaceObjectFactory`
   - construct `SDTField` via `SDTField.create(...)` instead of `SolaceObjectFactory.createSDTField(...)` factory method;

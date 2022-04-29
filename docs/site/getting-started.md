@@ -15,9 +15,10 @@ Install `@solace-community/angular-solace-message-client` and required modules u
 
 ```sh
 npm install @solace-community/angular-solace-message-client solclientjs @scion/toolkit --save
+npm install @types/events @types/long --save-dev
 ```
 
-> The library requires some peer dependencies to be installed. By using the above commands, those are installed as well.
+> The library requires some peer and dev dependencies to be installed. By using the above commands, those are installed as well.
 </details>
 
 <details>
