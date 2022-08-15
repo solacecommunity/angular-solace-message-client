@@ -532,11 +532,6 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
     return this.sendMessage(null, data, options, send);
   }
 
-  public enqueue(queue: string, data?: Data | Message, options?: PublishOptions): Promise<void> {
-    const destination = SolclientFactory.createDurableQueueDestination(queue);
-    return this.publish(destination, data, options);
-  }
-
   private async sendMessage(destination: Destination | null, data: ArrayBufferLike | DataView | string | SDTField | Message | undefined, options: PublishOptions | undefined, send: Send): Promise<void> {
     const message: Message = data instanceof Message ? data : SolclientFactory.createMessage();
     message.setDeliveryMode(message.getDeliveryMode() ?? MessageDeliveryModeType.DIRECT);
