@@ -10,7 +10,7 @@ import {PromptAccessTokenProvider} from '../prompt-access-token.provider';
 })
 export class EnterAccessTokenComponent {
 
-  public accessTokenFormControl = new FormControl('', Validators.required);
+  public accessTokenFormControl = new FormControl('', {validators: Validators.required, nonNullable: true});
 
   constructor(private _dialogRef: MatDialogRef<void>,
               private _accessTokenProvider: PromptAccessTokenProvider) {

@@ -7,11 +7,15 @@
     ],
     "out": "../../dist/solace-message-client-api",
     "includeVersion": true,
-    "listInvalidSymbolLinks": false,
     "excludeProtected": false,
     "excludePrivate": true,
     "excludeExternals": true,
     "exclude": "**/ɵ*.ts",
-    "categorizeByGroup": true
+    "categorizeByGroup": true,
+    "validation": {
+      "notExported": true,
+      "invalidLink": true,
+      "notDocumented": false
+    }
   }
 }

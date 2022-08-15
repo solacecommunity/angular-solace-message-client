@@ -3,7 +3,7 @@ import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {MessageEnvelope, SolaceMessageClient} from '@solace-community/angular-solace-message-client';
 import {Observable, Subject, Subscription} from 'rxjs';
 import {filter, finalize, takeUntil} from 'rxjs/operators';
-import {SciViewportComponent} from '@scion/toolkit/viewport';
+import {SciViewportComponent} from '@scion/components/viewport';
 import {Message, QueueDescriptor, QueueType} from 'solclientjs';
 
 export const DESTINATION = 'destination';
@@ -49,8 +49,8 @@ export class SubscriberComponent implements OnDestroy {
               private _cd: ChangeDetectorRef) {
     this.form = new FormGroup({
       [SUBSCRIPTION]: new FormGroup({
-        [DESTINATION]: new FormControl('', Validators.required),
-        [DESTINATION_TYPE]: new FormControl(SubscriptionDestinationType.TOPIC, Validators.required),
+        [DESTINATION]: new FormControl('', {validators: Validators.required, nonNullable: true}),
+        [DESTINATION_TYPE]: new FormControl(SubscriptionDestinationType.TOPIC, {validators: Validators.required, nonNullable: true}),
       }),
       [FOLLOW_TAIL]: new FormControl(true),
     });

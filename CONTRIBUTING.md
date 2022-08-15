@@ -34,7 +34,7 @@ This section explains how to submit a pull request.
   <summary><strong>Development</strong></summary>
   <br>
 
-Make sure to use Node.js version 16.14.0 for contributing to this library. We suggest using [Node Version Manager](https://github.com/nvm-sh/nvm) if you need different Node.js versions for other projects.
+Make sure to use Node.js version 16.16.0 for contributing to this library. We suggest using [Node Version Manager](https://github.com/nvm-sh/nvm) if you need different Node.js versions for other projects.
 
 For development, you can uncomment the section `PATH-OVERRIDE-FOR-DEVELOPMENT` in `tsconfig.json`. This allows running tests or serving applications without having to build dependent modules first.
 
@@ -53,8 +53,8 @@ The following is a summary of commands useful for development of `angular-solace
 
 ### Commands for working on the testing application (Try Me)
 
-- `npm run solace-message-client-testing-app:serve`\
-  Serves the testing app on [http://localhost:4200](http://localhost:4200).\
+- `npm run solace-message-client-testing-app:serve` or `npm run start`\
+  Serves the testing app (try me app) on [http://localhost:4200](http://localhost:4200).\
   Uncomment the section `PATH-OVERRIDE-FOR-DEVELOPMENT` in `tsconfig.json` to have hot module reloading support.
 
 - `npm run solace-message-client-testing-app:build`\
@@ -114,7 +114,7 @@ git config --global core.autocrlf false
 
 We believe in a compact and well written Git commit history. Every commit should be a logically separated changeset. We use the commit messages to generate the changelog.
 
-Each commit message consists of a **header**, a **summary** and a **footer**.  The header has a special format that includes a **type**, an optional **scope**, and a **subject**, as following:
+Each commit message consists of a **header**, a **summary** and a **footer**. The header has a special format that includes a **type**, an optional **scope**, and a **subject**, as following:
 
 ```
 <type>(<scope>): <subject>
