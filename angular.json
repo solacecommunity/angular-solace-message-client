@@ -44,37 +44,6 @@
         }
       }
     },
-    "solace-message-client.e2e": {
-      "projectType": "application",
-      "root": "projects/solace-message-client.e2e",
-      "architect": {
-        "e2e": {
-          "builder": "@angular-devkit/build-angular:protractor",
-          "options": {
-            "protractorConfig": "projects/solace-message-client.e2e/protractor.conf.js",
-            "webdriverUpdate": false
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "solace-message-client-testing-app:serve:production"
-            },
-            "development": {
-              "devServerTarget": "solace-message-client-testing-app:serve:development"
-            }
-          },
-          "defaultConfiguration": "development"
-        },
-        "lint": {
-          "builder": "@angular-eslint/builder:lint",
-          "options": {
-            "lintFilePatterns": [
-              "projects/solace-message-client.e2e/**/*.ts",
-              "projects/solace-message-client.e2e/**/*.html"
-            ]
-          }
-        }
-      }
-    },
     "solace-message-client-testing-app": {
       "projectType": "application",
       "schematics": {
@@ -92,7 +61,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/solace-message-client-testing-app/angular-solace-message-client/tryme",
+            "outputPath": "dist/solace-message-client-testing-app",
             "index": "apps/solace-message-client-testing-app/src/index.html",
             "main": "apps/solace-message-client-testing-app/src/main.ts",
             "polyfills": "apps/solace-message-client-testing-app/src/polyfills.ts",

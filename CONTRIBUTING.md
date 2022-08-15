@@ -21,8 +21,6 @@ This section explains how to submit a pull request.
       Builds the project and related artifacts.
     - `npm run test:headless`\
       Runs all unit tests.
-    - `npm run e2e:headless`\
-      Runs all end-to-end tests.
 1. Commit your changes using a descriptive commit message that follows our commit guidelines.
 1. Before submitting the pull request, ensure to have rebased your branch based on the master branch as we stick to the rebase policy to keep the repository history linear.
 1. Push your branch to your fork on GitHub. In GitHub, send a pull request to `angular-solace-message-client:master`.
@@ -52,9 +50,6 @@ The following is a summary of commands useful for development of `angular-solace
 
 - `npm run solace-message-client:test`\
   Runs unit tests.
-
-- `npm run solace-message-client:e2e`\
-  Runs end-to-end tests. Prior to test execution, the testing app is started.
 
 ### Commands for working on the testing application (Try Me)
 

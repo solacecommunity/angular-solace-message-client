@@ -91,7 +91,7 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: tryme-app
-          path: dist/solace-message-client-testing-app/angular-solace-message-client/tryme
+          path: dist/solace-message-client-testing-app
   test:
     name: 'Unit Testing'
     needs: install
@@ -107,26 +107,6 @@ jobs:
           path: ./node_modules
           key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
       - run: npm run test:headless
-  e2e:
-    name: 'E2E Testing'
-    needs: [build-tryme-app]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-      - name: 'Restoring NPM modules from cache'
-        uses: actions/cache@v2
-        with:
-          path: ./node_modules
-          key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
-      - name: 'Downloading TryMe App'
-        uses: actions/download-artifact@v2
-        with:
-          name: tryme-app
-          path: dist/solace-message-client-testing-app/angular-solace-message-client/tryme
-      - run: npm run e2e:ci
   release-guard:
     name: 'Release Guard'
     if: github.ref == 'refs/heads/master'
@@ -135,7 +115,6 @@ jobs:
       - build-tryme-app
       - lint
       - test
-      - e2e
     runs-on: ubuntu-latest
     outputs:
       should-release: ${{ steps.tag-release-commit.outputs.is-release-commit }}
@@ -176,7 +155,6 @@ jobs:
       - build-tryme-app
       - lint
       - test
-      - e2e
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
