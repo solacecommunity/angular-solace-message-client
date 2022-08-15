@@ -211,6 +211,8 @@ export abstract class SolaceMessageClient {
    * - https://solace.com/blog/solace-endpoints-durable-vs-non-durable
    *
    * @param  destination - Specifies the destination where to send the message to. If of the type `string`, sends it to a topic destination.
+   *         To send a message to a queue, pass a queue {@link Destination} which can be constructed using the {@link SolclientFactory}, as following:
+   *         `SolclientFactory.createDurableQueueDestination('queue')`
    * @param  data - Specifies optional {@link Data transfer data} to be carried along with this message. A message may contain unstructured byte data,
    *         or structured data in the form of a {@link SDTField}. Alternatively, to have full control over the message to be published, pass the
    *         {@link Message} object instead, which you can construct using {@link SolclientFactory#createMessage}.
@@ -256,54 +258,6 @@ export abstract class SolaceMessageClient {
    * @return A Promise that resolves when dispatched the reply, or that rejects if the reply could not be dispatched.
    */
   public abstract reply(request: Message, data?: Data | Message, options?: PublishOptions): Promise<void>;
-
-  /**
-   * Sends a message to the given queue destination. A queue is typically used in a point-to-point (P2P) messaging environment.
-   *
-   * A queue differs from the topic distribution mechanism that the message is transported to exactly a single consumer, i.e., the message is load
-   * balanced to a single consumer in round‑robin fashion, or for exclusive queues, it is always transported to the same subscription.
-   * When sending a message to a queue, the broker retains the message until it is consumed, or until it expires.
-   * Refer to the subsequent chapter 'Durability of Endpoints' for more information.
-   *
-   * ## Queue destination name
-   * Queues are case-sensitive and consist of one or more segments, each separated by a forward slash. The queue name must be exact, thus not contain wildcards.
-   *
-   * ## Payload
-   * A message may contain unstructured byte data, or a structured container. See {@link Data} for further information.
-   *
-   * ## Delivery Mode
-   * Solace supports two delivery modes, also known as qualities of service (QoS):
-   *  - Direct Messaging (default if not specified)
-   *  - Guaranteed or Persistent Messaging
-   *
-   * You can change the message delivery mode via the {@link PublishOptions.deliveryMode} property.
-   * For more information, refer to the documentation of {@link PublishOptions.deliveryMode}.
-   *
-   * ## Durability of Endpoints
-   * Solace distinguishes between durable und non-durable queues.
-   *
-   * When sending the message to a durable queue, the broker retains the message until it is consumed (and also acknowledged) by the consumer, or until
-   * it expires. In constract, a non-durable queue, also known as a temporary queue, has a shorter lifecycle than a durable queue. It has the lifespan
-   * of the client that created it, with an additional 60 seconds in case of unexpected disconnect. The 60 seconds provides the client with some time to
-   * reconnect to the endpoint before it and its contents are deleted from the Solace broker.
-   *
-   * Although the terms durable and persistent are related, keep in mind that the concept 'durability' applies to endpoints, whereas 'persistence' applies to event messages.
-   *
-   * For further information refer to:
-   * - https://docs.solace.com/PubSub-Basics/Endpoints.htm
-   * - https://solace.com/blog/solace-endpoints-durable-vs-non-durable
-   *
-   * @param  queue - Specifies the queue to which the message should be sent.
-   * @param  data - Specifies optional {@link Data transfer data} to be carried along with this message. A message may contain unstructured byte data,
-   *         or structured data in the form of a {@link SDTField}. Alternatively, to have full control over the message to be published, pass the
-   *         {@link Message} object instead, which you can construct using {@link SolclientFactory#createMessage}.
-   *         For more information, refer to the documentation of {@link Data}.
-   * @param  options - Controls how to publish the message.
-   * @return A Promise that resolves when dispatched the message, or that rejects if the message could not be dispatched.
-   *
-   * @deprecated This API will be removed in version 14.0.0. Instead, use {@link #publish} passing a queue destination, as follows: `solaceMessageClient.publish(SolclientFactory.createDurableQueueDestination('queue'))`
-   */
-  public abstract enqueue(queue: string, data?: Data | Message, options?: PublishOptions): Promise<void>;
 }
 
 /**
@@ -335,10 +289,6 @@ export class NullSolaceMessageClient implements SolaceMessageClient {
   }
 
   public reply(request: Message, data?: ArrayBufferLike | DataView | string | SDTField | Message, options?: PublishOptions): Promise<void> {
-    return Promise.resolve();
-  }
-
-  public enqueue(queue: string, data?: ArrayBufferLike | DataView | string | SDTField | Message, options?: PublishOptions): Promise<void> {
     return Promise.resolve();
   }
 
