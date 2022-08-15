@@ -312,13 +312,6 @@ export interface ObserveOptions {
   /**
    * Specifies the maximum time (in milliseconds) to wait for the destination to be subscribed.
    * If specified, overrides the global timeout as set via {@link SessionProperties#readTimeoutInMsecs}.
-   *
-   * @deprecated This API will be removed in a future release. Instead, use {@link #subscribeTimeout} instead.
-   */
-  requestTimeout?: number;
-  /**
-   * Specifies the maximum time (in milliseconds) to wait for the destination to be subscribed.
-   * If specified, overrides the global timeout as set via {@link SessionProperties#readTimeoutInMsecs}.
    */
   subscribeTimeout?: number;
 
