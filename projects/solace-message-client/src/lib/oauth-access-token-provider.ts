@@ -14,7 +14,7 @@ import {Observable} from 'rxjs';
  *     The method should return an Observable that, when being subscribed, emits the user's access token, and then emits continuously when
  *     the token is renewed. It should never complete. Otherwise, the connection to the broker would not be re-established in the event
  *     of a network interruption.
- * - Enable OAUTH and configure the access token in the config passed to {@link SolaceMessageClientModule#forRoot} or {@link SolaceMessageClient#connect}, as follows:
+ * - Enable OAUTH and configure the access token in the config passed to {@link SolaceMessageClientModule.forRoot} or {@link SolaceMessageClient#connect}, as follows:
  *   - Set {@link SolaceMessageClientConfig#authenticationScheme} to {@link AuthenticationScheme.OAUTH2}.
  *   - Set {@link SolaceMessageClientConfig#accessToken} to the above provider class.
  *
