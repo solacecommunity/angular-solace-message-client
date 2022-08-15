@@ -284,7 +284,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
           topic,
           true,
           subscribeCorrelationKey,
-          observeOptions?.subscribeTimeout ?? observeOptions?.requestTimeout,
+          observeOptions?.subscribeTimeout,
         );
         return whenSubscribed;
       }
