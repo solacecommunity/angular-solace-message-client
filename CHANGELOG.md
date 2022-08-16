@@ -1,3 +1,39 @@
+# [14.0.0](https://github.com/solacecommunity/angular-solace-message-client/compare/13.1.0...14.0.0) (2022-08-16)
+
+
+### Dependencies
+
+* **solace-message-client:** update @solace-community/angular-solace-message-client to Angular 14 ([6c48828](https://github.com/solacecommunity/angular-solace-message-client/commit/6c488280bb55eace73486b959a7046e1d3399f7f)), closes [#49](https://github.com/solacecommunity/angular-solace-message-client/issues/49)
+
+
+### Features
+
+* **tryme:** use Solace sponsored broker as default broker ([f4879be](https://github.com/solacecommunity/angular-solace-message-client/commit/f4879be62ca6b41f15b105b50cd2e817b56f063e))
+
+
+### Chore
+
+* **solace-message-client:** remove deprecated API `ObserveOptions#requestTimeout` ([813cf2d](https://github.com/solacecommunity/angular-solace-message-client/commit/813cf2dec4f1ee81e2213d7e112f351a1c46f0cb))
+* **solace-message-client:** remove deprecated API `SolaceMessageClient#enqueue` ([7f9125c](https://github.com/solacecommunity/angular-solace-message-client/commit/7f9125c1d2f73f67ba6a835ef5d22fecfd3ac512))
+
+### BREAKING CHANGES
+
+* **solace-message-client:** Updating `@solace-community/angular-solace-message-client` to Angular 14 introduced a breaking change.
+
+  To migrate:
+  - update your application to Angular 14; for detailed migration instructions, refer to https://v14.angular.io/guide/update-to-latest-version;
+  - update @scion/toolkit to version 1.0.0 using the following command: `npm install @scion/toolkit@latest --save`. Note that the toolkit was previously released as pre-releases of version `13.0.0` or older; for detailed migration instructions, refer to https://github.com/SchweizerischeBundesbahnen/scion-toolkit/blob/master/CHANGELOG_TOOLKIT.md
+
+* **solace-message-client:** Removing the deprecated API `ObserveOptions#requestTimeout` introduced a breaking change.
+
+  To migrate, use `ObserveOptions#subscribeTimeout` instead.
+ 
+* **solace-message-client:** Removing the deprecated API `SolaceMessageClient#enqueue` introduced a breaking change.
+
+  To send a message to a queue, use `SolaceMessageClient#publish` instead and pass the queue destination. The queue destination can be constructed using `SolclientFactory` as follows: `SolclientFactory.createDurableQueueDestination('queue')`.
+
+
+
 # [13.1.0](https://github.com/solacecommunity/angular-solace-message-client/compare/13.0.0...13.1.0) (2022-04-24)
 
 
