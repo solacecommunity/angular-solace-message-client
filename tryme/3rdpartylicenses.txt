@@ -66,6 +66,9 @@ MIT
 @angular/router
 MIT
 
+@scion/components
+EPL-2.0
+
 @scion/toolkit
 EPL-2.0
 
