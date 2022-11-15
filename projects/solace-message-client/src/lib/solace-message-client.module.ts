@@ -75,7 +75,7 @@ import {provideLogger} from './logger';
 @NgModule({})
 export class SolaceMessageClientModule {
 
-  constructor(@Inject(FORROOT_GUARD) _guard: any, _solaceMessageClient: SolaceMessageClient /** eager construction */) { // eslint-disable-line @typescript-eslint/no-empty-function
+  constructor(@Inject(FORROOT_GUARD) _guard: any) { // eslint-disable-line @typescript-eslint/no-empty-function
   }
 
   /**
