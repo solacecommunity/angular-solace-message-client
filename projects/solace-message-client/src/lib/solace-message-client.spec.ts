@@ -66,6 +66,15 @@ describe('SolaceMessageClient', () => {
       await expectAsync(solaceMessageClient.session).toBeResolved();
     });
 
+    it('should not eagerly construct `SolaceMessageClient`', async () => {
+      TestBed.overrideProvider(SolaceMessageClient, {
+        useFactory: () => {
+          throw Error();
+        },
+      });
+      expect(() => TestBed.inject(SolaceMessageClientModule)).not.toThrowError();
+    });
+
     it('should allow to disconnect and re-connect from the Solace message broker', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
       await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
