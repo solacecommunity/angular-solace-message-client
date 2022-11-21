@@ -34,7 +34,7 @@
     "@scion/toolkit": "1.0.0",
     "pako": "2.0.4",
     "rxjs": "7.5.6",
-    "solclientjs": "10.10.0",
+    "solclientjs": "10.11.0",
     "tslib": "2.4.0",
     "zone.js": "0.11.8"
   },

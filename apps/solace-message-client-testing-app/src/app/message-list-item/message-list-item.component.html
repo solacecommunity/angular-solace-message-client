@@ -1,7 +1,7 @@
 <span class="timestamp">{{message.getReceiverTimestamp() | date:'HH:mm:ss'}}</span>
 
 <label>Destination:</label>
-<span class="topic">{{envelope.message.getDestination().getName()}}</span>
+<span class="topic">{{envelope.message.getDestination()!.getName()}}</span>
 
 <label>Type:</label>
 <span>{{type}}</span>
