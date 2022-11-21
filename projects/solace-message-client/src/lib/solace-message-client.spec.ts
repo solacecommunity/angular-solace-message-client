@@ -8,7 +8,6 @@ import {AuthenticationScheme, Destination, DestinationType, Message, MessageCons
 import {asyncScheduler, BehaviorSubject, EMPTY, NEVER, noop, Observable, of, Subject} from 'rxjs';
 import {UUID} from '@scion/toolkit/uuid';
 import {OAuthAccessTokenProvider} from './oauth-access-token-provider';
-import './solclientjs-typedef-augmentation';
 
 type SessionEventListener = (() => void) | ((event: SessionEvent) => void) | ((error: OperationError) => void) | ((message: Message) => void);
 type MessageConsumerEventListener = (() => void) | ((event: MessageConsumerEvent) => void) | ((error: OperationError) => void) | ((message: Message) => void);
@@ -1425,10 +1424,8 @@ describe('SolaceMessageClient', () => {
         // Expect connected to a non-durable topic endpoint
         expect(messageConsumerMock.messageConsumerProperties).toEqual({
           topicEndpointSubscription: SolclientFactory.createTopicDestination('topic'),
-          // @ts-expect-error: typedef(solclientjs): remove '@ts-expect-error' when changed 'queueDescriptor' to accept an object literal with 'name' as optional field
-          // see 'solclient-fulljs' line 4301 that 'solclientjs' already supports the 'queueDescriptor' to be an object literal with 'name' as optional field. */
           queueDescriptor: {type: QueueType.TOPIC_ENDPOINT, durable: false},
-          // @ts-expect-error: typedef(solclientjs): remove 'queueProperties' when changed 'queueProperties' to optional
+          // FIXME typedef(solclientjs): remove 'queueProperties' when changed 'queueProperties' to optional
           queueProperties: undefined,
         });
       });
@@ -1440,7 +1437,7 @@ describe('SolaceMessageClient', () => {
         const messageConsumerMock = installMessageConsumerMock();
         const config: MessageConsumerProperties = {
           queueDescriptor: new QueueDescriptor({type: QueueType.QUEUE, name: 'queue', durable: true}),
-          // @ts-expect-error: typedef(solclientjs): remove 'queueProperties' when changed 'queueProperties' to optional
+          // FIXME typedef(solclientjs): remove 'queueProperties' when changed 'queueProperties' to optional
           queueProperties: undefined,
         };
         solaceMessageClient.consume$(config).subscribe();
@@ -1455,7 +1452,7 @@ describe('SolaceMessageClient', () => {
         // Expect connected to a durable queue endpoint
         expect(messageConsumerMock.messageConsumerProperties).toEqual({
           queueDescriptor: new QueueDescriptor({type: QueueType.QUEUE, name: 'queue', durable: true}),
-          // @ts-expect-error: typedef(solclientjs): remove 'queueProperties' when changed 'queueProperties' to optional
+          // FIXME typedef(solclientjs): remove 'queueProperties' when changed 'queueProperties' to optional
           queueProperties: undefined,
         });
       });
@@ -1468,7 +1465,7 @@ describe('SolaceMessageClient', () => {
         const config: MessageConsumerProperties = {
           topicEndpointSubscription: SolclientFactory.createTopicDestination('topic'),
           queueDescriptor: new QueueDescriptor({type: QueueType.TOPIC_ENDPOINT, name: 'topic-endpoint', durable: true}),
-          // @ts-expect-error: typedef(solclientjs): remove 'queueProperties' when changed 'queueProperties' to optional
+          // FIXME typedef(solclientjs): remove 'queueProperties' when changed 'queueProperties' to optional
           queueProperties: undefined,
         };
         solaceMessageClient.consume$(config).subscribe();
@@ -1484,7 +1481,7 @@ describe('SolaceMessageClient', () => {
         expect(messageConsumerMock.messageConsumerProperties).toEqual({
           topicEndpointSubscription: SolclientFactory.createTopicDestination('topic'),
           queueDescriptor: new QueueDescriptor({type: QueueType.TOPIC_ENDPOINT, name: 'topic-endpoint', durable: true}),
-          // @ts-expect-error: typedef(solclientjs): remove 'queueProperties' when changed 'queueProperties' to optional
+          // FIXME typedef(solclientjs): remove 'queueProperties' when changed 'queueProperties' to optional
           queueProperties: undefined,
         });
       });
@@ -1544,10 +1541,8 @@ describe('SolaceMessageClient', () => {
         const messageConsumerMock = installMessageConsumerMock();
         solaceMessageClient.consume$({
           topicEndpointSubscription: SolclientFactory.createTopicDestination('topic'),
-          // @ts-expect-error: typedef(solclientjs): remove '@ts-expect-error' when changed 'queueDescriptor' to accept an object literal with 'name' as optional field
-          // see 'solclient-fulljs' line 4301 that 'solclientjs' already supports the 'queueDescriptor' to be an object literal with 'name' as optional field. */
           queueDescriptor: {type: QueueType.TOPIC_ENDPOINT, durable: false},
-          // @ts-expect-error: typedef(solclientjs): remove 'queueProperties' when changed 'queueProperties' to optional
+          // FIXME typedef(solclientjs): remove 'queueProperties' when changed 'queueProperties' to optional
           queueProperties: undefined,
           emitOutsideAngularZone: true,
         }).subscribe(observeCaptor);
@@ -1701,7 +1696,7 @@ describe('SolaceMessageClient', () => {
         const onSubscribedCallback1 = jasmine.createSpy('onSubscribed');
         solaceMessageClient.consume$({
           queueDescriptor: new QueueDescriptor({type: QueueType.QUEUE, name: 'queue'}),
-          // @ts-expect-error: typedef(solclientjs): remove 'queueProperties' when changed 'queueProperties' to optional
+          // FIXME typedef(solclientjs): remove 'queueProperties' when changed 'queueProperties' to optional
           queueProperties: undefined,
           onSubscribed: onSubscribedCallback1,
         }).subscribe();
@@ -1717,7 +1712,7 @@ describe('SolaceMessageClient', () => {
         const onSubscribedCallback2 = jasmine.createSpy('onSubscribed');
         solaceMessageClient.consume$({
           queueDescriptor: new QueueDescriptor({type: QueueType.QUEUE, name: 'queue'}),
-          // @ts-expect-error: typedef(solclientjs): remove 'queueProperties' when changed 'queueProperties' to optional
+          // FIXME typedef(solclientjs): remove 'queueProperties' when changed 'queueProperties' to optional
           queueProperties: undefined,
           onSubscribed: onSubscribedCallback2,
         }).subscribe();
@@ -1738,7 +1733,7 @@ describe('SolaceMessageClient', () => {
         const onSubscribedCallback = jasmine.createSpy('onSubscribed');
         solaceMessageClient.consume$({
           queueDescriptor: new QueueDescriptor({type: QueueType.QUEUE, name: 'queue'}),
-          // @ts-expect-error: typedef(solclientjs): remove 'queueProperties' when changed 'queueProperties' to optional
+          // FIXME typedef(solclientjs): remove 'queueProperties' when changed 'queueProperties' to optional
           queueProperties: undefined,
           onSubscribed: onSubscribedCallback,
         }).subscribe();
@@ -2828,7 +2823,7 @@ describe('SolaceMessageClient', () => {
     const captor = new SessionSendCaptor();
     session.send.and.callFake((message: Message) => {
       captor.message = message;
-      captor.destination = message.getDestination();
+      captor.destination = message.getDestination()!;
       captor.type = message.getType();
     });
     return captor;
@@ -2896,12 +2891,11 @@ class MessageConsumerMock {
 
   private _callbacks = new Map<MessageConsumerEventName, MessageConsumerEventListener>();
 
-  public messageConsumer: jasmine.SpyObj<MessageConsumer>;
+  public messageConsumer: jasmine.SpyObj<Omit<MessageConsumer, 'disposed'> & {disposed: boolean}>;
   public messageConsumerProperties: MessageConsumerProperties | undefined;
 
   constructor(session: jasmine.SpyObj<Session>) {
     this.messageConsumer = jasmine.createSpyObj('messageConsumer', ['on', 'connect', 'disconnect', 'dispose']);
-    // @ts-expect-error: typedef(solclientjs): remove when changed 'MessageConsumer#disposed' from 'void' to 'boolean'
     this.messageConsumer.disposed = false;
 
     // Configure session to return a message consumer mock and capture the passed config
@@ -2924,7 +2918,6 @@ class MessageConsumerMock {
 
     // Mark message consumer disposed if calling 'dispose'
     this.messageConsumer.dispose.and.callFake(() => {
-      // @ts-expect-error: typedef(solclientjs): remove when changed 'MessageConsumer#disposed' from 'void' to 'boolean'
       this.messageConsumer.disposed = true;
     });
   }

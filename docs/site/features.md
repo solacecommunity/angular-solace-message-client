@@ -145,9 +145,8 @@ export class YourService {
     // Above code uses a convenience API by passing the topic as `string` literal, which is equivalent to the following code.
     this.messageClient.consume$({
       topicEndpointSubscription: SolclientFactory.createTopicDestination('topic'),
-      // @ts-expect-error: typedef(solclientjs): remove '@ts-expect-error' when changed 'queueDescriptor' to accept an object literal with 'name' as optional field
       queueDescriptor: {type: QueueType.TOPIC_ENDPOINT, durable: false},
-      // @ts-expect-error: typedef(solclientjs): remove 'queueProperties' when changed 'queueProperties' to optional
+      // FIXME typedef(solclientjs): remove 'queueProperties' when changed 'queueProperties' to optional
       queueProperties: undefined,
     }).subscribe(envelope => {
       console.log('message consumed', envelope.message);
@@ -243,7 +242,7 @@ export class YourService {
   public consumeMessagesSentToQueue(): void {
     this.messageClient.consume$({
       queueDescriptor: new QueueDescriptor({type: QueueType.QUEUE, name: 'queue'}),
-      // @ts-expect-error: typedef(solclientjs): remove 'queueProperties' when changed 'queueProperties' to optional
+      // FIXME typedef(solclientjs): remove 'queueProperties' when changed 'queueProperties' to optional
       queueProperties: undefined,
     }).subscribe(envelope => {
       console.log('message consumed', envelope.message);

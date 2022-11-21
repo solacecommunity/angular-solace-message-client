@@ -9,7 +9,7 @@ import {OAuthAccessTokenProvider} from './oauth-access-token-provider';
  * Configures the {@link SolaceMessageClient} to connect to the Solace message broker.
  */
 export abstract class SolaceMessageClientConfig implements Omit<SessionProperties, 'publisherProperties' | 'accessToken'> {
-  // typedef(solclientjs): remove 'publisherProperties' and 'Omit' when changed 'publisherProperties' to optional
+  // FIXME typedef(solclientjs): remove 'publisherProperties' and 'Omit' when changed 'publisherProperties' to optional
   public publisherProperties?: MessagePublisherProperties;
   /**
    * Specifies the access token required for OAUTH2 authentication.
@@ -26,7 +26,7 @@ export abstract class SolaceMessageClientConfig implements Omit<SessionPropertie
  * Configures the {@link SolaceMessageClient} to connect to the Solace message broker.
  */
 export interface SolaceMessageClientConfig extends Omit<SessionProperties, 'publisherProperties' | 'accessToken'> {
-  // typedef(solclientjs): remove 'publisherProperties' and 'Omit' when changed 'publisherProperties' to optional
+  // FIXME typedef(solclientjs): remove 'publisherProperties' and 'Omit' when changed 'publisherProperties' to optional
   publisherProperties?: MessagePublisherProperties;
   /**
    * Specifies the access token required for OAUTH2 authentication.

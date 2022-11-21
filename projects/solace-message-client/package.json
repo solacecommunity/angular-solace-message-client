@@ -19,7 +19,7 @@
     "@angular/core": "^14.0.0",
     "@scion/toolkit": "^1.0.0",
     "rxjs": "^7.5.0",
-    "solclientjs": "^10.10.0"
+    "solclientjs": "^10.11.0"
   },
   "dependencies": {
     "tslib": "^2.3.0"

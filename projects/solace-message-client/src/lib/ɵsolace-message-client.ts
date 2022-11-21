@@ -8,10 +8,9 @@ import {observeInside} from '@scion/toolkit/operators';
 import {SolaceSessionProvider} from './solace-session-provider';
 import {OAuthAccessTokenProvider} from './oauth-access-token-provider';
 import {SolaceMessageClientConfig} from './solace-message-client.config';
-import {AuthenticationScheme, Destination, Message, MessageConsumer, MessageConsumerEventName, MessageConsumerProperties, MessageDeliveryModeType, OperationError, QueueBrowser, QueueBrowserEventName, QueueBrowserProperties, QueueDescriptor, QueueType, RequestError, SDTField, SDTFieldType, SDTMapContainer, Session, SessionEvent, SessionEventCode, SessionProperties as SolaceSessionProperties, SessionProperties, SolclientFactory, SolclientFactoryProfiles, SolclientFactoryProperties} from 'solclientjs';
+import {AuthenticationScheme, Destination, Message, MessageConsumer, MessageConsumerEventName, MessageConsumerProperties, MessageDeliveryModeType, OperationError, QueueBrowser, QueueBrowserEventName, QueueBrowserProperties, QueueDescriptor, QueueType, RequestError, SDTField, SDTFieldType, SDTMapContainer, Session, SessionEvent, SessionEventCode, SessionProperties as SolaceSessionProperties, SolclientFactory, SolclientFactoryProfiles, SolclientFactoryProperties} from 'solclientjs';
 import {TopicSubscriptionCounter} from './topic-subscription-counter';
 import {SerialExecutor} from './serial-executor.service';
-import './solclientjs-typedef-augmentation';
 import {Logger} from './logger';
 
 @Injectable()
@@ -53,10 +52,10 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
 
     return (this._session || (this._session = new Promise((resolve, reject) => {
       // Apply session defaults.
-      const sessionProperties: SessionProperties = {
+      const sessionProperties: SolaceMessageClientConfig = {
         reapplySubscriptions: true, // remember subscriptions after a network interruption (default value if not set)
         reconnectRetries: -1, // Try to restore the connection automatically after a network interruption (default value if not set)
-        // @ts-expect-error: typedef(solclientjs): remove when changed 'publisherProperties' to optional
+        // FIXME typedef(solclientjs): remove 'publisherProperties' when changed 'publisherProperties' to optional
         publisherProperties: undefined,
         ...config,
       };
@@ -104,7 +103,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
         // When the Session is ready to send/receive messages and perform control operations.
         session.on(SessionEventCode.UP_NOTICE, (event: SessionEvent) => {
           this._event$.next(event);
-          this._logger.debug('Connected to Solace message broker.', obfuscateSecrets(config as SessionProperties));
+          this._logger.debug('Connected to Solace message broker.', obfuscateSecrets(config));
           resolve(session);
         });
 
@@ -340,10 +339,8 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
     if (typeof topicOrDescriptor === 'string') {
       return this.createMessageConsumer$({
         topicEndpointSubscription: SolclientFactory.createTopicDestination(topicOrDescriptor),
-        // @ts-expect-error: typedef(solclientjs): remove '@ts-expect-error' when changed 'queueDescriptor' to accept an object literal with 'name' as optional field
-        // see 'solclient-fulljs' line 4301 that 'solclientjs' already supports the 'queueDescriptor' to be an object literal with 'name' as optional field. */
         queueDescriptor: {type: QueueType.TOPIC_ENDPOINT, durable: false},
-        // @ts-expect-error: typedef(solclientjs): remove 'queueProperties' when changed 'queueProperties' to optional
+        // FIXME typedef(solclientjs): remove 'queueProperties' when changed 'queueProperties' to optional
         queueProperties: undefined,
       });
     }
@@ -400,7 +397,6 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
 
       return (): void => {
         // Initiate an orderly disconnection of the consumer. In turn, we will receive a `MessageConsumerEventName#DOWN` event and dispose the consumer.
-        // @ts-expect-error: typedef(solclientjs): remove when changed 'MessageConsumer#disposed' from 'void' to 'boolean'
         if (messageConsumer && !messageConsumer.disposed) {
           messageConsumer.disconnect();
         }
@@ -738,7 +734,7 @@ function collectNamedTopicSegmentValues(message: Message, subscriptionTopic: str
   }
 
   const subscriptionSegments = subscriptionTopic.split('/');
-  const effectiveDestinationSegments = message.getDestination().getName().split('/');
+  const effectiveDestinationSegments = message.getDestination()!.getName().split('/');
   return subscriptionSegments.reduce((acc, subscriptionSegment, i) => {
     if (isNamedWildcardSegment(subscriptionSegment)) {
       return acc.set(subscriptionSegment.substring(1), effectiveDestinationSegments[i]);
@@ -798,7 +794,7 @@ function assertNotInAngularZone<T>(): MonoTypeOperatorFunction<T> {
  */
 type Send = (session: Session, message: Message) => void;
 
-function obfuscateSecrets(sessionProperties: SessionProperties): SessionProperties {
+function obfuscateSecrets(sessionProperties: SolaceMessageClientConfig): SolaceMessageClientConfig {
   const obfuscated = {...sessionProperties};
   if (obfuscated.password) {
     obfuscated.password = '***';
