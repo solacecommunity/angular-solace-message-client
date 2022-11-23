@@ -5,6 +5,15 @@
 
 ## Changelog
 
+## [14.0.1](https://github.com/solacecommunity/angular-solace-message-client/compare/14.0.0...14.0.1) (2022-11-23)
+
+
+### Bug Fixes
+
+* **solace-message-client:** do not eagerly construct `SolaceMessageClient` ([82f73ed](https://github.com/solacecommunity/angular-solace-message-client/commit/82f73ed8888714e240504d41059e5a8bd275e18e)), closes [#53](https://github.com/solacecommunity/angular-solace-message-client/issues/53)
+
+
+
 # [14.0.0](https://github.com/solacecommunity/angular-solace-message-client/compare/13.1.0...14.0.0) (2022-08-16)
 
 
