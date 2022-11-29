@@ -16,22 +16,23 @@
 
       > header {
         flex: none;
-        font-size: mat.font-size(app-theme.$typography, title);
+        font-size: mat.font-size(app-theme.$typography, headline-6);
         margin-bottom: .25em;
       }
 
       > span.sub-title {
         flex: none;
-        font-size: mat.font-size(app-theme.$typography, subheading-1);
+        font-size: mat.font-size(app-theme.$typography, subtitle-2);
         color: mat.get-color-from-palette(app-theme.$foreground, secondary-text);
       }
 
       > sci-viewport {
         flex: 1 1 0;
 
-        &.request-reply {
-          --sci-viewport-content-grid-template-rows: auto 1fr;
-          --sci-viewport-content-grid-gap: 1em 0;
+        &::part(content) {
+          display: flex;
+          flex-direction: column;
+          gap: 1em;
         }
 
         form {
@@ -60,6 +61,7 @@
         }
 
         section.replies {
+          flex: auto;
           display: flex;
           flex-direction: column;
           padding: 1em;
@@ -68,9 +70,13 @@
 
           > sci-viewport {
             flex: 1 1 0;
-            --sci-viewport-content-grid-auto-rows: max-content;
-            --sci-viewport-content-grid-gap: 1em 0;
             min-height: 15em;
+
+            &::part(content) {
+              display: flex;
+              flex-direction: column;
+              gap: 1em;
+            }
 
             app-message-list-item {
               border-bottom: 1px solid mat.get-color-from-palette(app-theme.$foreground, divider);

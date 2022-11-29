@@ -64,9 +64,11 @@
             "outputPath": "dist/solace-message-client-testing-app",
             "index": "apps/solace-message-client-testing-app/src/index.html",
             "main": "apps/solace-message-client-testing-app/src/main.ts",
-            "polyfills": "apps/solace-message-client-testing-app/src/polyfills.ts",
             "tsConfig": "apps/solace-message-client-testing-app/tsconfig.app.json",
             "inlineStyleLanguage": "scss",
+            "polyfills": [
+              "zone.js"
+            ],
             "assets": [
               "apps/solace-message-client-testing-app/src/assets",
               {
@@ -135,5 +137,13 @@
     "schematicCollections": [
       "@angular-eslint/schematics"
     ]
+  },
+  "schematics": {
+    "@angular-eslint/schematics:application": {
+      "setParserOptionsProject": true
+    },
+    "@angular-eslint/schematics:library": {
+      "setParserOptionsProject": true
+    }
   }
 }

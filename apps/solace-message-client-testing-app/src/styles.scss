@@ -11,19 +11,14 @@ $theme: mat.define-light-theme((
 ));
 
 @import url('https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined');
-@include cdk.a11y-visually-hidden();
-@include cdk.overlay();
+@include mat.all-component-typographies();
 @include mat.core();
 @include mat.all-component-themes($theme);
 
-
 body {
   position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
+  inset: 0;
   font-size: mat.font-size(app-theme.$typography, body-1);
-  font-family: mat.font-family(app-theme.$typography);
+  font-family: mat.font-family(app-theme.$typography, body-1);
 }
 
