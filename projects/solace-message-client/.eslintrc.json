@@ -9,11 +9,7 @@
         "*.ts"
       ],
       "parserOptions": {
-        "project": [
-          "projects/solace-message-client/tsconfig.lib.json",
-          "projects/solace-message-client/tsconfig.lib.prod.json",
-          "projects/solace-message-client/tsconfig.spec.json"
-        ]
+        "project": "projects/solace-message-client/tsconfig.(lib|spec).json"
       },
       "rules": {
         "@angular-eslint/component-selector": [

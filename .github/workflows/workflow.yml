@@ -2,6 +2,7 @@ name: Continuous Integration and Delivery
 on: [push, pull_request]
 env:
   NODE_VERSION: 16.16.0
+  PUPPETEER_CACHE_DIR: ${{ github.workspace }}/node_modules/.cache/puppeteer
 jobs:
   install:
     name: 'Installing NPM modules'

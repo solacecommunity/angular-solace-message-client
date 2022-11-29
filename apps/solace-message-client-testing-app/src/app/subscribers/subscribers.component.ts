@@ -22,6 +22,10 @@ export class SubscribersComponent {
     this.deleteSubscription(subscription);
   }
 
+  public onSubscriptionNameChange(name: string, subscription: Subscription): void {
+    subscription.name = name;
+  }
+
   public onTabMouseDown(event: MouseEvent, subscription: Subscription): void {
     if (event.button === 1) {
       this.deleteSubscription(subscription);

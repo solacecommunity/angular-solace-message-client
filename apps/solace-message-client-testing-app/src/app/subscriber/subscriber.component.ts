@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, OnDestroy, ViewChild} from '@angular/core';
+import {ChangeDetectorRef, Component, EventEmitter, OnDestroy, Output, ViewChild} from '@angular/core';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {MessageEnvelope, SolaceMessageClient} from '@solace-community/angular-solace-message-client';
 import {Observable, Subject, Subscription} from 'rxjs';
@@ -43,6 +43,9 @@ export class SubscriberComponent implements OnDestroy {
   @ViewChild(SciViewportComponent, {static: true})
   private _viewport!: SciViewportComponent;
 
+  @Output()
+  public destination = new EventEmitter<string>();
+
   public SubscriptionDestinationType = SubscriptionDestinationType;
 
   constructor(private _solaceMessageClient: SolaceMessageClient,
@@ -54,6 +57,7 @@ export class SubscriberComponent implements OnDestroy {
       }),
       [FOLLOW_TAIL]: new FormControl(true),
     });
+    this.installDestinationEmitter();
     this.installFollowTailListener();
   }
 
@@ -136,6 +140,12 @@ export class SubscriberComponent implements OnDestroy {
 
   private scrollToEnd(): void {
     this._viewport.scrollTop = this._viewport.scrollHeight;
+  }
+
+  private installDestinationEmitter(): void {
+    this.form.get([SUBSCRIPTION, DESTINATION])!.valueChanges
+      .pipe(takeUntil(this._destroy$))
+      .subscribe(this.destination);
   }
 
   private installFollowTailListener(): void {

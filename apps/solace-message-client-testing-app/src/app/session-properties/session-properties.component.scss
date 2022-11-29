@@ -8,7 +8,7 @@
 
   > header {
     grid-column: 1/-1;
-    font-size: mat.font-size(app-theme.$typography, subheading-2);
+    font-size: mat.font-size(app-theme.$typography, subtitle-1);
     font-weight: bold;
     margin-bottom: 1em;
   }

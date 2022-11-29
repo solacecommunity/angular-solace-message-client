@@ -19,9 +19,13 @@
 
   > sci-viewport.messages {
     flex: 1 1 0;
-    --sci-viewport-content-grid-auto-rows: max-content;
-    --sci-viewport-content-grid-gap: 1em 0;
     min-height: 20em;
+
+    &::part(content) {
+      display: flex;
+      flex-direction: column;
+      gap: 1em;
+    }
 
     app-message-list-item {
       border-bottom: 1px solid mat.get-color-from-palette(app-theme.$foreground, divider);
@@ -40,6 +44,13 @@
     grid-auto-rows: auto;
     row-gap: 1em;
 
+    > button[mat-stroked-button] {
+      // Since Angular 15, Material installs a touch target that overlaps the button's boundaries,
+      // causing a vertical scrollbar to be displayed in the enclosing viewport. Therefore, we
+      // prevent the button content from overflowing.
+      overflow: hidden;
+    }
+
     > section.error {
       border: 1px solid mat.get-color-from-palette(app-theme.$warn);
       background-color: mat.get-color-from-palette(app-theme.$warn, 100);
@@ -49,7 +60,7 @@
   }
 }
 
-::ng-deep .mat-tooltip.large {
+::ng-deep .mat-mdc-tooltip.large {
   white-space: pre-line;
   font-size: larger;
 }

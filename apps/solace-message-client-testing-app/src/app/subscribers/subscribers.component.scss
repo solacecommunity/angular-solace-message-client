@@ -20,12 +20,12 @@
         margin-bottom: 2em;
 
         > span.title {
-          font-size: mat.font-size(app-theme.$typography, title);
+          font-size: mat.font-size(app-theme.$typography, headline-6);
           margin-bottom: .25em;
         }
 
         > span.sub-title {
-          font-size: mat.font-size(app-theme.$typography, subheading-1);
+          font-size: mat.font-size(app-theme.$typography, subtitle-2);
           color: mat.get-color-from-palette(app-theme.$foreground, secondary-text);
         }
       }
@@ -47,15 +47,19 @@
     }
 
     > mat-card-content {
+      display: grid;
       flex: auto;
-      position: relative; // positioning context for mat-tab-group
+
+      ::ng-deep .mdc-tab__content {
+        pointer-events: unset; // unset pointer-events because set to `none` by Angular Material; used to close the tab
+      }
 
       > mat-tab-group {
-        position: absolute; // position absolutely to the bounds of the mat-card-content
-        top: 0;
-        right: 0;
-        bottom: 0;
-        left: 0;
+        min-width: 0; // set min-width to 0 to not overflow flex container horizontally
+
+        ::ng-deep mat-tab-header {
+          border-bottom: 1px solid mat.get-color-from-palette(app-theme.$background, status-bar);
+        }
 
         div.tab {
           display: flex;
@@ -76,10 +80,10 @@
           }
         }
 
-        ::ng-deep .mat-tab-body-wrapper {
-          flex: auto; // fill availablevertical space
+        ::ng-deep .mat-mdc-tab-body-wrapper {
+          flex: 1 1 0; // fill available vertical space
 
-          ::ng-deep .mat-tab-body-content {
+          ::ng-deep .mat-mdc-tab-body-content {
             display: grid; // fill available vertical space
           }
         }
@@ -87,4 +91,3 @@
     }
   }
 }
-

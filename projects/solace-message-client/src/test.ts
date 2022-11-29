@@ -5,20 +5,15 @@ import 'zone.js/testing';
 import {getTestBed} from '@angular/core/testing';
 import {BrowserDynamicTestingModule, platformBrowserDynamicTesting} from '@angular/platform-browser-dynamic/testing';
 
-declare const require: {
-  context(path: string, deep?: boolean, filter?: RegExp): {
-    <T>(id: string): T;
-    keys(): string[];
-  };
-};
+/**
+ * TODO [Angular 16]
+ * Starting with Angular 15, this file can be removed and 'zone.js' polyfills can be specified directly in angular.json.
+ * However, when removing this file and specifying polyfills in angular.json, we experienced unexpected promise rejection errors in tests.
+ * We have reported an issue to Angular: https://github.com/angular/angular/issues/48386
+ */
 
 // First, initialize the Angular testing environment.
 getTestBed().initTestEnvironment(
   BrowserDynamicTestingModule,
   platformBrowserDynamicTesting(),
 );
-
-// Then we find all the tests.
-const context = require.context('./', true, /\.spec\.ts$/);
-// And load the modules.
-context.keys().forEach(context);
