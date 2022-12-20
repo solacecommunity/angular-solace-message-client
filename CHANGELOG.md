@@ -1,3 +1,20 @@
+# [15.0.0](https://github.com/solacecommunity/angular-solace-message-client/compare/14.0.1...15.0.0) (2022-12-20)
+
+
+### Dependencies
+
+* **solace-message-client:** update @solace-community/angular-solace-message-client to Angular 15 ([4638ed2](https://github.com/solacecommunity/angular-solace-message-client/commit/4638ed218f9c3b71b9d0a9943c38543a9daef5ba)), closes [#52](https://github.com/solacecommunity/angular-solace-message-client/issues/52)
+
+
+### BREAKING CHANGES
+
+* **solace-message-client:** Updating `@solace-community/angular-solace-message-client` to Angular 15 introduced a breaking change.
+
+  To migrate:
+  - update your application to Angular 15; for detailed migration instructions, refer to https://v15.angular.io/guide/update-to-latest-version;
+
+
+
 ## [14.0.1](https://github.com/solacecommunity/angular-solace-message-client/compare/14.0.0...14.0.1) (2022-11-23)
 
 
