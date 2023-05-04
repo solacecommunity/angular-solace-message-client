@@ -77,8 +77,6 @@ export class SubscriberComponent implements OnDestroy {
           case SubscriptionDestinationType.QUEUE: {
             return this._solaceMessageClient.consume$({
               queueDescriptor: new QueueDescriptor({type: QueueType.QUEUE, name: destination}),
-              // FIXME typedef(solclientjs): remove 'queueProperties' when changed 'queueProperties' to optional
-              queueProperties: undefined,
             });
           }
           case SubscriptionDestinationType.TOPIC_ENDPOINT: {

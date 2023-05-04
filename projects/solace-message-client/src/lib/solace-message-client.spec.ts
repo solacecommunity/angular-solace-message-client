@@ -1424,9 +1424,7 @@ describe('SolaceMessageClient', () => {
         // Expect connected to a non-durable topic endpoint
         expect(messageConsumerMock.messageConsumerProperties).toEqual({
           topicEndpointSubscription: SolclientFactory.createTopicDestination('topic'),
-          queueDescriptor: {type: QueueType.TOPIC_ENDPOINT, durable: false},
-          // FIXME typedef(solclientjs): remove 'queueProperties' when changed 'queueProperties' to optional
-          queueProperties: undefined,
+          queueDescriptor: new QueueDescriptor({type: QueueType.TOPIC_ENDPOINT, durable: false}),
         });
       });
 
@@ -1437,8 +1435,6 @@ describe('SolaceMessageClient', () => {
         const messageConsumerMock = installMessageConsumerMock();
         const config: MessageConsumerProperties = {
           queueDescriptor: new QueueDescriptor({type: QueueType.QUEUE, name: 'queue', durable: true}),
-          // FIXME typedef(solclientjs): remove 'queueProperties' when changed 'queueProperties' to optional
-          queueProperties: undefined,
         };
         solaceMessageClient.consume$(config).subscribe();
         await drainMicrotaskQueue();
@@ -1452,8 +1448,6 @@ describe('SolaceMessageClient', () => {
         // Expect connected to a durable queue endpoint
         expect(messageConsumerMock.messageConsumerProperties).toEqual({
           queueDescriptor: new QueueDescriptor({type: QueueType.QUEUE, name: 'queue', durable: true}),
-          // FIXME typedef(solclientjs): remove 'queueProperties' when changed 'queueProperties' to optional
-          queueProperties: undefined,
         });
       });
 
@@ -1465,8 +1459,6 @@ describe('SolaceMessageClient', () => {
         const config: MessageConsumerProperties = {
           topicEndpointSubscription: SolclientFactory.createTopicDestination('topic'),
           queueDescriptor: new QueueDescriptor({type: QueueType.TOPIC_ENDPOINT, name: 'topic-endpoint', durable: true}),
-          // FIXME typedef(solclientjs): remove 'queueProperties' when changed 'queueProperties' to optional
-          queueProperties: undefined,
         };
         solaceMessageClient.consume$(config).subscribe();
         await drainMicrotaskQueue();
@@ -1481,8 +1473,6 @@ describe('SolaceMessageClient', () => {
         expect(messageConsumerMock.messageConsumerProperties).toEqual({
           topicEndpointSubscription: SolclientFactory.createTopicDestination('topic'),
           queueDescriptor: new QueueDescriptor({type: QueueType.TOPIC_ENDPOINT, name: 'topic-endpoint', durable: true}),
-          // FIXME typedef(solclientjs): remove 'queueProperties' when changed 'queueProperties' to optional
-          queueProperties: undefined,
         });
       });
 
@@ -1541,9 +1531,7 @@ describe('SolaceMessageClient', () => {
         const messageConsumerMock = installMessageConsumerMock();
         solaceMessageClient.consume$({
           topicEndpointSubscription: SolclientFactory.createTopicDestination('topic'),
-          queueDescriptor: {type: QueueType.TOPIC_ENDPOINT, durable: false},
-          // FIXME typedef(solclientjs): remove 'queueProperties' when changed 'queueProperties' to optional
-          queueProperties: undefined,
+          queueDescriptor: new QueueDescriptor({type: QueueType.TOPIC_ENDPOINT, durable: false}),
           emitOutsideAngularZone: true,
         }).subscribe(observeCaptor);
         await drainMicrotaskQueue();
@@ -1696,8 +1684,6 @@ describe('SolaceMessageClient', () => {
         const onSubscribedCallback1 = jasmine.createSpy('onSubscribed');
         solaceMessageClient.consume$({
           queueDescriptor: new QueueDescriptor({type: QueueType.QUEUE, name: 'queue'}),
-          // FIXME typedef(solclientjs): remove 'queueProperties' when changed 'queueProperties' to optional
-          queueProperties: undefined,
           onSubscribed: onSubscribedCallback1,
         }).subscribe();
         await drainMicrotaskQueue();
@@ -1712,8 +1698,6 @@ describe('SolaceMessageClient', () => {
         const onSubscribedCallback2 = jasmine.createSpy('onSubscribed');
         solaceMessageClient.consume$({
           queueDescriptor: new QueueDescriptor({type: QueueType.QUEUE, name: 'queue'}),
-          // FIXME typedef(solclientjs): remove 'queueProperties' when changed 'queueProperties' to optional
-          queueProperties: undefined,
           onSubscribed: onSubscribedCallback2,
         }).subscribe();
         await drainMicrotaskQueue();
@@ -1733,8 +1717,6 @@ describe('SolaceMessageClient', () => {
         const onSubscribedCallback = jasmine.createSpy('onSubscribed');
         solaceMessageClient.consume$({
           queueDescriptor: new QueueDescriptor({type: QueueType.QUEUE, name: 'queue'}),
-          // FIXME typedef(solclientjs): remove 'queueProperties' when changed 'queueProperties' to optional
-          queueProperties: undefined,
           onSubscribed: onSubscribedCallback,
         }).subscribe();
         await drainMicrotaskQueue();
