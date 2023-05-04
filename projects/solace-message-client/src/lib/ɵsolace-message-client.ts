@@ -55,8 +55,6 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
       const sessionProperties: SolaceMessageClientConfig = {
         reapplySubscriptions: true, // remember subscriptions after a network interruption (default value if not set)
         reconnectRetries: -1, // Try to restore the connection automatically after a network interruption (default value if not set)
-        // FIXME typedef(solclientjs): remove 'publisherProperties' when changed 'publisherProperties' to optional
-        publisherProperties: undefined,
         ...config,
       };
 
@@ -339,9 +337,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
     if (typeof topicOrDescriptor === 'string') {
       return this.createMessageConsumer$({
         topicEndpointSubscription: SolclientFactory.createTopicDestination(topicOrDescriptor),
-        queueDescriptor: {type: QueueType.TOPIC_ENDPOINT, durable: false},
-        // FIXME typedef(solclientjs): remove 'queueProperties' when changed 'queueProperties' to optional
-        queueProperties: undefined,
+        queueDescriptor: new QueueDescriptor({type: QueueType.TOPIC_ENDPOINT, durable: false}),
       });
     }
 

@@ -145,9 +145,7 @@ export class YourService {
     // Above code uses a convenience API by passing the topic as `string` literal, which is equivalent to the following code.
     this.messageClient.consume$({
       topicEndpointSubscription: SolclientFactory.createTopicDestination('topic'),
-      queueDescriptor: {type: QueueType.TOPIC_ENDPOINT, durable: false},
-      // FIXME typedef(solclientjs): remove 'queueProperties' when changed 'queueProperties' to optional
-      queueProperties: undefined,
+      queueDescriptor: new QueueDescriptor({type: QueueType.TOPIC_ENDPOINT, durable: false}),
     }).subscribe(envelope => {
       console.log('message consumed', envelope.message);
     });
@@ -156,8 +154,6 @@ export class YourService {
 ```
 
 > Refer to [SolaceMessageClient#consume$](https://solacecommunity.github.io/angular-solace-message-client/api/classes/SolaceMessageClient.html#consume_) for more information about the API.
-
-> Refer to [issue/37](https://github.com/solacecommunity/angular-solace-message-client/issues/37#issuecomment-1094693407) for more information about the `typedef(solclientjs)` comment.
 
 It is important to understand that a topic is not the same thing as a topic endpoint. A topic is a message property the event broker uses to route a message to its destination. Topic endpoints, unlike topics, are objects that define the storage of messages for a consuming application. Topic endpoints are more closely related to queues than to topics. Messages cannot be published directly to topic endpoints, but only indirectly via topics. For more information, refer to https://solace.com/blog/queues-vs-topic-endpoints.
 
@@ -242,8 +238,6 @@ export class YourService {
   public consumeMessagesSentToQueue(): void {
     this.messageClient.consume$({
       queueDescriptor: new QueueDescriptor({type: QueueType.QUEUE, name: 'queue'}),
-      // FIXME typedef(solclientjs): remove 'queueProperties' when changed 'queueProperties' to optional
-      queueProperties: undefined,
     }).subscribe(envelope => {
       console.log('message consumed', envelope.message);
     });
@@ -253,8 +247,6 @@ export class YourService {
 ```
 
 > Refer to [SolaceMessageClient#consume$](https://solacecommunity.github.io/angular-solace-message-client/api/classes/SolaceMessageClient.html#consume_) for more information about the API.
-
-> Refer to [issue/37](https://github.com/solacecommunity/angular-solace-message-client/issues/37#issuecomment-1094693407) for more information about the `typedef(solclientjs)` comment.
 
 </details>
 

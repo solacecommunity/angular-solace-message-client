@@ -103,20 +103,20 @@ export abstract class SolaceMessageClient {
    * ```ts
    * solaceMessageClient.consume$({
    *   topicEndpointSubscription: SolclientFactory.createTopicDestination('topic'),
-   *   queueDescriptor: {
+   *   queueDescriptor: new QueueDescriptor({
    *     type: QueueType.TOPIC_ENDPOINT,
    *     durable: false,
-   *   },
+   *   }),
    * });
    * ```
    *
    * ## To consume messages sent to a durable queue, pass the following config:
    * ```ts
    * solaceMessageClient.consume$({
-   *   queueDescriptor: {
+   *   queueDescriptor: new QueueDescriptor({
    *     type: QueueType.QUEUE,
    *     name: 'queue',
-   *   },
+   *   }),
    * });
    * ```
    *
