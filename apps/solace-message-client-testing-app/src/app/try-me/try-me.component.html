@@ -1,10 +1,11 @@
 <header>
-  <div class="connection-state"
-       [class.connected]="solaceMessageClient.connected$ | async"
-       (click)="onSessionPropertiesOpen()"
-       title="Click to see session properties">
+  <button mat-stroked-button
+          class="connection-state"
+          [class.connected]="solaceMessageClient.connected$ | async"
+          (click)="onSessionPropertiesOpen()"
+          title="Click to see session properties">
     <ng-container *ngIf="solaceMessageClient.connected$ | async; then connected_template; else disconnected_template"></ng-container>
-  </div>
+  </button>
 
   <button mat-stroked-button (click)="onDisconnect()" *ngIf="solaceMessageClient.connected$ | async" matTooltip="Disconnect">
     <mat-icon>wifi</mat-icon>
