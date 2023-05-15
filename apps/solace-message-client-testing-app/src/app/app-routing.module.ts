@@ -1,8 +1,8 @@
-import {NgModule} from '@angular/core';
-import {RouterModule, Routes} from '@angular/router';
+import {inject, NgModule} from '@angular/core';
+import {Router, RouterModule, Routes, UrlTree} from '@angular/router';
 import {LoginComponent} from './login/login.component';
 import {TryMeComponent} from './try-me/try-me.component';
-import {TryMeActivateGuard} from './try-me/try-me-activate.guard';
+import {SessionConfigStore} from './session-config-store';
 
 const routes: Routes = [
   {
@@ -11,7 +11,7 @@ const routes: Routes = [
   },
   {
     path: '',
-    canActivate: [TryMeActivateGuard],
+    canActivate: [autoLoginGuardFn],
     component: TryMeComponent,
   },
 ];
@@ -21,4 +21,11 @@ const routes: Routes = [
   exports: [RouterModule],
 })
 export class AppRoutingModule {
+}
+
+function autoLoginGuardFn(): boolean | UrlTree {
+  if (SessionConfigStore.empty()) {
+    return inject(Router).createUrlTree(['/login']);
+  }
+  return true;
 }

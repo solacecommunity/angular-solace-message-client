@@ -15,7 +15,7 @@ Install `@solace-community/angular-solace-message-client` and required modules u
 
 ```sh
 npm install @solace-community/angular-solace-message-client solclientjs @scion/toolkit --save
-npm install @types/events@3 @types/long@4 --save-dev // required by solclientjs
+npm install @types/events@3 long@5 --save-dev // required by solclientjs
 ```
 
 > The library requires some peer and dev dependencies to be installed. By using the above commands, those are installed as well.
@@ -60,7 +60,7 @@ If you provide the config via `forRoot`, the first time you inject `SolaceMessag
 Inject the service `SolaceMessageClient` into a component or service and publish a message to a topic, as following:
 
 ```typescript
-import { SolaceMessageClientModule } from '@solace-community/angular-solace-message-client';
+import { SolaceMessageClient } from '@solace-community/angular-solace-message-client';
 
 @Component(...)
 public class YourComponent {
@@ -80,7 +80,7 @@ public class YourComponent {
 Inject the service `SolaceMessageClient` into a component or service and subscribe to a topic, as following:
 
 ```typescript
-import { SolaceMessageClientModule } from '@solace-community/angular-solace-message-client';
+import { SolaceMessageClient } from '@solace-community/angular-solace-message-client';
 
 @Component(...)
 public class YourComponent {
@@ -98,7 +98,7 @@ public class YourComponent {
 In the following example, we subscribe to the temperature of any room.
 
 ```typescript
-import { SolaceMessageClientModule } from '@solace-community/angular-solace-message-client';
+import { SolaceMessageClient } from '@solace-community/angular-solace-message-client';
 
 @Component(...)
 public class YourComponent {
