@@ -1,25 +1,25 @@
 <span class="timestamp">{{message.getReceiverTimestamp() | date:'HH:mm:ss'}}</span>
 
-<label>Destination:</label>
+<span>Destination:</span>
 <span class="topic">{{envelope.message.getDestination()!.getName()}}</span>
 
-<label>Type:</label>
+<span>Type:</span>
 <span>{{type}}</span>
 
 <ng-container *ngIf="envelope.params?.size">
-  <label>Params:</label>
+  <span>Params:</span>
   <span>{{envelope.params | appStringifyMap}}</span>
 </ng-container>
 
 <ng-container *ngIf="envelope.headers?.size">
-  <label>Headers:</label>
+  <span>Headers:</span>
   <span>{{envelope.headers | appStringifyMap}}</span>
 </ng-container>
 
-<label>Details:</label>
+<span>Details:</span>
 <sci-viewport class="content">{{details}}</sci-viewport>
 
-<label>Content:</label>
+<span>Content:</span>
 <sci-viewport class="content">
   <section [class.zipped]="envelope.headers.get('Content-Encoding') === 'gzip'">
     {{content}}

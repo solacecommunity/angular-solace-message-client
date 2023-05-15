@@ -11,13 +11,8 @@
     gap: .5em;
     justify-content: flex-end;
 
-    > div.connection-state {
+    > button.connection-state {
       border-radius: 3px;
-      padding: .25em 1em;
-      text-align: center;
-      display: flex;
-      align-items: center;
-      cursor: pointer;
 
       &.connected {
         border: 1px solid #24be6f;
