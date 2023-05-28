@@ -218,7 +218,11 @@ export abstract class SolaceMessageClient {
    *         {@link Message} object instead, which you can construct using {@link SolclientFactory#createMessage}.
    *         For more information, refer to the documentation of {@link Data}.
    * @param  options - Controls how to publish the message.
-   * @return A Promise that resolves when dispatched the message, or that rejects if the message could not be dispatched.
+   * @return A Promise that resolves when the message could be successfully dispatched or that rejects otherwise.
+   *         The Promise resolves immediately if the published message has the delivery mode {@link MessageDeliveryModeType#DIRECT} (direct messaging).
+   *         If the published message has the delivery mode {@link MessageDeliveryModeType#PERSISTENT} (guaranteed or persistent messaging),
+   *         the Promise resolves once acknowledged, i,e., when one-third of the publish window size is reached or one second has elapsed.
+   *         Refer to https://docs.solace.com/API/API-Developer-Guide/Acknowledging-Published-.htm for more information.
    */
   public abstract publish(destination: string | Destination, data?: Data | Message, options?: PublishOptions): Promise<void>;
 
