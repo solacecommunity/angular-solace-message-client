@@ -3,11 +3,11 @@
 @use 'styles/solace-client-theme' as app-theme;
 
 $theme: mat.define-light-theme((
-    color: (
-        primary: app-theme.$primary,
-        accent: app-theme.$accent,
-        warn: app-theme.$warn,
-    )
+  color: (
+    primary: app-theme.$primary,
+    accent: app-theme.$accent,
+    warn: app-theme.$warn,
+  )
 ));
 
 @import url('https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined');

@@ -8,7 +8,7 @@ export class LocationService {
   constructor(private _router: Router) {
   }
 
-  public navigateToAppRoot(options: { clearConnectProperties: boolean }): void {
+  public navigateToAppRoot(options: {clearConnectProperties: boolean}): void {
     if (options.clearConnectProperties) {
       SessionConfigStore.clear();
     }
