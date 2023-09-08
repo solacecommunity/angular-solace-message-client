@@ -191,3 +191,8 @@ jobs:
           dist-folder: dist/@solace-community/angular-solace-message-client
           npm-token: ${{ secrets.NPM_PUBLISH_TOKEN }}
           dry-run: false
+      - name: 'Creating GitHub Release'
+        run: gh release create $VERSION --title $VERSION --notes-file CHANGELOG_LATEST.md --verify-tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.build-solace-message-client.outputs.version }}

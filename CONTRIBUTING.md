@@ -254,11 +254,12 @@ This chapter describes the tasks to publish a new release to NPM.
 1. Run `npm run changelog` to generate the changelog. Then, review the generated changelog carefully and correct typos and formatting errors, if any.
 1. Commit the changed files using the following commit message: `release(solace-message-client): vX.X.X`. Replace `X.X.X` with the current version. Later, when merging the branch into the master branch, a commit message of this format triggers the release action in our [GitHub Actions workflow][link-github-actions-workflow].
 1. Push the commit to the branch `release/X.X.X` and submit a pull request to the master branch. Replace `X.X.X` with the current version.
-1. When merged into the master branch, the release action in our [GitHub Actions workflow][link-github-actions-workflow] creates a Git release tag, publishes the package to NPM, and deploys related applications.
-1. Verify that:
-- **@solace-community/angular-solace-message-client** is published to: https://www.npmjs.com/package/@solace-community/angular-solace-message-client.
-- **API Documentation (TypeDoc)** is deployed to: https://solacecommunity.github.io/angular-solace-message-client/api
-- **Testing Application (Try Me)** is deployed to: https://solacecommunity.github.io/angular-solace-message-client/tryme
+1. When merged into the master branch, the release action in our [GitHub Actions workflow][link-github-actions-workflow] does the following:
+   - Creates a Git release tag
+   - Publishes `@solace-community/angular-solace-message-client` package to NPM (https://www.npmjs.com/package/@solace-community/angular-solace-message-client)
+   - Creates a release on GitHub (https://github.com/solacecommunity/angular-solace-message-client/releases)
+   - Deploys Testing Application (Try Me) to https://solacecommunity.github.io/angular-solace-message-client/tryme
+   - Publishes API Documentation (TypeDoc) to https://solacecommunity.github.io/angular-solace-message-client/api
 
 </details>
 
