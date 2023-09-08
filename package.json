@@ -7,7 +7,9 @@
     "test": "run-s **:*:test",
     "test:headless": "cross-env HEADLESS=true run-s **:*:test",
     "start": "run-s solace-message-client-testing-app:serve",
-    "changelog": "conventional-changelog -k projects/solace-message-client -p angular -i CHANGELOG.md -s && markdown-include docs/site/changelog/changelog.template.json",
+    "changelog": "run-p changelog:*",
+    "changelog:fullest": "conventional-changelog -k projects/solace-message-client -p angular -i CHANGELOG.md -s && markdown-include docs/site/changelog/changelog.template.json",
+    "changelog:latest": "conventional-changelog -k projects/solace-message-client -p angular -o CHANGELOG_LATEST.md",
 
     "solace-message-client:lint": "ng lint solace-message-client",
     "solace-message-client:test": "ng test solace-message-client",
