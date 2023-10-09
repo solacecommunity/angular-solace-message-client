@@ -176,7 +176,7 @@ jobs:
   release:
     name: 'Releasing @solace-community/angular-solace-message-client'
     if: ${{ needs.release-guard.outputs.should-release == 'true' }}
-    needs: [ release-guard ]
+    needs: [ build-solace-message-client, release-guard ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
