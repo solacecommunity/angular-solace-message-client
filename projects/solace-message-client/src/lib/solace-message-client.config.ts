@@ -2,6 +2,8 @@ import {SessionProperties} from 'solclientjs';
 import {Type} from '@angular/core';
 import {OAuthAccessTokenProvider} from './oauth-access-token-provider';
 
+/* eslint-disable @typescript-eslint/no-unsafe-declaration-merging */
+
 // Merge class and interface declarations so that it can be used as DI token as well as object literal to configure the library.
 // See https://www.typescriptlang.org/docs/handbook/declaration-merging.html for more information.
 

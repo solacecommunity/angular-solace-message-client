@@ -1,19 +1,19 @@
 name: Continuous Integration and Delivery
 on: [push, pull_request]
 env:
-  NODE_VERSION: 18.16.0
+  NODE_VERSION: 20.9.0
   PUPPETEER_CACHE_DIR: ${{ github.workspace }}/node_modules/.cache/puppeteer
 jobs:
   install:
     name: 'Installing NPM modules'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: 'Running npm ci (if node_modules not cached)'
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: node-modules-cache
         with:
           path: ./node_modules
@@ -25,12 +25,12 @@ jobs:
     needs: install
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: 'Restoring NPM modules from cache'
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ./node_modules
           key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -42,8 +42,8 @@ jobs:
     outputs:
       version: ${{ steps.solace-message-client-package-json.outputs.version }}
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: 'Reading package.json version of solace-message-client'
@@ -52,7 +52,7 @@ jobs:
         with:
           path: projects/solace-message-client/package.json
       - name: 'Restoring NPM modules from cache'
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ./node_modules
           key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -60,11 +60,11 @@ jobs:
         run: npm run solace-message-client:build
       - name: 'Building API Documentation (TypeDoc)'
         run: npm run solace-message-client:typedoc
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: solace-message-client
           path: dist/@solace-community/angular-solace-message-client
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: solace-message-client-api
           path: dist/solace-message-client-api
@@ -73,37 +73,37 @@ jobs:
     needs: build-solace-message-client
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: 'Restoring NPM modules from cache'
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ./node_modules
           key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
       - name: 'Downloading solace-message-client'
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: solace-message-client
           path: dist/@solace-community/angular-solace-message-client
       - name: 'Building TryMe App'
         run: npm run solace-message-client-testing-app:build
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: tryme-app
-          path: dist/solace-message-client-testing-app
+          path: dist/solace-message-client-testing-app/browser
   test:
     name: 'Unit Testing'
     needs: install
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: 'Restoring NPM modules from cache'
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ./node_modules
           key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -120,7 +120,7 @@ jobs:
     outputs:
       should-release: ${{ steps.tag-release-commit.outputs.is-release-commit }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: 'If release commit present, add release tag'
         uses: SchweizerischeBundesbahnen/scion-toolkit/.github/actions/tag-release-commit@master
         id: tag-release-commit
@@ -133,14 +133,14 @@ jobs:
     needs: [ release-guard ]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: 'Downloading API'
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: solace-message-client-api
           path: dist/api
       - name: 'Deploying API to GitHub Pages'
-        uses: JamesIves/github-pages-deploy-action@4.1.0
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
           commit-message: 'release(api): publish API documentation'
@@ -158,14 +158,14 @@ jobs:
       - test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: 'Downloading TryMe App'
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: tryme-app
           path: dist/tryme
       - name: 'Deploying TryMe App to GitHub Pages'
-        uses: JamesIves/github-pages-deploy-action@4.1.0
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
           commit-message: 'release(tryme): publish TryMe application'
@@ -179,9 +179,9 @@ jobs:
     needs: [ build-solace-message-client, release-guard ]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: 'Downloading dist/solace-message-client'
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: solace-message-client
           path: dist/@solace-community/angular-solace-message-client
