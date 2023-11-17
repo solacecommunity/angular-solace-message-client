@@ -3,7 +3,9 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "../../out-tsc/solace-message-client-testing-app",
-    "types": []
+    "types": [
+      "node" // required by solclientjs
+    ]
   },
   "files": [
     "src/main.ts"

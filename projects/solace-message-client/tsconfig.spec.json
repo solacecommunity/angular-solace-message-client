@@ -4,12 +4,10 @@
   "compilerOptions": {
     "outDir": "../../out-tsc/solace-message-client/spec",
     "types": [
-      "jasmine"
+      "jasmine",
+      "node" // required by solclientjs
     ]
   },
-  "files": [
-    "src/test.ts"
-  ],
   "include": [
     "**/*.spec.ts",
     "**/*.d.ts"
