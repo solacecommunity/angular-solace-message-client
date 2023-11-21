@@ -3,7 +3,7 @@ import {NullSolaceMessageClient, SolaceMessageClient} from './solace-message-cli
 import {ɵSolaceMessageClient} from './ɵsolace-message-client';
 import {TopicMatcher} from './topic-matcher';
 import {SolaceSessionProvider, ɵSolaceSessionProvider} from './solace-session-provider';
-import {SolaceMessageClientConfig} from './solace-message-client.config';
+import {SOLACE_MESSAGE_CLIENT_CONFIG, SolaceMessageClientConfig} from './solace-message-client.config';
 import {provideLogger} from './logger';
 
 /**
@@ -113,7 +113,7 @@ export class SolaceMessageClientModule {
       ngModule: SolaceMessageClientModule,
       providers: [
         ForRootGuardService,
-        {provide: SolaceMessageClientConfig, useValue: config},
+        {provide: SOLACE_MESSAGE_CLIENT_CONFIG, useValue: config},
         {provide: SolaceMessageClient, useClass: ɵSolaceMessageClient},
         {provide: SolaceSessionProvider, useClass: ɵSolaceSessionProvider},
         TopicMatcher,

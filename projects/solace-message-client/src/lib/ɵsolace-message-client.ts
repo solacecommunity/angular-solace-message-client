@@ -1,4 +1,4 @@
-import {Injectable, Injector, NgZone, OnDestroy, Optional} from '@angular/core';
+import {inject, Injectable, Injector, NgZone, OnDestroy} from '@angular/core';
 import {EMPTY, EmptyError, firstValueFrom, identity, merge, MonoTypeOperatorFunction, noop, Observable, Observer, of, OperatorFunction, ReplaySubject, share, shareReplay, skip, Subject, TeardownLogic, throwError} from 'rxjs';
 import {distinctUntilChanged, filter, finalize, map, mergeMap, take, takeUntil, tap} from 'rxjs/operators';
 import {UUID} from '@scion/toolkit/uuid';
@@ -7,7 +7,7 @@ import {TopicMatcher} from './topic-matcher';
 import {observeInside} from '@scion/toolkit/operators';
 import {SolaceSessionProvider} from './solace-session-provider';
 import {OAuthAccessTokenProvider} from './oauth-access-token-provider';
-import {SolaceMessageClientConfig} from './solace-message-client.config';
+import {SOLACE_MESSAGE_CLIENT_CONFIG, SolaceMessageClientConfig} from './solace-message-client.config';
 import {AuthenticationScheme, Destination, Message, MessageConsumer, MessageConsumerEventName, MessageConsumerProperties, MessageDeliveryModeType, OperationError, QueueBrowser, QueueBrowserEventName, QueueBrowserProperties, QueueDescriptor, QueueType, RequestError, SDTField, SDTFieldType, SDTMapContainer, Session, SessionEvent, SessionEventCode, SessionProperties as SolaceSessionProperties, SolclientFactory, SolclientFactoryProfiles, SolclientFactoryProperties} from 'solclientjs';
 import {TopicSubscriptionCounter} from './topic-subscription-counter';
 import {SerialExecutor} from './serial-executor.service';
@@ -28,8 +28,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
 
   public connected$: Observable<boolean>;
 
-  constructor(@Optional() config: SolaceMessageClientConfig,
-              private _sessionProvider: SolaceSessionProvider,
+  constructor(private _sessionProvider: SolaceSessionProvider,
               private _topicMatcher: TopicMatcher,
               private _injector: Injector,
               private _logger: Logger,
@@ -40,6 +39,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
     this.connected$ = this.monitorConnectionState$();
 
     // Auto connect to the Solace broker if having provided a module config.
+    const config = inject(SOLACE_MESSAGE_CLIENT_CONFIG, {optional: true});
     if (config) {
       this.connect(config).catch(error => this._logger.error('Failed to connect to the Solace message broker.', error));
     }
