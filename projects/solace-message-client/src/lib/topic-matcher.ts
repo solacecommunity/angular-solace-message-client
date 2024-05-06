@@ -1,26 +1,28 @@
-import {Injectable} from '@angular/core';
-import {Destination} from 'solclientjs';
-
 /**
  * Matches exact topics as used when publishing messages against subscription topics.
  *
  * This class implements the rules for 'Wildcard Characters in SMF Topic Subscriptions',
  * as outlined here: https://docs.solace.com/PubSub-Basics/Wildcard-Charaters-Topic-Subs.htm.
  */
-@Injectable()
 export class TopicMatcher {
 
-  public matchesSubscriptionTopic(testeeTopic: string | Destination | null, subscriptionTopic: string | Destination): boolean {
-    if (!testeeTopic) {
+  private readonly _subscriptionTopic: string[];
+
+  constructor(subscriptionTopic: string) {
+    this._subscriptionTopic = parseSubscriptionTopic(subscriptionTopic);
+  }
+
+  public matches(topic: string | undefined): boolean {
+    if (!topic) {
       return false;
     }
-    const testeeSegments = coerceTopicName(testeeTopic).split('/');
-    const subscriptionTopicSegments = coerceTopicName(subscriptionTopic).split('/');
+    const testeeSegments = topic.split('/');
+    const subscriptionSegments = this._subscriptionTopic;
 
-    for (let i = 0; i < subscriptionTopicSegments.length; i++) {
-      const subscriptionTopicSegment = subscriptionTopicSegments[i];
+    for (let i = 0; i < subscriptionSegments.length; i++) {
+      const subscriptionTopicSegment = subscriptionSegments[i];
       const testee = testeeSegments[i];
-      const isLastSubscriptionTopicSegment = (i === subscriptionTopicSegments.length - 1);
+      const isLastSubscriptionTopicSegment = (i === subscriptionSegments.length - 1);
 
       if (testee === undefined) {
         return false;
@@ -42,13 +44,27 @@ export class TopicMatcher {
         return false;
       }
     }
-    return testeeSegments.length === subscriptionTopicSegments.length;
+    return testeeSegments.length === subscriptionSegments.length;
   }
 }
 
-function coerceTopicName(topic: string | Destination): string {
-  if (typeof topic === 'string') {
-    return topic;
+/**
+ * Parses the subscription topic, removing #noexport and #share segments, if any.
+ */
+function parseSubscriptionTopic(topic: string): string[] {
+  const segments = topic.split('/');
+
+  // Remove #noexport segment, if any. See https://docs.solace.com/Messaging/No-Export.htm
+  // Example: #noexport/#share/ShareName/topicFilter, #noexport/topicFilter
+  if (segments[0] === '#noexport') {
+    segments.shift();
   }
-  return topic.getName();
+
+  // Remove #share segments, if any. See https://docs.solace.com/Messaging/Direct-Msg/Direct-Messages.htm
+  // Examples: #share/<ShareName>/<topicFilter>
+  if (segments[0] === '#share') {
+    segments.shift(); // removes #share segment
+    segments.shift(); // removes share name segment
+  }
+  return segments;
 }

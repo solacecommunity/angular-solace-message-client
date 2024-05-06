@@ -29,7 +29,6 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
   public connected$: Observable<boolean>;
 
   constructor(private _sessionProvider: SolaceSessionProvider,
-              private _topicMatcher: TopicMatcher,
               private _injector: Injector,
               private _logger: Logger,
               private _zone: NgZone) {
@@ -206,6 +205,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
       const unsubscribe$ = new Subject<void>();
       const topicDestination = createSubscriptionTopicDestination(topic);
       const observeOutsideAngular = options?.emitOutsideAngularZone ?? false;
+      const topicMatcher = new TopicMatcher(topicDestination.getName());
 
       // Wait until initialized the session so that 'subscriptionExecutor' and 'subscriptionCounter' are initialized.
       this.session
@@ -217,7 +217,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
           merge(this._message$, subscribeError$)
             .pipe(
               assertNotInAngularZone(),
-              filter(message => this._topicMatcher.matchesSubscriptionTopic(message.getDestination(), topicDestination)),
+              filter(message => topicMatcher.matches(message.getDestination()?.getName())),
               mapToMessageEnvelope(topic),
               observeOutsideAngular ? identity : observeInside(continueFn => this._zone.run(continueFn)),
               takeUntil(merge(this._sessionDisposed$, unsubscribe$)),
