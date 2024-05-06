@@ -1,7 +1,6 @@
 import {Inject, Injectable, InjectionToken, ModuleWithProviders, NgModule, Optional, SkipSelf} from '@angular/core';
 import {NullSolaceMessageClient, SolaceMessageClient} from './solace-message-client';
 import {ɵSolaceMessageClient} from './ɵsolace-message-client';
-import {TopicMatcher} from './topic-matcher';
 import {SolaceSessionProvider, ɵSolaceSessionProvider} from './solace-session-provider';
 import {SOLACE_MESSAGE_CLIENT_CONFIG, SolaceMessageClientConfig} from './solace-message-client.config';
 import {provideLogger} from './logger';
@@ -116,7 +115,6 @@ export class SolaceMessageClientModule {
         {provide: SOLACE_MESSAGE_CLIENT_CONFIG, useValue: config},
         {provide: SolaceMessageClient, useClass: ɵSolaceMessageClient},
         {provide: SolaceSessionProvider, useClass: ɵSolaceSessionProvider},
-        TopicMatcher,
         provideLogger(),
         {
           provide: FORROOT_GUARD,
