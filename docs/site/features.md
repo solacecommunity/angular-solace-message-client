@@ -416,6 +416,41 @@ bootstrapApplication(AppComponent, {
 </details>
 
 <details>
+  <summary><strong>Connect to multiple Solace Message Brokers</strong></summary>
+  <br>
+
+An application is not limited to connecting to a single Solace Message Broker. Different injection environments can be used to connect to different brokers.
+
+Angular injection environments form a hierarchy, inheriting providers from parent environments. An environment can register new providers or replace inherited providers. A child environment is created through routing or programmatically using `createEnvironmentInjector`.
+
+Example for connecting to two different brokers:
+
+```ts
+import {createEnvironmentInjector, EnvironmentInjector, inject} from '@angular/core';
+import {provideSolaceMessageClient, SolaceMessageClient} from '@solace-community/angular-solace-message-client';
+
+// Create environment to provide message client for broker 1.
+const environment1 = createEnvironmentInjector([provideSolaceMessageClient({url: 'broker-1'})], inject(EnvironmentInjector));
+// Inject message client.
+const messageClient1 = environment1.get(SolaceMessageClient);
+// Publish message to broker 1.
+messageClient1.publish('topic', 'message for broker 1');
+
+// Create environment to provide message client for broker 2.
+const environment2 = createEnvironmentInjector([provideSolaceMessageClient({url: 'broker-2'})], inject(EnvironmentInjector));
+// Inject message client.
+const messageClient2 = environment2.get(SolaceMessageClient);
+// Publish message to broker 2.
+messageClient2.publish('topic', 'message for broker 2');
+
+// Destroy environments to destroy provided `SolaceMessageClient` instances. 
+environment1.destroy();
+environment2.destroy();
+```
+
+</details>
+
+<details>
   <summary><strong>Change Log Level</strong></summary>
   <br>
 
