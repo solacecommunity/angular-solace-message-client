@@ -112,16 +112,6 @@ inject(SolaceMessageClient).observe$('myhome/:room/temperature').subscribe(envel
 });
 ```
 
-**Receive Messages Outside Angular Zone**
-```ts
-import {inject} from '@angular/core';
-import {SolaceMessageClient} from '@solace-community/angular-solace-message-client';
-
-inject(SolaceMessageClient).observe$('myhome/livingroom/temperature', {emitOutsideAngularZone: true}).subscribe(() => {
-  console.log('Runs outside Angular zone');
-});
-```
-
 **Read Message Headers**
 ```ts
 import {inject} from '@angular/core';
@@ -325,6 +315,30 @@ solaceMessageClient.observe$('request-topic').subscribe(request => {
 ```
 
 > Refer to [SolaceMessageClient#request$](https://solacecommunity.github.io/angular-solace-message-client/api/classes/SolaceMessageClient.html#request_) for more information about the API.
+
+</details>
+
+<details>
+  <summary><strong>Control Angular Zone</strong></summary>
+  <br>
+
+Messages are received in the zone in which subscribed to the Observable.
+
+The following example receives messages outside the Angular zone:
+
+```ts
+import {inject, NgZone} from '@angular/core';
+import {SolaceMessageClient} from '@solace-community/angular-solace-message-client';
+
+// Run the following code outside of Angular
+inject(NgZone).runOutsideAngular(() => {
+  // Subscribe to topic outside of Angular
+  inject(SolaceMessageClient).observe$('topic').subscribe(() => {
+    // Message is received outside of Angular
+    NgZone.assertNotInAngularZone();
+  });
+});
+```
 
 </details>
 

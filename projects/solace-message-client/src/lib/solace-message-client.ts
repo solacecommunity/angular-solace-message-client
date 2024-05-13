@@ -54,7 +54,7 @@ export abstract class SolaceMessageClient {
   public abstract disconnect(): Promise<void>;
 
   /**
-   * Receives messages published to the given topic.
+   * Receives messages published to the given topic. Messages are received in the zone in which subscribed to the Observable.
    *
    * The Observable never completes, unless invoking {@link disconnect}. If not connected to the broker yet, or if the connect attempt failed, the Observable errors.
    *
@@ -77,10 +77,7 @@ export abstract class SolaceMessageClient {
    * Substituted segment values are then available in {@link MessageEnvelope.params}, or as the second element of the tuple when using {@link mapToBinary} or {@link mapToText}
    * RxJS operators.
    *
-   *
-   * The Observables emits the messages as received by the Solace broker. You can use one of the following custom RxJS operators to map the message to its payload.
-   * - {@link mapToBinary}
-   * - {@link mapToText}
+   * To map directly to the payload, you can use the following RxJS operators: {@link mapToBinary}, {@link mapToText}.
    *
    * @param topic - Specifies the topic which to observe.
    *        Topics are case-sensitive and consist of one or more segments, each separated by a forward slash.
@@ -94,7 +91,7 @@ export abstract class SolaceMessageClient {
   public abstract observe$(topic: string, options?: ObserveOptions): Observable<MessageEnvelope>;
 
   /**
-   * Consumes messages from a given topic endpoint or queue endpoint.
+   * Consumes messages from a given topic endpoint or queue endpoint. Messages are received in the zone in which subscribed to the Observable.
    *
    * Endpoint names are case-sensitive and consist of one or more segments, each separated by a forward slash.
    *
@@ -150,9 +147,7 @@ export abstract class SolaceMessageClient {
    * For example, the topic 'myhome/:room/temperature' is translated to 'myhome/* /temperature', matching messages sent to topics like 'myhome/kitchen/temperature' or 'myhome/livingroom/temperature'.
    * Substituted segment values are then available in {@link MessageEnvelope.params}, or as the second element of the tuple when using {@link mapToBinary} or {@link mapToText} RxJS operators.
    *
-   * The Observables emits the messages as received by the Solace broker. You can use one of the following custom RxJS operators to map the message to its payload.
-   * - {@link mapToBinary}
-   * - {@link mapToText}
+   * To map directly to the payload, you can use the following RxJS operators: {@link mapToBinary}, {@link mapToText}.
    *
    * @param topicOrDescriptor - If specifying a `string` literal, then it is used as the subscription topic to create a topic endpoint for, allowing messages to be reliably received even if the
    *        connection is unstable. If passing a descriptor object, it is used as the config to connect to a queue or topic endpoint.
@@ -163,7 +158,7 @@ export abstract class SolaceMessageClient {
   public abstract consume$(topicOrDescriptor: string | (MessageConsumerProperties & ConsumeOptions)): Observable<MessageEnvelope>;
 
   /**
-   * Browses messages in a queue, without removing/consuming the messages.
+   * Browses messages in a queue, without removing/consuming the messages. Messages are received in the zone in which subscribed to the Observable.
    *
    * @param queueOrDescriptor - Specifies the queue to browse, or a descriptor object describing how to connect to the queue browser.
    * @return Observable that emits spooled messages in the specified queue. The Observable never completes. If not connected to the broker yet, or if the connect attempt failed, the Observable errors.
@@ -234,7 +229,7 @@ export abstract class SolaceMessageClient {
   public abstract publish(destination: string | Destination, data?: Data | Message, options?: PublishOptions): Promise<void>;
 
   /**
-   * Sends a request to the specified destination and waits for the response to arrive.
+   * Sends a request to the specified destination and waits for the response to arrive. Replies are received in the zone in which subscribed to the Observable.
    *
    * - If sending the request to a topic, the request is transported to all subscribers subscribed to the topic at the time of sending the request.
    * - If sending the request to a queue, the request is transported to a single subscriber. The request is retained if there was no subscriber
@@ -327,10 +322,11 @@ export interface ObserveOptions {
   subscribeTimeout?: number;
 
   /**
-   * Controls if to emit received messages inside or outside of the Angular zone.
-   * If emitted outside of the Angular zone no change detection cycle is triggered.
+   * Controls if to emit received messages inside or outside the Angular zone.
    *
-   * By default, if not specified, emits inside the Angular zone.
+   * By default, if not specified, emits in the zone in which subscribed to the Observable.
+   *
+   * @deprecated since version 17.1.0; Messages are received in the zone in which subscribed to the Observable. To receive messages outside the Angular zone, subscribe to the Observable outside the Angular zone, otherwise inside the Angular zone; API will be removed in a future release.
    */
   emitOutsideAngularZone?: boolean;
 
@@ -349,10 +345,11 @@ export interface ObserveOptions {
 export interface ConsumeOptions {
 
   /**
-   * Controls if to emit received messages inside or outside of the Angular zone.
-   * If emitted outside of the Angular zone no change detection cycle is triggered.
+   * Controls if to emit received messages inside or outside the Angular zone.
    *
-   * By default, if not specified, emits inside the Angular zone.
+   * By default, if not specified, emits in the zone in which subscribed to the Observable.
+   *
+   * @deprecated since version 17.1.0; Messages are received in the zone in which subscribed to the Observable. To receive messages outside the Angular zone, subscribe to the Observable outside the Angular zone, otherwise inside the Angular zone; API will be removed in a future release.
    */
   emitOutsideAngularZone?: boolean;
 
@@ -376,10 +373,11 @@ export interface ConsumeOptions {
 export interface BrowseOptions {
 
   /**
-   * Controls if to emit received messages inside or outside of the Angular zone.
-   * If emitted outside of the Angular zone no change detection cycle is triggered.
+   * Controls if to emit received messages inside or outside the Angular zone.
    *
-   * By default, if not specified, emits inside the Angular zone.
+   * By default, if not specified, emits in the zone in which subscribed to the Observable.
+   *
+   * @deprecated since version 17.1.0; Messages are received in the zone in which subscribed to the Observable. To receive messages outside the Angular zone, subscribe to the Observable outside the Angular zone, otherwise inside the Angular zone; API will be removed in a future release.
    */
   emitOutsideAngularZone?: boolean;
 }
@@ -523,10 +521,11 @@ export interface RequestOptions extends PublishOptions {
    */
   requestTimeout?: number;
   /**
-   * Controls if to emit received replies inside or outside of the Angular zone.
-   * If emitted outside of the Angular zone no change detection cycle is triggered.
+   * Controls if to emit received replies inside or outside the Angular zone.
    *
-   * By default, if not specified, emits inside the Angular zone.
+   * By default, if not specified, emits in the zone in which subscribed to the Observable.
+   *
+   * @deprecated since version 17.1.0; Replies are received in the zone in which subscribed to the Observable. To receive replies outside the Angular zone, subscribe to the Observable outside the Angular zone, otherwise inside the Angular zone; API will be removed in a future release.
    */
   emitOutsideAngularZone?: boolean;
 }

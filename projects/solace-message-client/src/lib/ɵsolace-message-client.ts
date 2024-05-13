@@ -210,7 +210,6 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
     return new Observable((observer: Observer<MessageEnvelope>): TeardownLogic => {
       const unsubscribe$ = new Subject<void>();
       const topicDestination = createSubscriptionTopicDestination(topic);
-      const observeOutsideAngular = options?.emitOutsideAngularZone ?? false;
       const topicMatcher = new TopicMatcher(topicDestination.getName());
 
       // Wait until initialized the session so that 'subscriptionExecutor' and 'subscriptionCounter' are initialized.
@@ -225,7 +224,8 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
               assertNotInAngularZone(),
               filter(message => topicMatcher.matches(message.getDestination()?.getName())),
               mapToMessageEnvelope(topic),
-              observeOutsideAngular ? identity : observeInside(continueFn => this._zone.run(continueFn)),
+              synchronizeNgZone(this._zone),
+              synchronizeNgZoneLegacy(this._zone, options?.emitOutsideAngularZone),
               takeUntil(merge(this._sessionDisposed$, unsubscribe$)),
               finalize(() => {
                 // Unsubscribe from the topic on the Solace session, but only if being the last subscription on that topic and if successfully subscribed to the Solace broker.
@@ -355,7 +355,6 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
     if (topicEndpointSubscription) {
       consumerProperties.topicEndpointSubscription = createSubscriptionTopicDestination(consumerProperties.topicEndpointSubscription!.getName());
     }
-    const observeOutsideAngular = consumerProperties?.emitOutsideAngularZone ?? false;
 
     return new Observable((observer: Observer<Message>): TeardownLogic => {
       let messageConsumer: MessageConsumer | undefined;
@@ -406,7 +405,8 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
     })
       .pipe(
         mapToMessageEnvelope(topicEndpointSubscription),
-        observeOutsideAngular ? identity : observeInside(continueFn => this._zone.run(continueFn)),
+        synchronizeNgZone(this._zone),
+        synchronizeNgZoneLegacy(this._zone, consumerProperties?.emitOutsideAngularZone),
       );
   }
 
@@ -426,7 +426,6 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
   }
 
   private createQueueBrowser$(queueBrowserProperties: (QueueBrowserProperties & BrowseOptions)): Observable<MessageEnvelope> {
-    const observeOutsideAngular = queueBrowserProperties?.emitOutsideAngularZone ?? false;
     return new Observable((observer: Observer<Message>): TeardownLogic => {
       let queueBrowser: QueueBrowser | undefined;
       let disposed = false;
@@ -481,7 +480,8 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
     })
       .pipe(
         mapToMessageEnvelope(),
-        observeOutsideAngular ? identity : observeInside(continueFn => this._zone.run(continueFn)),
+        synchronizeNgZone(this._zone),
+        synchronizeNgZoneLegacy(this._zone, queueBrowserProperties?.emitOutsideAngularZone),
       );
   }
 
@@ -492,7 +492,6 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
   }
 
   public request$(destination: string | Destination, data?: Data | Message, options?: RequestOptions): Observable<MessageEnvelope> {
-    const observeOutsideAngular = options?.emitOutsideAngularZone ?? false;
     const solaceDestination = typeof destination === 'string' ? SolclientFactory.createTopicDestination(destination) : destination;
 
     return new Observable<MessageEnvelope>(observer => {
@@ -502,7 +501,8 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
         .pipe(
           assertNotInAngularZone(),
           mapToMessageEnvelope(),
-          observeOutsideAngular ? identity : observeInside(continueFn => this._zone.run(continueFn)),
+          synchronizeNgZone(this._zone),
+          synchronizeNgZoneLegacy(this._zone, options?.emitOutsideAngularZone),
           takeUntil(unsubscribe$),
         )
         .subscribe(observer);
@@ -823,4 +823,47 @@ function mapEmptyError(errorFactory: () => Error): (error: any) => Promise<never
       return Promise.reject(error);
     }
   };
+}
+
+/**
+ * Emits in the zone in which subscribed to the Observable.
+ */
+function synchronizeNgZone<T>(zone: NgZone): MonoTypeOperatorFunction<T> {
+  return (source$: Observable<T>) => {
+    return new Observable<T>(observer => {
+      const insideAngular = NgZone.isInAngularZone();
+      const subscription = source$
+        .pipe(observeInside(fn => insideAngular ? runInsideAngular(fn) : runOutsideAngular(fn)))
+        .subscribe(observer);
+      return () => subscription.unsubscribe();
+    });
+  };
+
+  function runInsideAngular(fn: () => void): void {
+    NgZone.isInAngularZone() ? fn() : zone.run(fn);
+  }
+
+  function runOutsideAngular(fn: () => void): void {
+    !NgZone.isInAngularZone() ? fn() : zone.runOutsideAngular(fn);
+  }
+}
+
+/**
+ * Emits in the zone as specified. Does nothing if `emitOutsideAngular` is `undefined`.
+ *
+ * @deprecated since version 17.1.0; Remove when dropping support to configure whether to emit inside or outside the Angular zone.
+ */
+function synchronizeNgZoneLegacy<T>(zone: NgZone, emitOutsideAngular: boolean | undefined): MonoTypeOperatorFunction<T> {
+  if (emitOutsideAngular === undefined) {
+    return identity;
+  }
+  return observeInside(fn => emitOutsideAngular ? runOutsideAngular(fn) : runInsideAngular(fn));
+
+  function runInsideAngular(fn: () => void): void {
+    NgZone.isInAngularZone() ? fn() : zone.run(fn);
+  }
+
+  function runOutsideAngular(fn: () => void): void {
+    !NgZone.isInAngularZone() ? fn() : zone.runOutsideAngular(fn);
+  }
 }

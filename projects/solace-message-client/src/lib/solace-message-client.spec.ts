@@ -641,13 +641,14 @@ describe('SolaceMessageClient', () => {
       expect(observeCaptor3_topic2.getValues()).toEqual([message8]);
     });
 
-    it('should receive messages inside the Angular zone (by default)', async () => {
+    // @deprecated since version 17.1.0; Remove when dropping support to configure whether to emit inside or outside the Angular zone.
+    it('should receive messages inside the Angular zone', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
       const observeCaptor = new ObserveCaptor(() => NgZone.isInAngularZone());
 
       // Subscribe to topic
       const sessionSubscribeCaptor = sessionFixture.installSessionSubscribeCaptor();
-      solaceMessageClient.observe$('topic').subscribe(observeCaptor);
+      solaceMessageClient.observe$('topic', {emitOutsideAngularZone: false}).subscribe(observeCaptor);
       await drainMicrotaskQueue();
       await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
 
@@ -658,6 +659,7 @@ describe('SolaceMessageClient', () => {
       expect(observeCaptor.getValues()).toEqual([true]);
     });
 
+    // @deprecated since version 17.1.0; Remove when dropping support to configure whether to emit inside or outside the Angular zone.
     it('should receive messages outside the Angular zone', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
       const observeCaptor = new ObserveCaptor(() => NgZone.isInAngularZone());
@@ -665,6 +667,42 @@ describe('SolaceMessageClient', () => {
       // Subscribe to topic
       const sessionSubscribeCaptor = sessionFixture.installSessionSubscribeCaptor();
       solaceMessageClient.observe$('topic', {emitOutsideAngularZone: true}).subscribe(observeCaptor);
+      await drainMicrotaskQueue();
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+
+      // Simulate receiving a message from the Solace broker
+      await sessionFixture.simulateMessage(createTopicMessage('topic'));
+
+      // Expect message to be received outside the Angular zone
+      expect(observeCaptor.getValues()).toEqual([false]);
+    });
+
+    it('should receive messages in the zone subscribed (inside Angular)', async () => {
+      const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+      const observeCaptor = new ObserveCaptor(() => NgZone.isInAngularZone());
+
+      // Subscribe inside the Angular zone.
+      const sessionSubscribeCaptor = sessionFixture.installSessionSubscribeCaptor();
+      TestBed.inject(NgZone).run(() => solaceMessageClient.observe$('topic').subscribe(observeCaptor));
+
+      await drainMicrotaskQueue();
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+
+      // Simulate receiving a message from the Solace broker
+      await sessionFixture.simulateMessage(createTopicMessage('topic'));
+
+      // Expect message to be received inside the Angular zone
+      expect(observeCaptor.getValues()).toEqual([true]);
+    });
+
+    it('should receive messages in the zone subscribed (outside Angular)', async () => {
+      const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+      const observeCaptor = new ObserveCaptor(() => NgZone.isInAngularZone());
+
+      // Subscribe outside the Angular zone.
+      const sessionSubscribeCaptor = sessionFixture.installSessionSubscribeCaptor();
+      TestBed.inject(NgZone).runOutsideAngular(() => solaceMessageClient.observe$('topic').subscribe(observeCaptor));
+
       await drainMicrotaskQueue();
       await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
 
@@ -843,17 +881,19 @@ describe('SolaceMessageClient', () => {
     it('should not notify when subscription to topic destination failed', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
+      const messageCaptor = new ObserveCaptor<MessageEnvelope>();
       const sessionSubscribeCaptor = sessionFixture.installSessionSubscribeCaptor();
 
       // Subscribe to topic
       const onSubscribedCallback = jasmine.createSpy('onSubscribed');
-      solaceMessageClient.observe$('topic', {onSubscribed: onSubscribedCallback}).subscribe();
+      solaceMessageClient.observe$('topic', {onSubscribed: onSubscribedCallback}).subscribe(messageCaptor);
       await drainMicrotaskQueue();
 
       // Expect `onSubscribed` callback not to be invoked after the receipt of `SUBSCRIPTION_ERROR` event
       expect(onSubscribedCallback).toHaveBeenCalledTimes(0);
       await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_ERROR, sessionSubscribeCaptor.correlationKey);
       expect(onSubscribedCallback).toHaveBeenCalledTimes(0);
+      expect(messageCaptor.hasErrored()).toBeTrue();
     });
 
     it('should publish a message to a topic', async () => {
@@ -1552,13 +1592,18 @@ describe('SolaceMessageClient', () => {
         ]);
       });
 
-      it('should receive messages inside the Angular zone (by default)', async () => {
+      // @deprecated since version 17.1.0; Remove when dropping support to configure whether to emit inside or outside the Angular zone.
+      it('should receive messages inside the Angular zone', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
         const observeCaptor = new ObserveCaptor(() => NgZone.isInAngularZone());
 
         // Subscribe to a topic endpoint
         const messageConsumerFixture = sessionFixture.messageConsumerFixture;
-        solaceMessageClient.consume$('topic').subscribe(observeCaptor);
+        solaceMessageClient.consume$({
+          topicEndpointSubscription: SolclientFactory.createTopicDestination('topic'),
+          queueDescriptor: new QueueDescriptor({type: QueueType.TOPIC_ENDPOINT, durable: false}),
+          emitOutsideAngularZone: false,
+        }).subscribe(observeCaptor);
 
         // Simulate the message consumer to be connected to the broker
         await messageConsumerFixture.simulateEvent(MessageConsumerEventName.UP);
@@ -1570,6 +1615,7 @@ describe('SolaceMessageClient', () => {
         expect(observeCaptor.getValues()).toEqual([true]);
       });
 
+      // @deprecated since version 17.1.0; Remove when dropping support to configure whether to emit inside or outside the Angular zone.
       it('should receive messages outside the Angular zone', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
         const observeCaptor = new ObserveCaptor(() => NgZone.isInAngularZone());
@@ -1581,6 +1627,42 @@ describe('SolaceMessageClient', () => {
           queueDescriptor: new QueueDescriptor({type: QueueType.TOPIC_ENDPOINT, durable: false}),
           emitOutsideAngularZone: true,
         }).subscribe(observeCaptor);
+
+        // Simulate the message consumer to be connected to the broker
+        await messageConsumerFixture.simulateEvent(MessageConsumerEventName.UP);
+
+        // Simulate to receive a message
+        await messageConsumerFixture.simulateMessage(createTopicMessage('topic'));
+
+        // Expect message to be received outside the Angular zone
+        expect(observeCaptor.getValues()).toEqual([false]);
+      });
+
+      it('should receive messages in the zone subscribed (inside Angular)', async () => {
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+        const observeCaptor = new ObserveCaptor(() => NgZone.isInAngularZone());
+
+        // Subscribe inside the Angular zone.
+        const messageConsumerFixture = sessionFixture.messageConsumerFixture;
+        TestBed.inject(NgZone).run(() => solaceMessageClient.consume$('topic').subscribe(observeCaptor));
+
+        // Simulate the message consumer to be connected to the broker
+        await messageConsumerFixture.simulateEvent(MessageConsumerEventName.UP);
+
+        // Simulate to receive a message
+        await messageConsumerFixture.simulateMessage(createTopicMessage('topic'));
+
+        // Expect message to be received inside the Angular zone
+        expect(observeCaptor.getValues()).toEqual([true]);
+      });
+
+      it('should receive messages in the zone subscribed (outside Angular)', async () => {
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+        const observeCaptor = new ObserveCaptor(() => NgZone.isInAngularZone());
+
+        // Subscribe outside the Angular zone.
+        const messageConsumerFixture = sessionFixture.messageConsumerFixture;
+        TestBed.inject(NgZone).runOutsideAngular(() => solaceMessageClient.consume$('topic').subscribe(observeCaptor));
 
         // Simulate the message consumer to be connected to the broker
         await messageConsumerFixture.simulateEvent(MessageConsumerEventName.UP);
@@ -1755,6 +1837,7 @@ describe('SolaceMessageClient', () => {
 
       it('should not notify when subscription to endpoint failed', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+        const messageCaptor = new ObserveCaptor<MessageEnvelope>();
 
         // Subscribe to endpoint
         const messageConsumerFixture = sessionFixture.messageConsumerFixture;
@@ -1762,13 +1845,14 @@ describe('SolaceMessageClient', () => {
         solaceMessageClient.consume$({
           queueDescriptor: new QueueDescriptor({type: QueueType.QUEUE, name: 'queue'}),
           onSubscribed: onSubscribedCallback,
-        }).subscribe();
+        }).subscribe(messageCaptor);
         await drainMicrotaskQueue();
 
         // Simulate the message consumer to be connected to the broker
         expect(onSubscribedCallback).toHaveBeenCalledTimes(0);
         await messageConsumerFixture.simulateEvent(MessageConsumerEventName.CONNECT_FAILED_ERROR);
         expect(onSubscribedCallback).toHaveBeenCalledTimes(0);
+        expect(messageCaptor.hasErrored()).toBeTrue();
       });
     });
 
@@ -1842,13 +1926,17 @@ describe('SolaceMessageClient', () => {
         ]);
       });
 
-      it('should receive messages inside the Angular zone (by default)', async () => {
+      // @deprecated since version 17.1.0; Remove when dropping support to configure whether to emit inside or outside the Angular zone.
+      it('should receive messages inside the Angular zone', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
         const observeCaptor = new ObserveCaptor(() => NgZone.isInAngularZone());
 
         // Connect to the queue browser
         const queueBrowserFixture = sessionFixture.queueBrowserFixture;
-        solaceMessageClient.browse$('queue').subscribe(observeCaptor);
+        solaceMessageClient.browse$({
+          queueDescriptor: new QueueDescriptor({type: QueueType.QUEUE, name: 'queue'}),
+          emitOutsideAngularZone: false,
+        }).subscribe(observeCaptor);
 
         // Simulate the queue browser to be connected to the broker
         await queueBrowserFixture.simulateEvent(QueueBrowserEventName.UP);
@@ -1860,6 +1948,7 @@ describe('SolaceMessageClient', () => {
         expect(observeCaptor.getValues()).toEqual([true]);
       });
 
+      // @deprecated since version 17.1.0; Remove when dropping support to configure whether to emit inside or outside the Angular zone.
       it('should receive messages outside the Angular zone', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
         const observeCaptor = new ObserveCaptor(() => NgZone.isInAngularZone());
@@ -1870,6 +1959,42 @@ describe('SolaceMessageClient', () => {
           queueDescriptor: new QueueDescriptor({type: QueueType.QUEUE, name: 'queue'}),
           emitOutsideAngularZone: true,
         }).subscribe(observeCaptor);
+
+        // Simulate the queue browser to be connected to the broker
+        await queueBrowserFixture.simulateEvent(QueueBrowserEventName.UP);
+
+        // Simulate to receive a message
+        await queueBrowserFixture.simulateMessage(createQueueMessage('queue'));
+
+        // Expect message to be received outside the Angular zone
+        expect(observeCaptor.getValues()).toEqual([false]);
+      });
+
+      it('should receive messages in the zone subscribed (inside Angular)', async () => {
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+        const observeCaptor = new ObserveCaptor(() => NgZone.isInAngularZone());
+
+        // Subscribe inside the Angular zone.
+        const queueBrowserFixture = sessionFixture.queueBrowserFixture;
+        TestBed.inject(NgZone).run(() => solaceMessageClient.browse$('queue').subscribe(observeCaptor));
+
+        // Simulate the queue browser to be connected to the broker
+        await queueBrowserFixture.simulateEvent(QueueBrowserEventName.UP);
+
+        // Simulate to receive a message
+        await queueBrowserFixture.simulateMessage(createQueueMessage('queue'));
+
+        // Expect message to be received inside the Angular zone
+        expect(observeCaptor.getValues()).toEqual([true]);
+      });
+
+      it('should receive messages in the zone subscribed (outside Angular)', async () => {
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+        const observeCaptor = new ObserveCaptor(() => NgZone.isInAngularZone());
+
+        // Subscribe outside the Angular zone.
+        const queueBrowserFixture = sessionFixture.queueBrowserFixture;
+        TestBed.inject(NgZone).runOutsideAngular(() => solaceMessageClient.browse$('queue').subscribe(observeCaptor));
 
         // Simulate the queue browser to be connected to the broker
         await queueBrowserFixture.simulateEvent(QueueBrowserEventName.UP);
@@ -2029,13 +2154,14 @@ describe('SolaceMessageClient', () => {
         expect(replyCaptor.hasErrored()).toBeTrue();
       });
 
-      it('should emit inside Angular (by default)', async () => {
+      // @deprecated since version 17.1.0; Remove when dropping support to configure whether to emit inside or outside the Angular zone.
+      it('should emit inside Angular', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
         // Send a request
         const sendRequestFixture = sessionFixture.sendRequestFixture;
         const zoneCaptor = new ObserveCaptor<MessageEnvelope, boolean>(() => NgZone.isInAngularZone());
-        solaceMessageClient.request$('topic').subscribe(zoneCaptor);
+        solaceMessageClient.request$('topic', undefined, {emitOutsideAngularZone: false}).subscribe(zoneCaptor);
         await drainMicrotaskQueue();
 
         // Simulate to receive a reply
@@ -2044,6 +2170,7 @@ describe('SolaceMessageClient', () => {
         expect(zoneCaptor.getValues()).toEqual([true]);
       });
 
+      // @deprecated since version 17.1.0; Remove when dropping support to configure whether to emit inside or outside the Angular zone.
       it('should emit outside Angular', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
@@ -2056,6 +2183,38 @@ describe('SolaceMessageClient', () => {
         // Simulate to receive a reply
         await sendRequestFixture.simulateReply(createTopicMessage('reply'));
 
+        expect(zoneCaptor.getValues()).toEqual([false]);
+      });
+
+      it('should receive reply in the zone subscribed (inside Angular)', async () => {
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+
+        // Send request inside the Angular zone.
+        const sendRequestFixture = sessionFixture.sendRequestFixture;
+        const zoneCaptor = new ObserveCaptor<MessageEnvelope, boolean>(() => NgZone.isInAngularZone());
+        TestBed.inject(NgZone).run(() => solaceMessageClient.request$('topic').subscribe(zoneCaptor));
+        await drainMicrotaskQueue();
+
+        // Simulate to receive a reply
+        await sendRequestFixture.simulateReply(createTopicMessage('reply'));
+
+        // Expect reply to be received inside the Angular zone
+        expect(zoneCaptor.getValues()).toEqual([true]);
+      });
+
+      it('should receive replies in the zone subscribed (outside Angular)', async () => {
+        const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+
+        // Send request outside the Angular zone.
+        const sendRequestFixture = sessionFixture.sendRequestFixture;
+        const zoneCaptor = new ObserveCaptor<MessageEnvelope, boolean>(() => NgZone.isInAngularZone());
+        TestBed.inject(NgZone).runOutsideAngular(() => solaceMessageClient.request$('topic').subscribe(zoneCaptor));
+        await drainMicrotaskQueue();
+
+        // Simulate to receive a reply
+        await sendRequestFixture.simulateReply(createTopicMessage('reply'));
+
+        // Expect reply to be received outside the Angular zone
         expect(zoneCaptor.getValues()).toEqual([false]);
       });
 
