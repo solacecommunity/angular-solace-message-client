@@ -1,8 +1,8 @@
 <header>Session Properties</header>
 
-<ng-container *ngFor="let prop of $any(sessionProperties) | keyvalue">
+@for (prop of $any(sessionProperties) | keyvalue; track prop) {
   <span>{{prop.key}}:</span><span>{{prop.value}}</span>
-</ng-container>
+}
 
 <div class="buttons">
   <button mat-mini-fab color="accent" (click)="onCopyToClipboard()" title="Copy to clipboard">

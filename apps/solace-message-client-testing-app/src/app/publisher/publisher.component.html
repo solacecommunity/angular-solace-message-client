@@ -53,38 +53,53 @@
         <!-- Request/Reply -->
         <mat-checkbox [formControlName]="REQUEST_REPLY">Request/Reply</mat-checkbox>
 
-        <button mat-stroked-button color="primary" (click)="onPublish()" *ngIf="!publishing" [disabled]="form.invalid">Publish</button>
-        <button mat-stroked-button color="primary" (click)="onCancelPublish()" *ngIf="publishing">Cancel</button>
+        @if (publishing) {
+          <button mat-stroked-button color="primary" (click)="onCancelPublish()">Cancel</button>
+        }
+        @else {
+          <button mat-stroked-button color="primary" (click)="onPublish()" [disabled]="form.invalid">Publish</button>
+        }
       </form>
 
       <!-- Replies -->
-      <section *ngIf="requestReply" class="replies">
-        <sci-viewport>
-          <app-message-list-item *ngFor="let envelope of replies"
-                                 [envelope]="envelope"
-                                 (delete)="onDeleteReply(envelope)">
-          </app-message-list-item>
-        </sci-viewport>
-        <button class="clear" mat-stroked-button color="primary" (click)="onClearReplies()" *ngIf="replies.length">Clear</button>
-      </section>
+      @if (requestReply) {
+        <section class="replies">
+          <sci-viewport>
+            @for (envelope of replies; track $index) {
+              <app-message-list-item [envelope]="envelope"
+                                     (delete)="onDeleteReply(envelope)">
+              </app-message-list-item>
+            }
+          </sci-viewport>
+          @if (replies.length) {
+            <button class="clear" mat-stroked-button color="primary" (click)="onClearReplies()">Clear</button>
+          }
+        </section>
+      }
     </sci-viewport>
   </mat-card-content>
 
-  <mat-card-footer *ngIf="publishing && !requestReply">
-    <section class="sending">
-      Waiting for the event broker to acknowledge the message.
-    </section>
-  </mat-card-footer>
+  @if (publishing && !requestReply) {
+    <mat-card-footer>
+      <section class="sending">
+        Waiting for the event broker to acknowledge the message.
+      </section>
+    </mat-card-footer>
+  }
 
-  <mat-card-footer *ngIf="publishing && requestReply">
-    <section class="sending">
-      Waiting for the reply to be received.
-    </section>
-  </mat-card-footer>
+  @if (publishing && requestReply) {
+    <mat-card-footer>
+      <section class="sending">
+        Waiting for the reply to be received.
+      </section>
+    </mat-card-footer>
+  }
 
-  <mat-card-footer *ngIf="publishError">
-    <section class="error">
-      {{publishError}}
-    </section>
-  </mat-card-footer>
+  @if (publishError) {
+    <mat-card-footer>
+      <section class="error">
+        {{publishError}}
+      </section>
+    </mat-card-footer>
+  }
 </mat-card>

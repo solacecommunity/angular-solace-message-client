@@ -6,15 +6,15 @@
 <span>Type:</span>
 <span>{{type}}</span>
 
-<ng-container *ngIf="envelope.params?.size">
+@if (envelope.params.size) {
   <span>Params:</span>
   <span>{{envelope.params | appStringifyMap}}</span>
-</ng-container>
+}
 
-<ng-container *ngIf="envelope.headers?.size">
+@if (envelope.headers.size) {
   <span>Headers:</span>
   <span>{{envelope.headers | appStringifyMap}}</span>
-</ng-container>
+}
 
 <span>Details:</span>
 <sci-viewport class="content">{{details}}</sci-viewport>
@@ -27,11 +27,12 @@
 </sci-viewport>
 
 <section class="actions">
-  <button *ngIf="envelope.message.getReplyTo()"
-          mat-mini-fab class="reply" color="primary" title="Reply"
-          (click)="onReply(envelope.message)">
-    <mat-icon>reply</mat-icon>
-  </button>
+  @if (envelope.message.getReplyTo()) {
+    <button mat-mini-fab class="reply" color="primary" title="Reply"
+            (click)="onReply(envelope.message)">
+      <mat-icon>reply</mat-icon>
+    </button>
+  }
 
   <button mat-mini-fab class="delete" color="primary" title="Delete" (click)="onDelete()">
     <mat-icon>delete</mat-icon>

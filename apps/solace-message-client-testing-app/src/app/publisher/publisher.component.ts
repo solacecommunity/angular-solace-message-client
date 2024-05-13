@@ -1,11 +1,19 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy} from '@angular/core';
-import {FormBuilder, FormGroup, Validators} from '@angular/forms';
+import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {DestinationType, MessageDeliveryModeType, MessageType, SDTField, SDTFieldType, SolclientFactory} from 'solclientjs';
 import {Data, MessageEnvelope, PublishOptions, SolaceMessageClient} from '@solace-community/angular-solace-message-client';
 import {defer, Observable, Subject, Subscription, tap, throwError} from 'rxjs';
 import {finalize, takeUntil} from 'rxjs/operators';
 import {Arrays} from '@scion/toolkit/util';
 import {observeInside} from '@scion/toolkit/operators';
+import {MatCardModule} from '@angular/material/card';
+import {SciViewportComponent} from '@scion/components/viewport';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatSelectModule} from '@angular/material/select';
+import {MatCheckboxModule} from '@angular/material/checkbox';
+import {MessageListItemComponent} from '../message-list-item/message-list-item.component';
+import {MatInputModule} from '@angular/material/input';
+import {MatButtonModule} from '@angular/material/button';
 
 export const DESTINATION = 'destination';
 export const DESTINATION_TYPE = 'destinationType';
@@ -20,6 +28,18 @@ export const REQUEST_REPLY = 'request/reply';
   templateUrl: './publisher.component.html',
   styleUrls: ['./publisher.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [
+    ReactiveFormsModule,
+    SciViewportComponent,
+    MatCardModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatCheckboxModule,
+    MatInputModule,
+    MatButtonModule,
+    MessageListItemComponent,
+  ],
 })
 export class PublisherComponent implements OnDestroy {
 

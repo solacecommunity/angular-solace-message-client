@@ -18,26 +18,35 @@
     </mat-form-field>
 
     <!-- Subscribe/Unsubscribe -->
-    <button mat-stroked-button color="primary" (click)="onSubscribe()" *ngIf="!isSubscribed" [disabled]="form.invalid" class="subscribe">Subscribe</button>
-    <button mat-stroked-button color="primary" (click)="onUnsubscribe()" *ngIf="isSubscribed" [disabled]="form.invalid" class="unsubscribe">Unsubscribe</button>
+    @if (isSubscribed) {
+      <button mat-stroked-button color="primary" (click)="onUnsubscribe()" [disabled]="form.invalid" class="unsubscribe">Unsubscribe</button>
+    }
+    @else {
+      <button mat-stroked-button color="primary" (click)="onSubscribe()" [disabled]="form.invalid" class="subscribe">Subscribe</button>
+    }
   </section>
 
   <!-- Messages -->
   <sci-viewport class="messages">
-    <app-message-list-item *ngFor="let envelope of envelopes"
-                           [envelope]="envelope"
-                           (reply)="onReply(envelope.message)"
-                           (delete)="onDelete(envelope)">
-    </app-message-list-item>
+    @for (envelope of envelopes; track $index) {
+      <app-message-list-item [envelope]="envelope"
+                             (reply)="onReply(envelope.message)"
+                             (delete)="onDelete(envelope)">
+      </app-message-list-item>
+    }
   </sci-viewport>
 
   <!-- Follow tail -->
   <mat-checkbox [formControlName]="FOLLOW_TAIL" color="primary" class="follow-tail">Follow tail</mat-checkbox>
 
   <footer>
-    <button mat-stroked-button (click)="onClear()" *ngIf="envelopes.length">Clear messages</button>
-    <section class="error" *ngIf="subscribeError">
-      {{subscribeError}}
-    </section>
+    @if (envelopes.length) {
+      <button mat-stroked-button (click)="onClear()">Clear messages</button>
+    }
+    @if (subscribeError) {
+      <section class="error">
+        {{subscribeError}}
+      </section>
+    }
   </footer>
 </ng-container>

@@ -1,5 +1,5 @@
 import {Component, OnDestroy} from '@angular/core';
-import {FormBuilder, FormGroup, Validators} from '@angular/forms';
+import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {LocationService} from '../location.service';
 import {SolaceMessageClientConfig} from '@solace-community/angular-solace-message-client';
 import {SessionConfigStore} from '../session-config-store';
@@ -7,6 +7,12 @@ import {AuthenticationScheme} from 'solclientjs';
 import {PromptAccessTokenProvider} from '../prompt-access-token.provider';
 import {startWith, Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
+import {MatCardModule} from '@angular/material/card';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatInputModule} from '@angular/material/input';
+import {MatSelectModule} from '@angular/material/select';
+import {MatCheckboxModule} from '@angular/material/checkbox';
+import {MatButtonModule} from '@angular/material/button';
 
 export const URL = 'url';
 export const VPN_NAME = 'vpnName';
@@ -20,6 +26,16 @@ export const RECONNECT_RETRIES = 'reconnectRetries';
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
+  standalone: true,
+  imports: [
+    ReactiveFormsModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatCheckboxModule,
+    MatButtonModule,
+  ],
 })
 export class LoginComponent implements OnDestroy {
 

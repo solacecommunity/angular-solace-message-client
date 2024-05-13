@@ -1,10 +1,18 @@
 import {ChangeDetectorRef, Component, EventEmitter, OnDestroy, Output, ViewChild} from '@angular/core';
-import {FormControl, FormGroup, Validators} from '@angular/forms';
+import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {MessageEnvelope, SolaceMessageClient} from '@solace-community/angular-solace-message-client';
 import {Observable, Subject, Subscription} from 'rxjs';
 import {filter, finalize, takeUntil} from 'rxjs/operators';
 import {SciViewportComponent} from '@scion/components/viewport';
 import {Message, QueueDescriptor, QueueType} from 'solclientjs';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatSelectModule} from '@angular/material/select';
+import {MatTooltipModule} from '@angular/material/tooltip';
+import {MessageListItemComponent} from '../message-list-item/message-list-item.component';
+import {MatCheckboxModule} from '@angular/material/checkbox';
+import {MatButtonModule} from '@angular/material/button';
+import {MatInputModule} from '@angular/material/input';
+import {AutofocusDirective} from '../autofocus.directive';
 
 export const DESTINATION = 'destination';
 export const DESTINATION_TYPE = 'destinationType';
@@ -15,6 +23,19 @@ export const FOLLOW_TAIL = 'followTail';
   selector: 'app-subscriber',
   templateUrl: './subscriber.component.html',
   styleUrls: ['./subscriber.component.scss'],
+  standalone: true,
+  imports: [
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatTooltipModule,
+    MessageListItemComponent,
+    MatCheckboxModule,
+    MatButtonModule,
+    MatInputModule,
+    SciViewportComponent,
+    AutofocusDirective,
+  ],
 })
 export class SubscriberComponent implements OnDestroy {
 

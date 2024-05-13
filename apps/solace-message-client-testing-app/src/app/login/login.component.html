@@ -15,17 +15,19 @@
         <input matInput [formControlName]="VPN_NAME">
       </mat-form-field>
 
-      <!-- Username -->
-      <mat-form-field *ngIf="form.get(AUTHENTICATION_SCHEME)!.value === AuthenticationScheme.BASIC">
-        <mat-label>Username</mat-label>
-        <input matInput [formControlName]="USER_NAME">
-      </mat-form-field>
+      @if (form.get(AUTHENTICATION_SCHEME)!.value === AuthenticationScheme.BASIC) {
+        <!-- Username -->
+        <mat-form-field>
+          <mat-label>Username</mat-label>
+          <input matInput [formControlName]="USER_NAME">
+        </mat-form-field>
 
-      <!-- Password -->
-      <mat-form-field *ngIf="form.get(AUTHENTICATION_SCHEME)!.value === AuthenticationScheme.BASIC">
-        <mat-label>Password</mat-label>
-        <input matInput [formControlName]="PASSWORD" type="password">
-      </mat-form-field>
+        <!-- Password -->
+        <mat-form-field>
+          <mat-label>Password</mat-label>
+          <input matInput [formControlName]="PASSWORD" type="password">
+        </mat-form-field>
+      }
 
       <!-- Authentication Scheme -->
       <mat-form-field>
