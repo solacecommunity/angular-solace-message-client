@@ -1,6 +1,6 @@
-import {OAuthAccessTokenProvider} from '@solace-community/angular-solace-message-client';
+import {OAuthAccessTokenFn} from '@solace-community/angular-solace-message-client';
 import {Observable, ReplaySubject} from 'rxjs';
-import {Injectable, NgZone} from '@angular/core';
+import {inject, Injectable} from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
 import {EnterAccessTokenComponent} from './enter-access-token/enter-access-token.component';
 
@@ -8,18 +8,18 @@ import {EnterAccessTokenComponent} from './enter-access-token/enter-access-token
  * Prompts the user for an access token.
  */
 @Injectable({providedIn: 'root'})
-export class PromptAccessTokenProvider implements OAuthAccessTokenProvider {
+export class PromptAccessTokenProvider {
 
   private _empty = true;
   private _accessToken$ = new ReplaySubject<string>(1);
 
-  constructor(private _matDialog: MatDialog, private _zone: NgZone) {
+  constructor(private _matDialog: MatDialog) {
   }
 
   public provide$(): Observable<string> {
     // If not provided an access token yet, prompt for input.
     if (this._empty) {
-      this._zone.run(() => this._matDialog.open(EnterAccessTokenComponent));
+      this._matDialog.open(EnterAccessTokenComponent);
     }
     return this._accessToken$;
   }
@@ -29,3 +29,10 @@ export class PromptAccessTokenProvider implements OAuthAccessTokenProvider {
     this._accessToken$.next(accessToken);
   }
 }
+
+/**
+ * Prompts the user for an access token.
+ */
+export const promptForAccessToken: OAuthAccessTokenFn = (): Observable<string> => {
+  return inject(PromptAccessTokenProvider).provide$();
+};

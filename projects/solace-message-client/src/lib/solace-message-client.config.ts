@@ -1,6 +1,6 @@
 import {SessionProperties} from 'solclientjs';
 import {InjectionToken, Type} from '@angular/core';
-import {OAuthAccessTokenProvider} from './oauth-access-token-provider';
+import {OAuthAccessTokenFn, OAuthAccessTokenProvider} from './oauth-access-token-provider';
 import {Observable} from 'rxjs';
 
 /**
@@ -13,14 +13,13 @@ export const SOLACE_MESSAGE_CLIENT_CONFIG = new InjectionToken<SolaceMessageClie
  */
 export interface SolaceMessageClientConfig extends Omit<SessionProperties, 'accessToken'> {
   /**
-   * Specifies the access token required for OAUTH2 authentication.
-   * This is only relevant if the {@link AuthenticationScheme#OAUTH2} authentication scheme is being used.
+   * Specifies the access token for OAuth 2.0 authentication.
    *
-   * We recommend using a {@link OAuthAccessTokenProvider} to continuously provide a valid access token.
+   * Property is ignored if not using OAuth 2.0 authentication scheme.
    *
-   * See {@link OAuthAccessTokenProvider} for detailed instructions how to create and register an access provider.
+   * @see {@link OAuthAccessTokenFn}
    */
-  accessToken?: string | Type<OAuthAccessTokenProvider>;
+  accessToken?: string | Type<OAuthAccessTokenProvider> | OAuthAccessTokenFn;
 }
 
 /**

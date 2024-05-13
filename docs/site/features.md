@@ -363,55 +363,38 @@ const session = await inject(SolaceMessageClient).session
 </details>
 
 <details>
-  <summary><strong>Enable OAUTH2 authentication</strong></summary>
+  <summary><strong>Enable OAuth 2.0 authentication</strong></summary>
   <br>
 
-OAuth 2.0 enables secure login to the broker while protecting user credentials. Follow these steps to enable OAuth authentication:
-- Create an access token provider:
-  - Provide a class that implements `OAuthAccessTokenProvider`.
-  - Implement the `provide$` method. The method should return an Observable that, when being subscribed, emits the user's access token, and then emits continuously when the token is renewed. It should never complete. Otherwise, the connection to the broker would not be re-established in the event of a network interruption. 
-- Enable OAUTH and configure the access token in the config passed to `provideSolaceMessageClient` or `SolaceMessageClient.connect`, as follows:
-  - Set `SolaceMessageClientConfig.authenticationScheme` to `AuthenticationScheme.OAUTH2`.
-  - Set `SolaceMessageClientConfig.accessToken` to the above provider class.
+Enable OAuth 2.0 authentication in the config passed to `provideSolaceMessageClient` function.
 
-#### Example of an `OAuthAccessTokenProvider`
+1. Set `SolaceMessageClientConfig.authenticationScheme` to `AuthenticationScheme.OAUTH2`.
+2. Register a function in `SolaceMessageClientConfig.accessToken` that provides the access token. 
 
-```ts
-import {Injectable} from '@angular/core';
-import {OAuthAccessTokenProvider} from '@solace-community/angular-solace-message-client';
+The function should return an Observable that emits the user's access token upon subscription, and then continuously emits it when the token is renewed.
+The Observable should never complete, enabling the connection to the broker to be re-established in the event of a network interruption.
 
-@Injectable({providedIn: 'root'})
-export class YourAccessTokenProvider implements OAuthAccessTokenProvider {
-
-  constructor(private authService: YourAuthService) {
-  }
-
-  public provide$(): Observable<string> {
-    return this.authService.accessToken$;
-  }
-}
-```
-
-#### Example for the configuration of the Solace Message Client
+**Example:**
 
 ```ts
 import {bootstrapApplication} from '@angular/platform-browser';
 import {provideSolaceMessageClient} from '@solace-community/angular-solace-message-client';
 import {AuthenticationScheme} from 'solclientjs';
+import {inject} from '@angular/core';
 
 bootstrapApplication(AppComponent, {
   providers: [
     provideSolaceMessageClient({
       url: 'wss://YOUR-SOLACE-BROKER-URL:443',
       vpnName: 'YOUR VPN',
-      authenticationScheme: AuthenticationScheme.OAUTH2, // enables OAUTH
-      accessToken: YourAccessTokenProvider, // sets your access token provider
+      authenticationScheme: AuthenticationScheme.OAUTH2, // enable OAuth 2.0
+      accessToken: () => inject(AuthService).accessToken$, // provide access token
     }),
   ],
 });
 ```
 
-> Refer to [SolaceMessageClientConfig#accessToken](https://solacecommunity.github.io/angular-solace-message-client/api/classes/SolaceMessageClientConfig.html#accessToken) for more information about the API.
+> The function can call `inject` to get any required dependencies.
 
 </details>
 
