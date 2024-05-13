@@ -2,11 +2,20 @@ import {Component, Inject} from '@angular/core';
 import {MAT_SNACK_BAR_DATA, MatSnackBar} from '@angular/material/snack-bar';
 import {Clipboard} from '@angular/cdk/clipboard';
 import {SessionProperties} from 'solclientjs';
+import {KeyValuePipe} from '@angular/common';
+import {MatIconModule} from '@angular/material/icon';
+import {MatButtonModule} from '@angular/material/button';
 
 @Component({
   selector: 'app-session-properties',
   templateUrl: './session-properties.component.html',
   styleUrls: ['./session-properties.component.scss'],
+  standalone: true,
+  imports: [
+    KeyValuePipe,
+    MatIconModule,
+    MatButtonModule,
+  ],
 })
 export class SessionPropertiesComponent {
 

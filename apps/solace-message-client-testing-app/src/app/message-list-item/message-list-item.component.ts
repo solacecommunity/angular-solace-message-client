@@ -2,12 +2,25 @@ import {ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Outp
 import {MessageEnvelope} from '@solace-community/angular-solace-message-client';
 import {ungzip} from 'pako';
 import {Message, MessageDumpFlag, MessageType} from 'solclientjs';
+import {DatePipe} from '@angular/common';
+import {StringifyMapPipe} from '../stringify-map.pipe';
+import {SciViewportComponent} from '@scion/components/viewport';
+import {MatIconModule} from '@angular/material/icon';
+import {MatButtonModule} from '@angular/material/button';
 
 @Component({
   selector: 'app-message-list-item',
   templateUrl: './message-list-item.component.html',
   styleUrls: ['./message-list-item.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [
+    DatePipe,
+    StringifyMapPipe,
+    SciViewportComponent,
+    MatIconModule,
+    MatButtonModule,
+  ],
 })
 export class MessageListItemComponent implements OnChanges {
 

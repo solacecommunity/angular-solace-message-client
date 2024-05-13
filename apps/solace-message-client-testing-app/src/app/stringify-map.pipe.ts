@@ -1,6 +1,6 @@
 import {Pipe, PipeTransform} from '@angular/core';
 
-@Pipe({name: 'appStringifyMap'})
+@Pipe({name: 'appStringifyMap', standalone: true})
 export class StringifyMapPipe implements PipeTransform {
 
   public transform(object: Map<string, any> | undefined | null): string | null {

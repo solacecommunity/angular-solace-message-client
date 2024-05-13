@@ -7,11 +7,29 @@ import {SessionConfigStore} from '../session-config-store';
 import {EnterAccessTokenComponent} from '../enter-access-token/enter-access-token.component';
 import {MatDialog} from '@angular/material/dialog';
 import {AuthenticationScheme} from 'solclientjs';
+import {AsyncPipe} from '@angular/common';
+import {MatIconModule} from '@angular/material/icon';
+import {SciSashboxComponent, SciSashDirective} from '@scion/components/sashbox';
+import {PublisherComponent} from '../publisher/publisher.component';
+import {SubscribersComponent} from '../subscribers/subscribers.component';
+import {MatButtonModule} from '@angular/material/button';
+import {MatTooltipModule} from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-try-me',
   templateUrl: './try-me.component.html',
   styleUrls: ['./try-me.component.scss'],
+  standalone: true,
+  imports: [
+    AsyncPipe,
+    MatIconModule,
+    MatButtonModule,
+    MatTooltipModule,
+    SciSashboxComponent,
+    SciSashDirective,
+    PublisherComponent,
+    SubscribersComponent,
+  ],
 })
 export class TryMeComponent {
 

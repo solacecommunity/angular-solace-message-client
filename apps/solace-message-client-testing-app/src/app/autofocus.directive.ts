@@ -6,6 +6,7 @@ import {asyncScheduler} from 'rxjs';
  */
 @Directive({
   selector: '[appAutoFocus]',
+  standalone: true,
 })
 export class AutofocusDirective {
 
