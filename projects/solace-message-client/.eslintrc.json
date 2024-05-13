@@ -17,7 +17,8 @@
           {
             "type": "attribute",
             "prefix": [
-              "lib"
+              "lib",
+              "spec"
             ],
             "style": "camelCase"
           }
@@ -27,7 +28,8 @@
           {
             "type": "element",
             "prefix": [
-              "lib"
+              "lib",
+              "spec"
             ],
             "style": "kebab-case"
           }
