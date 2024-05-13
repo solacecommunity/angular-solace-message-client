@@ -103,6 +103,7 @@ describe('Multi Environment Configuration', () => {
 
     // Connect to the broker.
     runInInjectionContext(childEnvironment, () => inject(SolaceMessageClient));
+    await drainMicrotaskQueue();
     expect(sessionFixture.sessionProvider.provide).toHaveBeenCalledWith(jasmine.objectContaining({url: 'url', vpnName: 'vpn'}));
   });
 

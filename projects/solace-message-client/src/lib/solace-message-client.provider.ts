@@ -1,5 +1,5 @@
 import {EnvironmentProviders, inject, InjectionToken, makeEnvironmentProviders} from '@angular/core';
-import {SOLACE_MESSAGE_CLIENT_CONFIG, SolaceMessageClientConfig} from './solace-message-client.config';
+import {SOLACE_MESSAGE_CLIENT_CONFIG, SolaceMessageClientConfig, SolaceMessageClientConfigFn} from './solace-message-client.config';
 import {provideLogger} from './logger';
 import {ɵSolaceMessageClient} from './ɵsolace-message-client';
 import {SolaceSessionProvider, ɵSolaceSessionProvider} from './solace-session-provider';
@@ -29,7 +29,9 @@ import {LogLevel} from 'solclientjs';
  * });
  * ```
  *
- * If providing a config to {@link provideSolaceMessageClient}, the {@link SolaceMessageClient} will automatically connect to the broker the first time it is injected. Alternatively, for more flexibility in providing the config, do not pass a config and connect manually using {@link SolaceMessageClient.connect}.
+ * Alternatively, a function can be passed to load the config asynchronously. The function can call `inject` to get any required dependencies.
+ *
+ * The connection to the broker will be established when `SolaceMessageClient` is injected for the first time.
  *
  * ### Usage
  *
@@ -111,10 +113,10 @@ import {LogLevel} from 'solclientjs';
  * Storage Value: `info`
  *
  * @param config - Configures {@link SolaceMessageClient}.
- *                 If providing a config, the {@link SolaceMessageClient} will automatically connect to the broker the first time it is injected.
- *                 Alternatively, for more flexibility in providing the config, do not pass a config and connect manually using {@link SolaceMessageClient.connect}.
+ *                 Can be an object or a function to provide the config asynchronously.
+ *                 The function can call `inject` to get any required dependencies.
  */
-export function provideSolaceMessageClient(config?: SolaceMessageClientConfig): EnvironmentProviders {
+export function provideSolaceMessageClient(config?: SolaceMessageClientConfig | SolaceMessageClientConfigFn): EnvironmentProviders {
   const SOLACE_SESSION_PROVIDER = new InjectionToken<SolaceSessionProvider>('SOLACE_SESSION_PROVIDER');
 
   return makeEnvironmentProviders([

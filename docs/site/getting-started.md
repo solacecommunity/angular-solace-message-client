@@ -84,7 +84,9 @@ export class AppModule {
 }
 ```
 
-If providing a config to `provideSolaceMessageClient`, the `SolaceMessageClient` will automatically connect to the broker the first time it is injected. Alternatively, for more flexibility in providing the config, do not pass a config and connect manually using `SolaceMessageClient.connect`.
+> Alternatively, a function can be passed to load the config asynchronously. The function can call `inject` to get any required dependencies.
+
+> The connection to the broker will be established when `SolaceMessageClient` is injected for the first time. 
 
 > See [feature overview][menu-features] section **Enable OAUTH2 authentication** for an example how to enable OAUTH authentication.
 

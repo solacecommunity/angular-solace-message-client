@@ -1,5 +1,5 @@
 import {ModuleWithProviders, NgModule} from '@angular/core';
-import {SolaceMessageClientConfig} from './solace-message-client.config';
+import {SolaceMessageClientConfig, SolaceMessageClientConfigFn} from './solace-message-client.config';
 import {provideNullSolaceMessageClient, provideSolaceMessageClient} from './solace-message-client.provider';
 
 /**
@@ -15,7 +15,7 @@ export class SolaceMessageClientModule {
   /**
    * @deprecated since version 17.1.0; Register Angular Solace Message Client using `provideSolaceMessageClient` function; API will be removed in a future release.
    */
-  public static forRoot(config?: SolaceMessageClientConfig): ModuleWithProviders<SolaceMessageClientModule> {
+  public static forRoot(config?: SolaceMessageClientConfig | SolaceMessageClientConfigFn): ModuleWithProviders<SolaceMessageClientModule> {
     return {
       ngModule: SolaceMessageClientModule,
       providers: [provideSolaceMessageClient(config)],
