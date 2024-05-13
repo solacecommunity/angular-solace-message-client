@@ -110,6 +110,7 @@ describe('SolaceMessageClient', () => {
       });
 
       TestBed.inject(SolaceMessageClient);
+      await drainMicrotaskQueue();
       expect(sessionFixture.sessionProvider.provide).toHaveBeenCalledOnceWith(jasmine.objectContaining({url: 'url', vpnName: 'vpn'}));
     });
 
@@ -2150,6 +2151,8 @@ describe('SolaceMessageClient', () => {
 
         // WHEN injected the message client
         TestBed.inject(SolaceMessageClient);
+        await drainMicrotaskQueue();
+
         // THEN expect "solclientjs" not to be initialized yet, but only after having emitted the access token
         expect(sessionFixture.sessionProvider.provide).toHaveBeenCalledTimes(0);
         expect(sessionFixture.session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);

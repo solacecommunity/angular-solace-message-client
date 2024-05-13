@@ -2,7 +2,7 @@ import {Injectable} from '@angular/core';
 import {BehaviorSubject, NEVER, noop, Observable, OperatorFunction} from 'rxjs';
 import {Destination, Message, MessageConsumer, MessageConsumerProperties, MessageDeliveryModeType, MessageType, QueueBrowserProperties, SDTField, Session} from 'solclientjs';
 import {map} from 'rxjs/operators';
-import {SolaceMessageClientConfig} from './solace-message-client.config';
+import {SolaceMessageClientConfig, SolaceMessageClientConfigFn} from './solace-message-client.config';
 
 /**
  * Allows clients to communicate with a Solace messaging broker for sending and receiving messages using the native SMF protocol (Solace Message Format).
@@ -32,15 +32,22 @@ export abstract class SolaceMessageClient {
    *
    * Do not forget to invoke this method if registering Solace Message Client providers without config: `provideSolaceMessageClient()`.
    *
+   * @deprecated since version 17.1.0; Configure Solace Message Client using `provideSolaceMessageClient`; To load the config asynchronously, you can pass a function instead; To connect to another broker, you can create a new environment using `createEnvironmentInjector()` and provide the Solace Message Client with the broker config; API will be removed in a future release.
+   *
+   * @param config - Configures {@link SolaceMessageClient}.
+   *                 Can be an object or a function to provide the config asynchronously.
+   *                 The function can call `inject` to get any required dependencies.
    * @return Promise that resolves to the {@link Session} when connected to the broker, or that rejects if the connection attempt failed.
    *         If already connected, the Promise resolves immediately.
    */
-  public abstract connect(config: SolaceMessageClientConfig): Promise<Session>;
+  public abstract connect(config: SolaceMessageClientConfig | SolaceMessageClientConfigFn): Promise<Session>;
 
   /**
    * Disconnects this client from the Solace message broker. Has no effect if already disconnected.
    *
    * Disconnecting this client will complete all Observables for observing messages. Subscriptions are not restored when connecting anew.
+   *
+   * @deprecated since version 17.1.0; Configure Solace Message Client using `provideSolaceMessageClient`; To load the config asynchronously, you can pass a function instead; To connect to another broker, you can create a new environment using `createEnvironmentInjector()` and provide the Solace Message Client with the broker config; API will be removed in a future release.
    *
    * @return Promise that resolves when disconnected from the broker.
    */

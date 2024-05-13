@@ -1,4 +1,4 @@
-import {DestroyRef, inject, Injectable, Injector, NgZone, OnDestroy} from '@angular/core';
+import {DestroyRef, inject, Injectable, Injector, NgZone, OnDestroy, runInInjectionContext} from '@angular/core';
 import {EMPTY, EmptyError, firstValueFrom, identity, merge, MonoTypeOperatorFunction, noop, Observable, Observer, of, OperatorFunction, ReplaySubject, share, shareReplay, skip, Subject, TeardownLogic, throwError} from 'rxjs';
 import {distinctUntilChanged, filter, finalize, map, mergeMap, take, takeUntil, tap} from 'rxjs/operators';
 import {UUID} from '@scion/toolkit/uuid';
@@ -7,12 +7,13 @@ import {TopicMatcher} from './topic-matcher';
 import {observeInside} from '@scion/toolkit/operators';
 import {SolaceSessionProvider} from './solace-session-provider';
 import {OAuthAccessTokenProvider} from './oauth-access-token-provider';
-import {SOLACE_MESSAGE_CLIENT_CONFIG, SolaceMessageClientConfig} from './solace-message-client.config';
+import {SOLACE_MESSAGE_CLIENT_CONFIG, SolaceMessageClientConfig, SolaceMessageClientConfigFn} from './solace-message-client.config';
 import {AuthenticationScheme, Destination, Message, MessageConsumer, MessageConsumerEventName, MessageConsumerProperties, MessageDeliveryModeType, OperationError, QueueBrowser, QueueBrowserEventName, QueueBrowserProperties, QueueDescriptor, QueueType, RequestError, SDTField, SDTFieldType, SDTMapContainer, Session, SessionEvent, SessionEventCode, SessionProperties as SolaceSessionProperties, SolclientFactory, SolclientFactoryProfiles, SolclientFactoryProperties} from 'solclientjs';
 import {TopicSubscriptionCounter} from './topic-subscription-counter';
 import {SerialExecutor} from './serial-executor.service';
 import {Logger} from './logger';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {Observables} from '@scion/toolkit/util';
 
 @Injectable()
 export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
@@ -40,19 +41,18 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
     this.logSolaceSessionEvents();
     this.connected$ = this.monitorConnectionState$();
 
-    // Auto connect to the Solace broker if having provided a config.
+    // Connect to the Solace Message Broker, but only if passed a config to {@link provideSolaceMessageClient}.
     const config = inject(SOLACE_MESSAGE_CLIENT_CONFIG, {optional: true});
     if (config) {
-      this.connect(config).catch(error => this._logger.error('Failed to connect to the Solace message broker.', error));
+      this._session = this.connect(config).catch(error => {
+        this._logger.error('Failed to connect to the Solace message broker.', error);
+        return Promise.reject(error);
+      });
     }
   }
 
-  public async connect(config: SolaceMessageClientConfig): Promise<Session> {
-    if (!config) {
-      throw Error('Missing required config for connecting to the Solace message broker.');
-    }
-
-    return (this._session || (this._session = new Promise((resolve, reject) => {
+  public async connect(configOrFn: SolaceMessageClientConfig | SolaceMessageClientConfigFn): Promise<Session> {
+    return (this._session || (this._session = this.loadConfig(configOrFn).then(config => new Promise((resolve, reject) => {
       // Apply session defaults.
       const sessionProperties: SolaceMessageClientConfig = {
         reapplySubscriptions: true, // remember subscriptions after a network interruption (default value if not set)
@@ -142,7 +142,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
 
         session.connect();
       }).catch(error => reject(error));
-    })));
+    }))));
   }
 
   /**
@@ -693,6 +693,11 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
     // Connect to the source, then unsubscribe immediately (resetOnRefCountZero: false)
     connected$.subscribe().unsubscribe();
     return connected$;
+  }
+
+  private loadConfig(configOrFn: SolaceMessageClientConfig | SolaceMessageClientConfigFn): Promise<SolaceMessageClientConfig> {
+    const configFn = typeof configOrFn === 'function' ? configOrFn : () => configOrFn;
+    return firstValueFrom(Observables.coerce(runInInjectionContext(this._injector, configFn)));
   }
 
   public ngOnDestroy(): void {
