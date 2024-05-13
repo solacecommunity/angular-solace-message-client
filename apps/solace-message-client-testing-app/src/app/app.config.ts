@@ -1,7 +1,7 @@
-import {ApplicationConfig, EnvironmentProviders, importProvidersFrom, makeEnvironmentProviders} from '@angular/core';
+import {ApplicationConfig, EnvironmentProviders, makeEnvironmentProviders} from '@angular/core';
 import {provideRouter, withHashLocation} from '@angular/router';
 import {routes} from './app.routes';
-import {SolaceMessageClientModule} from '@solace-community/angular-solace-message-client';
+import {provideSolaceMessageClient} from '@solace-community/angular-solace-message-client';
 import {SessionConfigStore} from './session-config-store';
 import {MAT_FORM_FIELD_DEFAULT_OPTIONS} from '@angular/material/form-field';
 import {provideAnimations} from '@angular/platform-browser/animations';
@@ -13,7 +13,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes, withHashLocation()),
     provideAnimations(),
-    importProvidersFrom(SolaceMessageClientModule.forRoot(SessionConfigStore.load())),
+    provideSolaceMessageClient(SessionConfigStore.load()),
     provideMaterialDefaults(),
   ],
 };

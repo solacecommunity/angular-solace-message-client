@@ -1,4 +1,4 @@
-import {inject, Injectable, Injector, NgZone, OnDestroy} from '@angular/core';
+import {DestroyRef, inject, Injectable, Injector, NgZone, OnDestroy} from '@angular/core';
 import {EMPTY, EmptyError, firstValueFrom, identity, merge, MonoTypeOperatorFunction, noop, Observable, Observer, of, OperatorFunction, ReplaySubject, share, shareReplay, skip, Subject, TeardownLogic, throwError} from 'rxjs';
 import {distinctUntilChanged, filter, finalize, map, mergeMap, take, takeUntil, tap} from 'rxjs/operators';
 import {UUID} from '@scion/toolkit/uuid';
@@ -12,6 +12,7 @@ import {AuthenticationScheme, Destination, Message, MessageConsumer, MessageCons
 import {TopicSubscriptionCounter} from './topic-subscription-counter';
 import {SerialExecutor} from './serial-executor.service';
 import {Logger} from './logger';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 
 @Injectable()
 export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
@@ -20,7 +21,6 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
   private _event$ = new Subject<SessionEvent>();
 
   private _session: Promise<Session> | null = null;
-  private _destroy$ = new Subject<void>();
   private _sessionDisposed$ = new Subject<void>();
 
   private _subscriptionExecutor: SerialExecutor | null = null;
@@ -28,16 +28,19 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
 
   public connected$: Observable<boolean>;
 
-  constructor(private _sessionProvider: SolaceSessionProvider,
-              private _injector: Injector,
-              private _logger: Logger,
-              private _zone: NgZone) {
+  private _sessionProvider = inject(SolaceSessionProvider);
+  private _injector = inject(Injector);
+  private _logger = inject(Logger);
+  private _zone = inject(NgZone);
+  private _destroyRef = inject(DestroyRef);
+
+  constructor() {
     this.initSolaceClientFactory();
     this.disposeWhenSolaceSessionDied();
     this.logSolaceSessionEvents();
     this.connected$ = this.monitorConnectionState$();
 
-    // Auto connect to the Solace broker if having provided a module config.
+    // Auto connect to the Solace broker if having provided a config.
     const config = inject(SOLACE_MESSAGE_CLIENT_CONFIG, {optional: true});
     if (config) {
       this.connect(config).catch(error => this._logger.error('Failed to connect to the Solace message broker.', error));
@@ -602,7 +605,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
   }
 
   public get session(): Promise<Session> {
-    return this._session || Promise.reject('Not connected to the Solace message broker. Did you forget to initialize the `SolaceClient` via `SolaceMessageClientModule.forRoot({...}) or to invoke \'connect\'`?');
+    return this._session || Promise.reject('Not connected to the Solace message broker. Did you forget to provide the `SolaceMessageClient` via `provideSolaceMessageClient()` function or to invoke \'connect\'`?');
   }
 
   /**
@@ -652,7 +655,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
       .pipe(
         filter(event => SESSION_DIED_EVENTS.has(event.sessionEventCode)),
         assertNotInAngularZone(),
-        takeUntil(this._destroy$),
+        takeUntilDestroyed(this._destroyRef),
       )
       .subscribe(() => {
         this.dispose();
@@ -664,7 +667,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
     this._event$
       .pipe(
         assertNotInAngularZone(),
-        takeUntil(this._destroy$),
+        takeUntilDestroyed(this._destroyRef),
       )
       .subscribe((event: SessionEvent) => {
         this._logger.debug(`SessionEvent: ${sessionEventCodeMapping.get(event.sessionEventCode)}`, event);
@@ -693,7 +696,6 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
   }
 
   public ngOnDestroy(): void {
-    this._destroy$.next();
     this.dispose();
   }
 }

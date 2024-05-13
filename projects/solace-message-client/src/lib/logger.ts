@@ -1,4 +1,4 @@
-import {Injectable, Provider} from '@angular/core';
+import {EnvironmentProviders, Injectable, makeEnvironmentProviders} from '@angular/core';
 import {LogLevel} from 'solclientjs';
 
 /**
@@ -70,9 +70,9 @@ export class Logger {
 /**
  * Registers a set of DI providers to enable logging in the Angular Solace Message Client.
  */
-export function provideLogger(): Provider[] {
-  return [
+export function provideLogger(): EnvironmentProviders {
+  return makeEnvironmentProviders([
     Logger,
     {provide: LogLevel, useValue: LogLevel.WARN},
-  ];
+  ]);
 }
