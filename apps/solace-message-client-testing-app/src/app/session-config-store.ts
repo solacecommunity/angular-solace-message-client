@@ -1,5 +1,5 @@
 import {SolaceMessageClientConfig} from '@solace-community/angular-solace-message-client';
-import {PromptAccessTokenProvider} from './prompt-access-token.provider';
+import {promptForAccessToken} from './prompt-access-token.provider';
 
 const SESSION_CONFIG_STORAGE_KEY = 'solace';
 
@@ -13,7 +13,7 @@ export class SessionConfigStore {
 
   public static store(config: SolaceMessageClientConfig): void {
     const json = JSON.stringify(config, (key, value) => {
-      if (key === 'accessToken' && value === PromptAccessTokenProvider) {
+      if (key === 'accessToken' && value === promptForAccessToken) {
         return value.name;
       }
       return value;
@@ -28,8 +28,8 @@ export class SessionConfigStore {
     }
 
     return JSON.parse(config, (key, value) => {
-      if (key === 'accessToken' && value === PromptAccessTokenProvider.name) {
-        return PromptAccessTokenProvider;
+      if (key === 'accessToken' && value === promptForAccessToken.name) {
+        return promptForAccessToken;
       }
       return value;
     });

@@ -1,12 +1,12 @@
-import {DestroyRef, inject, Injectable, Injector, NgZone, OnDestroy, runInInjectionContext} from '@angular/core';
+import {DestroyRef, inject, Injectable, Injector, NgZone, OnDestroy, runInInjectionContext, ɵisInjectable} from '@angular/core';
 import {EMPTY, EmptyError, firstValueFrom, identity, merge, MonoTypeOperatorFunction, noop, Observable, Observer, of, OperatorFunction, ReplaySubject, share, shareReplay, skip, Subject, TeardownLogic, throwError} from 'rxjs';
 import {distinctUntilChanged, filter, finalize, map, mergeMap, take, takeUntil, tap} from 'rxjs/operators';
 import {UUID} from '@scion/toolkit/uuid';
 import {BrowseOptions, ConsumeOptions, Data, MessageEnvelope, ObserveOptions, PublishOptions, RequestOptions, SolaceMessageClient} from './solace-message-client';
 import {TopicMatcher} from './topic-matcher';
-import {observeInside} from '@scion/toolkit/operators';
+import {observeInside, subscribeInside} from '@scion/toolkit/operators';
 import {SolaceSessionProvider} from './solace-session-provider';
-import {OAuthAccessTokenProvider} from './oauth-access-token-provider';
+import {OAuthAccessTokenFn, OAuthAccessTokenProvider} from './oauth-access-token-provider';
 import {SOLACE_MESSAGE_CLIENT_CONFIG, SolaceMessageClientConfig, SolaceMessageClientConfigFn} from './solace-message-client.config';
 import {AuthenticationScheme, Destination, Message, MessageConsumer, MessageConsumerEventName, MessageConsumerProperties, MessageDeliveryModeType, OperationError, QueueBrowser, QueueBrowserEventName, QueueBrowserProperties, QueueDescriptor, QueueType, RequestError, SDTField, SDTFieldType, SDTMapContainer, Session, SessionEvent, SessionEventCode, SessionProperties as SolaceSessionProperties, SolclientFactory, SolclientFactoryProfiles, SolclientFactoryProperties} from 'solclientjs';
 import {TopicSubscriptionCounter} from './topic-subscription-counter';
@@ -72,7 +72,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
 
         // If using OAUTH2 authentication scheme, set the initial access token via session properties.
         if (accessToken$) {
-          sessionProperties.accessToken = await firstValueFrom(accessToken$).catch(mapEmptyError(() => Error('[EmptyAccessTokenError] Access token Observable has completed without emitted an access token.')));
+          sessionProperties.accessToken = await firstValueFrom(accessToken$.pipe(subscribeInside(fn => this._zone.run(fn)))).catch(mapEmptyError(() => Error('[EmptyAccessTokenError] Access token Observable has completed without emitted an access token.')));
         }
 
         // Create the Solace session.
@@ -146,7 +146,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
   }
 
   /**
-   * Provides the OAuth access token as configured in {@link SolaceMessageClientConfig#accessToken} as Observable.
+   * Provides the OAuth 2.0 access token configured in {@link SolaceMessageClientConfig#accessToken} as Observable.
    * The Observable errors if not using OAUTH2 authentication scheme, or if no token/provider is configured.
    */
   private provideOAuthAccessToken$(config: SolaceMessageClientConfig): Observable<string> {
@@ -154,24 +154,27 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
       return throwError(() => `Expected authentication scheme to be  ${AuthenticationScheme.OAUTH2}, but was ${config.authenticationScheme}.`);
     }
 
-    const accessTokenOrAccessTokenProvider = config.accessToken;
-    const accessToken$ = (() => {
-      switch (typeof accessTokenOrAccessTokenProvider) {
+    const configuredAccessToken = config.accessToken;
+    const accessToken$ = this._zone.run(() => runInInjectionContext(this._injector, () => {
+      switch (typeof configuredAccessToken) {
         case 'string': {
-          return of(accessTokenOrAccessTokenProvider);
+          return of(configuredAccessToken);
         }
         case 'function': {
-          const provider = this._injector.get<OAuthAccessTokenProvider | null>(accessTokenOrAccessTokenProvider, null);
-          if (!provider) {
-            return throwError(() => Error(`[NullAccessTokenProviderError] No provider for ${accessTokenOrAccessTokenProvider.name} found. Did you forget to register it? You can register it as follows: "@Injectable({providedIn: 'root'})"`));
+          const provider = this._injector.get<OAuthAccessTokenProvider | null>(configuredAccessToken, null);
+          if (provider) {
+            return provider.provide$(); // class provider
           }
-          return provider.provide$();
+          if (!ɵisInjectable(configuredAccessToken)) {
+            return Observables.coerce((configuredAccessToken as OAuthAccessTokenFn)()); // function provider
+          }
+          return throwError(() => Error(`[NullAccessTokenProviderError] No provider for ${configuredAccessToken.name} found. Did you forget to register it? You can register it as follows: "@Injectable({providedIn: 'root'})"`));
         }
         default: {
           return throwError(() => Error('[NullAccessTokenConfigError] No access token or provider configured in \'SolaceMessageClientConfig.accessToken\'. An access token is required for OAUTH2 authentication. It is recommended to provide the token via `OAuthAccessTokenProvider`.'));
         }
       }
-    })();
+    }));
 
     return accessToken$.pipe(mergeMap(accessToken => accessToken ? of(accessToken) : throwError(() => Error('[NullAccessTokenError] Invalid "OAuth 2.0 Access Token". Token must not be `null` or `undefined`.'))));
   }

@@ -2130,20 +2130,13 @@ describe('SolaceMessageClient', () => {
         const sessionFixture = new SessionFixture();
         const accessToken$ = new Subject<string>();
 
-        @Injectable({providedIn: 'root'})
-        class TestAccessTokenProvider implements OAuthAccessTokenProvider {
-          public provide$(): Observable<string> {
-            return accessToken$;
-          }
-        }
-
         TestBed.configureTestingModule({
           providers: [
             provideSolaceMessageClient({
               url: 'url',
               vpnName: 'vpn',
               authenticationScheme: AuthenticationScheme.OAUTH2,
-              accessToken: TestAccessTokenProvider,
+              accessToken: () => accessToken$,
             }),
             provideSession(sessionFixture),
           ],
@@ -2244,13 +2237,6 @@ describe('SolaceMessageClient', () => {
       });
 
       it('should error when emitting `null` as the initial access token [NullAccessTokenError]', async () => {
-        @Injectable({providedIn: 'root'})
-        class TestAccessTokenProvider implements OAuthAccessTokenProvider {
-          public provide$(): Observable<string> {
-            return of(null! as string);
-          }
-        }
-
         const sessionFixture = new SessionFixture();
         TestBed.configureTestingModule({
           providers: [
@@ -2258,7 +2244,7 @@ describe('SolaceMessageClient', () => {
               url: 'url',
               vpnName: 'vpn',
               authenticationScheme: AuthenticationScheme.OAUTH2,
-              accessToken: TestAccessTokenProvider,
+              accessToken: () => of(null! as string),
             }),
             provideSession(sessionFixture),
           ],
@@ -2273,13 +2259,6 @@ describe('SolaceMessageClient', () => {
       });
 
       it('should error when emitting `undefined` as the initial access token [NullAccessTokenError]', async () => {
-        @Injectable({providedIn: 'root'})
-        class TestAccessTokenProvider implements OAuthAccessTokenProvider {
-          public provide$(): Observable<string> {
-            return of(undefined! as string);
-          }
-        }
-
         const sessionFixture = new SessionFixture();
         TestBed.configureTestingModule({
           providers: [
@@ -2287,7 +2266,7 @@ describe('SolaceMessageClient', () => {
               url: 'url',
               vpnName: 'vpn',
               authenticationScheme: AuthenticationScheme.OAUTH2,
-              accessToken: TestAccessTokenProvider,
+              accessToken: () => of(undefined! as string),
             }),
             provideSession(sessionFixture),
           ],
@@ -2302,13 +2281,6 @@ describe('SolaceMessageClient', () => {
       });
 
       it('should error when the access token Observable completes without having having emitted an access token [EmptyAccessTokenError]', async () => {
-        @Injectable({providedIn: 'root'})
-        class TestAccessTokenProvider implements OAuthAccessTokenProvider {
-          public provide$(): Observable<string> {
-            return EMPTY;
-          }
-        }
-
         const sessionFixture = new SessionFixture();
         TestBed.configureTestingModule({
           providers: [
@@ -2316,7 +2288,7 @@ describe('SolaceMessageClient', () => {
               url: 'url',
               vpnName: 'vpn',
               authenticationScheme: AuthenticationScheme.OAUTH2,
-              accessToken: TestAccessTokenProvider,
+              accessToken: () => EMPTY,
             }),
             provideSession(sessionFixture),
           ],
@@ -2331,13 +2303,6 @@ describe('SolaceMessageClient', () => {
       });
 
       it('should warn when the access token Observable completes [AccessTokenProviderCompletedWarning] (1/2)', async () => {
-        @Injectable({providedIn: 'root'})
-        class TestAccessTokenProvider implements OAuthAccessTokenProvider {
-          public provide$(): Observable<string> {
-            return of('access token'); // completes after emitted the initial access token
-          }
-        }
-
         const sessionFixture = new SessionFixture();
         TestBed.configureTestingModule({
           providers: [
@@ -2345,7 +2310,7 @@ describe('SolaceMessageClient', () => {
               url: 'url',
               vpnName: 'vpn',
               authenticationScheme: AuthenticationScheme.OAUTH2,
-              accessToken: TestAccessTokenProvider,
+              accessToken: () => of('access token'), // completes after emitted the initial access token,
             }),
             provideSession(sessionFixture),
           ],
@@ -2358,13 +2323,6 @@ describe('SolaceMessageClient', () => {
       });
 
       it('should warn when the access token Observable completes [AccessTokenProviderCompletedWarning] (2/2)', async () => {
-        @Injectable({providedIn: 'root'})
-        class TestAccessTokenProvider implements OAuthAccessTokenProvider {
-          public provide$(): Observable<string> {
-            return of('access token 1', 'access token 2', 'access token 3'); // completes after 3 emissions
-          }
-        }
-
         const sessionFixture = new SessionFixture();
         TestBed.configureTestingModule({
           providers: [
@@ -2372,7 +2330,7 @@ describe('SolaceMessageClient', () => {
               url: 'url',
               vpnName: 'vpn',
               authenticationScheme: AuthenticationScheme.OAUTH2,
-              accessToken: TestAccessTokenProvider,
+              accessToken: () => of('access token 1', 'access token 2', 'access token 3'), // completes after 3 emissions
             }),
             provideSession(sessionFixture),
           ],
@@ -2388,20 +2346,13 @@ describe('SolaceMessageClient', () => {
         const sessionFixture = new SessionFixture();
         const accessToken$ = new BehaviorSubject<string>('access-token-1');
 
-        @Injectable({providedIn: 'root'})
-        class TestAccessTokenProvider implements OAuthAccessTokenProvider {
-          public provide$(): Observable<string> {
-            return accessToken$;
-          }
-        }
-
         TestBed.configureTestingModule({
           providers: [
             provideSolaceMessageClient({
               url: 'url',
               vpnName: 'vpn',
               authenticationScheme: AuthenticationScheme.OAUTH2,
-              accessToken: TestAccessTokenProvider,
+              accessToken: () => accessToken$,
             }),
             provideSession(sessionFixture),
           ],
@@ -2454,13 +2405,6 @@ describe('SolaceMessageClient', () => {
         const sessionFixture = new SessionFixture();
         const accessToken$ = new Subject<string>();
 
-        @Injectable({providedIn: 'root'})
-        class TestAccessTokenProvider implements OAuthAccessTokenProvider {
-          public provide$(): Observable<string> {
-            return accessToken$;
-          }
-        }
-
         TestBed.configureTestingModule({
           providers: [
             provideSolaceMessageClient(),
@@ -2479,7 +2423,7 @@ describe('SolaceMessageClient', () => {
           url: 'url',
           vpnName: 'vpn',
           authenticationScheme: AuthenticationScheme.OAUTH2,
-          accessToken: TestAccessTokenProvider,
+          accessToken: () => accessToken$,
         });
         await drainMicrotaskQueue();
 
@@ -2583,19 +2527,12 @@ describe('SolaceMessageClient', () => {
           ],
         });
 
-        @Injectable({providedIn: 'root'})
-        class TestAccessTokenProvider implements OAuthAccessTokenProvider {
-          public provide$(): Observable<string> {
-            return of(null! as string);
-          }
-        }
-
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
         const connected = solaceMessageClient.connect({
           url: 'url',
           vpnName: 'vpn',
           authenticationScheme: AuthenticationScheme.OAUTH2,
-          accessToken: TestAccessTokenProvider,
+          accessToken: () => of(null! as string),
         });
 
         await expectAsync(connected).toBeRejectedWithError(/\[NullAccessTokenError]/);
@@ -2612,19 +2549,12 @@ describe('SolaceMessageClient', () => {
           ],
         });
 
-        @Injectable({providedIn: 'root'})
-        class TestAccessTokenProvider implements OAuthAccessTokenProvider {
-          public provide$(): Observable<string> {
-            return of(undefined! as string);
-          }
-        }
-
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
         const connected = solaceMessageClient.connect({
           url: 'url',
           vpnName: 'vpn',
           authenticationScheme: AuthenticationScheme.OAUTH2,
-          accessToken: TestAccessTokenProvider,
+          accessToken: () => of(undefined! as string),
         });
 
         await expectAsync(connected).toBeRejectedWithError(/\[NullAccessTokenError]/);
@@ -2641,19 +2571,12 @@ describe('SolaceMessageClient', () => {
           ],
         });
 
-        @Injectable({providedIn: 'root'})
-        class TestAccessTokenProvider implements OAuthAccessTokenProvider {
-          public provide$(): Observable<string> {
-            return EMPTY;
-          }
-        }
-
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
         const connected = solaceMessageClient.connect({
           url: 'url',
           vpnName: 'vpn',
           authenticationScheme: AuthenticationScheme.OAUTH2,
-          accessToken: TestAccessTokenProvider,
+          accessToken: () => EMPTY,
         });
 
         await expectAsync(connected).toBeRejectedWithError(/\[EmptyAccessTokenError]/);
@@ -2670,19 +2593,12 @@ describe('SolaceMessageClient', () => {
           ],
         });
 
-        @Injectable({providedIn: 'root'})
-        class TestAccessTokenProvider implements OAuthAccessTokenProvider {
-          public provide$(): Observable<string> {
-            return of('access token'); // completes after emitted the initial access token
-          }
-        }
-
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
         const connected = solaceMessageClient.connect({
           url: 'url',
           vpnName: 'vpn',
           authenticationScheme: AuthenticationScheme.OAUTH2,
-          accessToken: TestAccessTokenProvider,
+          accessToken: () => of('access token'), // completes after emitted the initial access token,
         });
         await sessionFixture.simulateEvent(SessionEventCode.UP_NOTICE);
         await connected;
@@ -2699,19 +2615,12 @@ describe('SolaceMessageClient', () => {
           ],
         });
 
-        @Injectable({providedIn: 'root'})
-        class TestAccessTokenProvider implements OAuthAccessTokenProvider {
-          public provide$(): Observable<string> {
-            return of('access token 1', 'access token 2', 'access token 3'); // completes after 3 emissions
-          }
-        }
-
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
         const connected = solaceMessageClient.connect({
           url: 'url',
           vpnName: 'vpn',
           authenticationScheme: AuthenticationScheme.OAUTH2,
-          accessToken: TestAccessTokenProvider,
+          accessToken: () => of('access token 1', 'access token 2', 'access token 3'),
         });
         await sessionFixture.simulateEvent(SessionEventCode.UP_NOTICE);
         await connected;
@@ -2730,19 +2639,12 @@ describe('SolaceMessageClient', () => {
 
         const accessToken$ = new BehaviorSubject<string>('access-token-1');
 
-        @Injectable({providedIn: 'root'})
-        class TestAccessTokenProvider implements OAuthAccessTokenProvider {
-          public provide$(): Observable<string> {
-            return accessToken$;
-          }
-        }
-
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
         const connected = solaceMessageClient.connect({
           url: 'url',
           vpnName: 'vpn',
           authenticationScheme: AuthenticationScheme.OAUTH2,
-          accessToken: TestAccessTokenProvider,
+          accessToken: () => accessToken$,
         });
         await sessionFixture.simulateEvent(SessionEventCode.UP_NOTICE);
         await connected;

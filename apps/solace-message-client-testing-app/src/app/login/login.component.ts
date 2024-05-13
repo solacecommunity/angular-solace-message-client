@@ -4,7 +4,7 @@ import {LocationService} from '../location.service';
 import {SolaceMessageClientConfig} from '@solace-community/angular-solace-message-client';
 import {SessionConfigStore} from '../session-config-store';
 import {AuthenticationScheme} from 'solclientjs';
-import {PromptAccessTokenProvider} from '../prompt-access-token.provider';
+import {promptForAccessToken} from '../prompt-access-token.provider';
 import {startWith, Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
 import {MatCardModule} from '@angular/material/card';
@@ -77,7 +77,7 @@ export class LoginComponent implements OnDestroy {
       reconnectRetries: this.form.get(RECONNECT_RETRIES)!.value ?? undefined,
       connectRetries: this.form.get(RECONNECT_RETRIES)!.value ?? undefined,
       authenticationScheme: this.form.get(AUTHENTICATION_SCHEME)!.value ?? undefined,
-      accessToken: oAuthEnabled ? PromptAccessTokenProvider : undefined,
+      accessToken: oAuthEnabled ? promptForAccessToken : undefined,
     };
 
     SessionConfigStore.store(sessionConfig);
