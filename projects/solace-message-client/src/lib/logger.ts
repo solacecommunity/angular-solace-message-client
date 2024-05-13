@@ -1,4 +1,4 @@
-import {EnvironmentProviders, Injectable, makeEnvironmentProviders} from '@angular/core';
+import {EnvironmentProviders, inject, Injectable, makeEnvironmentProviders} from '@angular/core';
 import {LogLevel} from 'solclientjs';
 
 /**
@@ -70,9 +70,10 @@ export class Logger {
 /**
  * Registers a set of DI providers to enable logging in the Angular Solace Message Client.
  */
-export function provideLogger(): EnvironmentProviders {
+export function provideLogger(logLevel: LogLevel): EnvironmentProviders {
   return makeEnvironmentProviders([
     Logger,
-    {provide: LogLevel, useValue: LogLevel.WARN},
+    // Provide inherited 'LogLevel' or provide default LogLevel otherwise.
+    {provide: LogLevel, useFactory: () => inject(LogLevel as any, {skipSelf: true, optional: true}) ?? logLevel},
   ]);
 }
