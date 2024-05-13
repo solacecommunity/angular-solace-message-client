@@ -13,51 +13,61 @@ This page gives you an overview of features provided by Angular Solace Message C
 
 When publishing a message to a topic, it will be transported to all consumers subscribed to the topic. A message may contain unstructured byte data, or a structured container.
 
-#### Example:
+#### Examples:
 
-```typescript
+**Publish Binary Message**
+```ts
 import {SolaceMessageClient} from '@solace-community/angular-solace-message-client';
-import {Injectable} from '@angular/core';
-import {Message, MessageDeliveryModeType, MessageDumpFlag, SDTField, SDTFieldType} from 'solclientjs';
+import {inject} from '@angular/core';
 
-@Injectable()
-export class YourService {
+inject(SolaceMessageClient).publish('myhome/livingroom/temperature', '20°C');
 
-  constructor(private messageClient: SolaceMessageClient) {
-  }
+// `solclientjs` encodes `string` content to latin1 encoded binary attachment. Alternatively, you can directly pass binary content, as follows:
+inject(SolaceMessageClient).publish('myhome/livingroom/temperature', new TextEncoder().encode('20°C'));
+```
 
-  public publishBinaryMessage(): void {
-    this.messageClient.publish('myhome/livingroom/temperature', '20°C');
+**Publish Structured Text Message**
+```ts
+import {inject} from '@angular/core';
+import {SDTField, SDTFieldType} from 'solclientjs';
+import {SolaceMessageClient} from '@solace-community/angular-solace-message-client';
 
-    // `solclientjs` encodes `string` content to latin1 encoded binary attachment. Alternatively, you can directly pass binary content, as follows:
-    this.messageClient.publish('myhome/livingroom/temperature', new TextEncoder().encode('20°C'));
-  }
+const sdtField = SDTField.create(SDTFieldType.STRING, '20°C');
+inject(SolaceMessageClient).publish('myhome/livingroom/temperature', sdtField);
+```
 
-  public publishStructuredTextMessage(): void {
-    const sdtField = SDTField.create(SDTFieldType.STRING, '20°C');
-    this.messageClient.publish('myhome/livingroom/temperature', sdtField);
-  }
+**Publish Message With Headers**
+```ts
+import {inject} from '@angular/core';
+import {SolaceMessageClient} from '@solace-community/angular-solace-message-client';
 
-  public publishMessageWithHeaders(): void {
-    this.messageClient.publish('myhome/livingroom/temperature', '20°C', {
-      headers: new Map().set('bearer', '<<ACCESS_TOKEN>>'),
-    });
-  }
+inject(SolaceMessageClient).publish('myhome/livingroom/temperature', '20°C', {
+  headers: new Map().set('bearer', '<<ACCESS_TOKEN>>'),
+});
+```
 
-  public publishGuaranteedMessage(): void {
-    this.messageClient.publish('myhome/livingroom/temperature', '20°C', {
-      deliveryMode: MessageDeliveryModeType.PERSISTENT,
-    });
-  }
+**Publish Guaranteed Message**
+```ts
+import {inject} from '@angular/core';
+import {SolaceMessageClient} from '@solace-community/angular-solace-message-client';
+import {MessageDeliveryModeType} from 'solclientjs';
 
-  public interceptMessageBeforePublish(): void {
-    this.messageClient.publish('myhome/livingroom/temperature', '20°C', {
-      intercept: (msg: Message) => {
-        console.log('>>> msg to be published', msg.dump(MessageDumpFlag.MSGDUMP_FULL));
-      },
-    });
-  }
-}
+inject(SolaceMessageClient).publish('myhome/livingroom/temperature', '20°C', {
+  deliveryMode: MessageDeliveryModeType.PERSISTENT,
+});
+```
+
+**Intercept Message Before Publish**
+```ts
+import {inject} from '@angular/core';
+import {SolaceMessageClient} from '@solace-community/angular-solace-message-client';
+import {Message, MessageDumpFlag} from 'solclientjs';
+
+inject(SolaceMessageClient).publish('myhome/livingroom/temperature', '20°C', {
+  intercept: (msg: Message) => {
+    console.log('>>> msg to be published', msg.dump(MessageDumpFlag.MSGDUMP_FULL));
+  },
+});
 ```
 
 > Refer to [SolaceMessageClient#publish](https://solacecommunity.github.io/angular-solace-message-client/api/classes/SolaceMessageClient.html#publish) for more information about the API.
@@ -70,50 +80,56 @@ export class YourService {
 
 You can subscribe to multiple topics simultaneously by using wildcard segments in the topic.
 
-#### Example:
+#### Examples:
 
-```typescript
+**Receive Messages on Exact Topic**
+```ts
+import {inject} from '@angular/core';
 import {SolaceMessageClient} from '@solace-community/angular-solace-message-client';
-import {Injectable, NgZone} from '@angular/core';
 
-@Injectable()
-export class YourService {
+inject(SolaceMessageClient).observe$('myhome/livingroom/temperature').subscribe(envelope => {
+  console.log('Received temperature for livingroom', envelope.message);
+});
+```
 
-  constructor(private messageClient: SolaceMessageClient, private zone: NgZone) {
-  }
+**Receive Messages For Any Room (Wildcard Segments)**
+```ts
+import {inject} from '@angular/core';
+import {SolaceMessageClient} from '@solace-community/angular-solace-message-client';
 
-  public receiveMessagesOnExactTopic(): void {
-    this.messageClient.observe$('myhome/livingroom/temperature').subscribe(envelope => {
-      console.log('Received temperature for livingroom', envelope.message);
-    });
-  }
+inject(SolaceMessageClient).observe$('myhome/*/temperature').subscribe(envelope => {
+  console.log('Received temperature', envelope.message);
+});
+```
 
-  public receiveMessagesForAnyRoom(): void {
-    this.messageClient.observe$('myhome/*/temperature').subscribe(envelope => {
-      console.log('Received temperature', envelope.message);
-    });
-  }
+**Receive Messages For Any Room (Named Wildcard Segments)**
+```ts
+import {inject} from '@angular/core';
+import {SolaceMessageClient} from '@solace-community/angular-solace-message-client';
 
-  public receiveMessagesForAnyRoomUsingNamedWildcardSegment(): void {
-    this.messageClient.observe$('myhome/:room/temperature').subscribe(envelope => {
-      console.log(`Received temperature for room ${envelope.params.get('room')}`, envelope.message);
-    });
-  }
+inject(SolaceMessageClient).observe$('myhome/:room/temperature').subscribe(envelope => {
+  console.log(`Received temperature for room ${envelope.params.get('room')}`, envelope.message);
+});
+```
 
-  public receiveMessagesOutsideAngular(): void {
-    this.messageClient.observe$('myhome/livingroom/temperature', {emitOutsideAngularZone: true}).subscribe(() => {
-      console.log('Running outside Angular zone');
-      this.zone.run(() => console.log('Running inside Angular zone'));
-    });
-  }
+**Receive Messages Outside Angular Zone**
+```ts
+import {inject} from '@angular/core';
+import {SolaceMessageClient} from '@solace-community/angular-solace-message-client';
 
-  public readMessageHeaders(): void {
-    this.messageClient.observe$('myhome/*/temperature').subscribe(envelope => {
-      const accessToken = envelope.headers.get('ACCESS_TOKEN');
-    });
-  }
-}
+inject(SolaceMessageClient).observe$('myhome/livingroom/temperature', {emitOutsideAngularZone: true}).subscribe(() => {
+  console.log('Runs outside Angular zone');
+});
+```
 
+**Read Message Headers**
+```ts
+import {inject} from '@angular/core';
+import {SolaceMessageClient} from '@solace-community/angular-solace-message-client';
+
+inject(SolaceMessageClient).observe$('myhome/*/temperature').subscribe(envelope => {
+  const accessToken = envelope.headers.get('ACCESS_TOKEN');
+});
 ```
 
 > Refer to [SolaceMessageClient#observe$](https://solacecommunity.github.io/angular-solace-message-client/api/classes/SolaceMessageClient.html#observe_) for more information about the API.
@@ -126,31 +142,23 @@ export class YourService {
 
 Instead of observing messages published to a topic via [SolaceMessageClient#observe$](https://solacecommunity.github.io/angular-solace-message-client/api/classes/SolaceMessageClient.html#observe_), you can consume messages via a temporary, non-durable topic endpoint, so that messages are not lost even in the event of short connection interruptions as messages are retained on the broker until consumed by the consumer. The lifecycle of a non-durable topic endpoint is bound to the client that created it, with an additional 60s in case of unexpected disconnect.
 
-```typescript
+```ts
 import {SolaceMessageClient} from '@solace-community/angular-solace-message-client';
-import {QueueType, SolclientFactory} from 'solclientjs';
-import {Injectable} from '@angular/core';
+import {QueueDescriptor, QueueType, SolclientFactory} from 'solclientjs';
+import {inject} from '@angular/core';
 
-@Injectable()
-export class YourService {
+// Consume messages sent to topic 'topic'.
+inject(SolaceMessageClient).consume$('topic').subscribe(envelope => {
+  console.log('message consumed', envelope.message);
+});
 
-  constructor(private messageClient: SolaceMessageClient) {
-  }
-
-  public consumeMessagesSentToTopic(): void {
-    this.messageClient.consume$('topic').subscribe(envelope => {
-      console.log('message consumed', envelope.message);
-    });
-
-    // Above code uses a convenience API by passing the topic as `string` literal, which is equivalent to the following code.
-    this.messageClient.consume$({
-      topicEndpointSubscription: SolclientFactory.createTopicDestination('topic'),
-      queueDescriptor: new QueueDescriptor({type: QueueType.TOPIC_ENDPOINT, durable: false}),
-    }).subscribe(envelope => {
-      console.log('message consumed', envelope.message);
-    });
-  }
-}
+// Above code uses a convenience API by passing the topic as `string` literal, which is equivalent to the following code.
+inject(SolaceMessageClient).consume$({
+  topicEndpointSubscription: SolclientFactory.createTopicDestination('topic'),
+  queueDescriptor: new QueueDescriptor({type: QueueType.TOPIC_ENDPOINT, durable: false}),
+}).subscribe(envelope => {
+  console.log('message consumed', envelope.message);
+});
 ```
 
 > Refer to [SolaceMessageClient#consume$](https://solacecommunity.github.io/angular-solace-message-client/api/classes/SolaceMessageClient.html#consume_) for more information about the API.
@@ -167,55 +175,67 @@ A queue is typically used in a point-to-point (P2P) messaging environment. A que
 
 > Refer to [SolaceMessageClient#publish](https://solacecommunity.github.io/angular-solace-message-client/api/classes/SolaceMessageClient.html#publish) for more information about the API.
 
-#### Example:
+#### Examples:
 
-```typescript
-import {Injectable} from '@angular/core';
+**Send Binary Message**
+```ts
+import {inject} from '@angular/core';
 import {SolaceMessageClient} from '@solace-community/angular-solace-message-client';
-import {Message, MessageDeliveryModeType, MessageDumpFlag, SDTField, SDTFieldType} from 'solclientjs';
+import {SolclientFactory} from 'solclientjs';
 
-@Injectable()
-export class YourService {
+const queue = SolclientFactory.createDurableQueueDestination('queue');
+inject(SolaceMessageClient).publish(queue, '20°C');
 
-  constructor(private messageClient: SolaceMessageClient) {
-  }
+// `solclientjs` encodes `string` content to latin1 encoded binary attachment. Alternatively, you can directly pass binary content, as follows:
+inject(SolaceMessageClient).publish(queue, new TextEncoder().encode('20°C'));
+```
 
-  public sendBinaryMessage(): void {
-    const queue = SolclientFactory.createDurableQueueDestination('queue');
-    this.messageClient.publish(queue, '20°C');
+**Send Structured Text Message**
+```ts
+import {inject} from '@angular/core';
+import {SolaceMessageClient} from '@solace-community/angular-solace-message-client';
+import {SDTField, SDTFieldType, SolclientFactory} from 'solclientjs';
 
-    // `solclientjs` encodes `string` content to latin1 encoded binary attachment. Alternatively, you can directly pass binary content, as follows:
-    this.messageClient.publish(queue, new TextEncoder().encode('20°C'));
-  }
+const queue = SolclientFactory.createDurableQueueDestination('queue');
+const sdtField = SDTField.create(SDTFieldType.STRING, '20°C');
 
-  public sendStructuredTextMessage(): void {
-    const queue = SolclientFactory.createDurableQueueDestination('queue');
-    const sdtField = SDTField.create(SDTFieldType.STRING, '20°C');
+inject(SolaceMessageClient).publish(queue, sdtField);
+```
 
-    this.messageClient.publish(queue, sdtField);
-  }
+**Send Message With Headers**
+```ts
+import {inject} from '@angular/core';
+import {SolaceMessageClient} from '@solace-community/angular-solace-message-client';
+import {SolclientFactory} from 'solclientjs';
 
-  public sendMessageWithHeaders(): void {
-    const queue = SolclientFactory.createDurableQueueDestination('queue');
-    this.messageClient.publish(queue, '20°C', {headers: new Map().set('bearer', '<<ACCESS_TOKEN>>')});
-  }
+const queue = SolclientFactory.createDurableQueueDestination('queue');
+inject(SolaceMessageClient).publish(queue, '20°C', {headers: new Map().set('bearer', '<<ACCESS_TOKEN>>')});
+```
 
-  public sendGuaranteedMessage(): void {
-    const queue = SolclientFactory.createDurableQueueDestination('queue');
-    this.messageClient.publish(queue, '20°C', {
-      deliveryMode: MessageDeliveryModeType.PERSISTENT,
-    });
-  }
+**Send Guaranteed Message**
+```ts
+import {inject} from '@angular/core';
+import {SolaceMessageClient} from '@solace-community/angular-solace-message-client';
+import {MessageDeliveryModeType, SolclientFactory} from 'solclientjs';
 
-  public interceptMessageBeforeSend(): void {
-    const queue = SolclientFactory.createDurableQueueDestination('queue');
-    this.messageClient.publish(queue, '20°C', {
-      intercept: (msg: Message) => {
-        console.log('>>> msg to be sent', msg.dump(MessageDumpFlag.MSGDUMP_FULL));
-      },
-    });
-  }
-}
+const queue = SolclientFactory.createDurableQueueDestination('queue');
+inject(SolaceMessageClient).publish(queue, '20°C', {
+  deliveryMode: MessageDeliveryModeType.PERSISTENT,
+});
+```
+
+**Intercept Message Before Send**
+```ts
+import {inject} from '@angular/core';
+import {SolaceMessageClient} from '@solace-community/angular-solace-message-client';
+import {Message, MessageDumpFlag, SolclientFactory} from 'solclientjs';
+
+const queue = SolclientFactory.createDurableQueueDestination('queue');
+inject(SolaceMessageClient).publish(queue, '20°C', {
+  intercept: (msg: Message) => {
+    console.log('>>> msg to be sent', msg.dump(MessageDumpFlag.MSGDUMP_FULL));
+  },
+});
 ```
 
 </details>
@@ -224,26 +244,16 @@ export class YourService {
   <summary><strong>Consume messages sent to a durable queue</strong></summary>
   <br>
 
-```typescript
-import {Injectable} from '@angular/core';
-import {SolaceMessageClient} from '@solace-community/angular-solace-message-client';
+```ts
 import {QueueDescriptor, QueueType} from 'solclientjs';
+import {inject} from '@angular/core';
+import {SolaceMessageClient} from '@solace-community/angular-solace-message-client';
 
-@Injectable()
-export class YourService {
-
-  constructor(private messageClient: SolaceMessageClient) {
-  }
-
-  public consumeMessagesSentToQueue(): void {
-    this.messageClient.consume$({
-      queueDescriptor: new QueueDescriptor({type: QueueType.QUEUE, name: 'queue'}),
-    }).subscribe(envelope => {
-      console.log('message consumed', envelope.message);
-    });
-  }
-}
-
+inject(SolaceMessageClient).consume$({
+  queueDescriptor: new QueueDescriptor({type: QueueType.QUEUE, name: 'queue'}),
+}).subscribe(envelope => {
+  console.log('message', envelope.message);
+});
 ```
 
 > Refer to [SolaceMessageClient#consume$](https://solacecommunity.github.io/angular-solace-message-client/api/classes/SolaceMessageClient.html#consume_) for more information about the API.
@@ -255,31 +265,22 @@ export class YourService {
   <br>
 Browses messages in a queue, without removing/consuming the messages.
 
-```typescript
-import {Injectable} from '@angular/core';
+```ts
+import {inject} from '@angular/core';
 import {SolaceMessageClient} from '@solace-community/angular-solace-message-client';
 import {QueueDescriptor, QueueType} from 'solclientjs';
 
-@Injectable()
-export class YourService {
+// Browse messages.
+inject(SolaceMessageClient).browse$('queue').subscribe(envelope => {
+  console.log('message', envelope.message);
+});
 
-  constructor(private messageClient: SolaceMessageClient) {
-  }
-
-  public browseMessages(): void {
-    this.messageClient.browse$('queue').subscribe(envelope => {
-      console.log('message', envelope.message);
-    });
-
-    // Above code uses a convenience API by passing the queue as `string` literal, which is equivalent to the following code.
-    this.messageClient.browse$({
-      queueDescriptor: new QueueDescriptor({type: QueueType.QUEUE, name: 'queue'}),
-    }).subscribe(envelope => {
-      console.log('message consumed', envelope.message);
-    });
-  }
-}
-
+// Above code uses a convenience API by passing the queue as `string` literal, which is equivalent to the following code.
+inject(SolaceMessageClient).browse$({
+  queueDescriptor: new QueueDescriptor({type: QueueType.QUEUE, name: 'queue'}),
+}).subscribe(envelope => {
+  console.log('message', envelope.message);
+});
 ```
 
 > Refer to [SolaceMessageClient#browse$](https://solacecommunity.github.io/angular-solace-message-client/api/classes/SolaceMessageClient.html#browse_) for more information about the API.
@@ -291,41 +292,35 @@ export class YourService {
   <br>
 The following snippet illustrates how to send a request and receive the response.
 
-```typescript
-import {Injectable} from '@angular/core';
+**Initiate Request-Reply Communication**
+```ts
+import {inject} from '@angular/core';
 import {SolaceMessageClient} from '@solace-community/angular-solace-message-client';
 
-@Injectable()
-export class YourService {
+inject(SolaceMessageClient).request$('request-topic', 'request data').subscribe(reply => {
+  console.log('reply received', reply);
+});
+```
 
-  constructor(private messageClient: SolaceMessageClient) {
-    this.installReplier();
-  }
+**Reply To Requests**
+```ts
+import {inject} from '@angular/core';
+import {SolaceMessageClient} from '@solace-community/angular-solace-message-client';
 
-  /**
-   * Initiates a request-response communication.
-   */
-  public request(): void {
-    this.messageClient.request$('request-topic', 'request data').subscribe(reply => {
-      console.log('reply received', reply);
-    });
-  }
+const solaceMessageClient = inject(SolaceMessageClient);
 
-  private installReplier(): void {
-    // Listen for requests sent to the request topic.
-    this.messageClient.observe$('request-topic').subscribe(request => {
-      // Reply to the request.
-      this.messageClient.reply(request.message, 'reply');
+// Listen for requests sent to the request topic.
+solaceMessageClient.observe$('request-topic').subscribe(request => {
+  // Reply to the request.
+  solaceMessageClient.reply(request.message, 'reply');
 
-      // Above code uses a convenience API to directly respond to a request.
-      // Alternatively, you could answer to the request as following.
-      this.messageClient.publish(request.message.getReplyTo(), 'reply', {
-        markAsReply: true,
-        correlationId: request.message.getCorrelationId(),
-      });
-    });
-  }
-}
+  // Above code uses a convenience API to directly respond to a request.
+  // Alternatively, you could answer to the request as following.
+  solaceMessageClient.publish(request.message.getReplyTo()!, 'reply', {
+    markAsReply: true,
+    correlationId: request.message.getCorrelationId() ?? undefined,
+  });
+});
 
 ```
 
@@ -337,20 +332,13 @@ export class YourService {
   <summary><strong>Monitor connectivity to the message broker</strong></summary>
   <br>
 
-```typescript
+```ts
+import {inject} from '@angular/core';
 import {SolaceMessageClient} from '@solace-community/angular-solace-message-client';
-import {Injectable} from '@angular/core';
 
-@Injectable()
-export class YourService {
-
-  constructor(messageClient: SolaceMessageClient) {
-    messageClient.connected$.subscribe(connected => {
-      console.log('connected to the broker', connected);
-    });
-  }
-}
-
+inject(SolaceMessageClient).connected$.subscribe(connected => {
+  console.log('connected to the broker', connected);
+});
 ```
 
 > Refer to [SolaceMessageClient#connected$](https://solacecommunity.github.io/angular-solace-message-client/api/classes/SolaceMessageClient.html#connected_) for more information about the API.
@@ -363,21 +351,11 @@ export class YourService {
 
 You can obtain the native Solace session to get the full functionality of the underlying *solclient* library.
 
-```typescript
+```ts
+import {inject} from '@angular/core';
 import {SolaceMessageClient} from '@solace-community/angular-solace-message-client';
-import {Injectable} from '@angular/core';
-import {Session} from 'solclientjs';
 
-@Injectable()
-export class YourService {
-
-  constructor(messageClient: SolaceMessageClient) {
-    messageClient.session.then((session: Session) => {
-
-    });
-  }
-}
-
+const session = await inject(SolaceMessageClient).session
 ```
 
 > Refer to [SolaceMessageClient#session](https://solacecommunity.github.io/angular-solace-message-client/api/interfaces/Session.html) for more information about the API.
@@ -390,11 +368,9 @@ export class YourService {
 
 OAuth 2.0 enables secure login to the broker while protecting user credentials. Follow these steps to enable OAuth authentication:
 - Create an access token provider:
-  - Create a class that implements `OAuthAccessTokenProvider`.
-  - Register the class as Angular provider, either via `providers` array of the `@NgModule` or via the `providedIn` property of the `@Injectable` decorator.
-  - Implement the method `provide$` in your `OAuthAccessTokenProvider`.
-    The method should return an Observable that, when being subscribed, emits the user's access token, and then emits continuously when the token is renewed. It should never complete. Otherwise, the connection to the broker would not be re-established in the event of a network interruption. 
-- Enable OAUTH and configure the access token in the config passed to `SolaceMessageClientModule.forRoot` or `SolaceMessageClient.connect`, as follows:
+  - Provide a class that implements `OAuthAccessTokenProvider`.
+  - Implement the `provide$` method. The method should return an Observable that, when being subscribed, emits the user's access token, and then emits continuously when the token is renewed. It should never complete. Otherwise, the connection to the broker would not be re-established in the event of a network interruption. 
+- Enable OAUTH and configure the access token in the config passed to `provideSolaceMessageClient` or `SolaceMessageClient.connect`, as follows:
   - Set `SolaceMessageClientConfig.authenticationScheme` to `AuthenticationScheme.OAUTH2`.
   - Set `SolaceMessageClientConfig.accessToken` to the above provider class.
 
@@ -419,23 +395,20 @@ export class YourAccessTokenProvider implements OAuthAccessTokenProvider {
 #### Example for the configuration of the Solace Message Client
 
 ```ts
-import {NgModule} from '@angular/core';
-import {SolaceMessageClientModule} from '@solace-community/angular-solace-message-client';
+import {bootstrapApplication} from '@angular/platform-browser';
+import {provideSolaceMessageClient} from '@solace-community/angular-solace-message-client';
+import {AuthenticationScheme} from 'solclientjs';
 
-@NgModule({
-  imports: [
-    ...
-      SolaceMessageClientModule.forRoot({
-        url: 'wss://YOUR-SOLACE-BROKER-URL:443',
-        vpnName: 'YOUR VPN',
-        authenticationScheme: AuthenticationScheme.OAUTH2, // enables OAUTH
-        accessToken: YourAccessTokenProvider, // sets the access token provider
-      }),
+bootstrapApplication(AppComponent, {
+  providers: [
+    provideSolaceMessageClient({
+      url: 'wss://YOUR-SOLACE-BROKER-URL:443',
+      vpnName: 'YOUR VPN',
+      authenticationScheme: AuthenticationScheme.OAUTH2, // enables OAUTH
+      accessToken: YourAccessTokenProvider, // sets your access token provider
+    }),
   ],
-  ...
-})
-export class AppModule {
-}
+});
 ```
 
 > Refer to [SolaceMessageClientConfig#accessToken](https://solacecommunity.github.io/angular-solace-message-client/api/classes/SolaceMessageClientConfig.html#accessToken) for more information about the API.
@@ -446,25 +419,27 @@ export class AppModule {
   <summary><strong>Change Log Level</strong></summary>
   <br>
 
-The default log level is set to 'WARN' so that only warnings and errors are logged.
+The default log level is set to `WARN` so that only warnings and errors are logged.
 
 The default log level can be changed as follows:
-- Change the log level programmatically by providing it under the DI token `LogLevel`:
-  ```ts
-  import {LogLevel} from 'solclientjs';
-  
-  @NgModule({
-    providers: [
-      {provide: LogLevel, useValue: LogLevel.WARN},
-    ],
-    ...
-  })
-  export class AppModule {
-  }
-  ```
-- Change the log level at runtime via session storage by adding the following entry and then reloading the application:\
-  key:   `angular-solace-message-client#loglevel`\
-  value: `debug` // supported values are: trace | debug | info | warn | error | fatal
+```ts
+import {bootstrapApplication} from '@angular/platform-browser';
+import {provideSolaceMessageClient} from '@solace-community/angular-solace-message-client';
+import {LogLevel} from 'solclientjs';
+
+bootstrapApplication(AppComponent, {
+  providers: [
+    provideSolaceMessageClient(),
+    {provide: LogLevel, useValue: LogLevel.INFO}, // Add this line
+  ],
+});
+```
+To change the log level at runtime, add the `angular-solace-message-client#loglevel` entry to session storage and reload the application. Supported log levels are: `trace`, `debug`, `info`, `warn`, `error` and `fatal`.
+
+```
+Storage Key: `angular-solace-message-client#loglevel`
+Storage Value: `info`
+```
 
 </details>
 

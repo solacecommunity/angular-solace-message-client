@@ -30,8 +30,7 @@ export abstract class SolaceMessageClient {
   /**
    * Connects to the Solace message broker with the specified configuration. Has no effect if already connected.
    *
-   * Do not forget to invoke this method if you import {@link SolaceMessageClientModule} without configuration in the root injector.
-   * Typically, you would connect to the broker in an app initializer.
+   * Do not forget to invoke this method if registering Solace Message Client providers without config: `provideSolaceMessageClient()`.
    *
    * @return Promise that resolves to the {@link Session} when connected to the broker, or that rejects if the connection attempt failed.
    *         If already connected, the Promise resolves immediately.
@@ -65,9 +64,9 @@ export abstract class SolaceMessageClient {
    *
    * See https://docs.solace.com/PubSub-Basics/Wildcard-Charaters-Topic-Subs.htm for more information and examples.
    *
-   * If a segment begins with a colon (`:`), it is called a named wildcard segment that acts as a placeholder for any value. The characters after the leading colon give the segment its name.
-   * Internally, named wildcard segments are translated to single-level wildcard segments. Named segments allow retrieving substituted segment values when receiving a message in an easy manner.
-   * E.g., the topic 'myhome/:room/temperature' is translated to 'myhome/* /temperature', matching messages sent to topics like 'myhome/kitchen/temperature' or 'myhome/livingroom/temperature'.
+   * If a segment begins with a colon (`:`), it is called a named wildcard segment that acts as a placeholder for any value. The characters after the colon give the segment its name.
+   * Internally, named wildcard segments are translated to single-level wildcard segments. Named segments can be read from the received message
+   * For example, the topic 'myhome/:room/temperature' is translated to 'myhome/* /temperature', matching messages sent to topics like 'myhome/kitchen/temperature' or 'myhome/livingroom/temperature'.
    * Substituted segment values are then available in {@link MessageEnvelope.params}, or as the second element of the tuple when using {@link mapToBinary} or {@link mapToText}
    * RxJS operators.
    *
@@ -79,8 +78,9 @@ export abstract class SolaceMessageClient {
    * @param topic - Specifies the topic which to observe.
    *        Topics are case-sensitive and consist of one or more segments, each separated by a forward slash.
    *        You can subscribe to the exact topic of a published message, or use wildcards (single-level or multi-level) to subscribe to multiple topics simultaneously.
-   *        In place of using a single-level wildcard segment (`*`), you can also use a named wildcard segment starting with a colon (`:`), allowing you to retrieve
-   *        substituted values of wildcard segments when receiving a message.
+   *        As an alternative to the single-level wildcard `*`, named wildcard segments can be used. A named wildcard segment begins with a colon (`:`) followed by a name.
+   *        Substituted segments can be read from the received message.
+   *
    * @param options - Controls how to observe the topic.
    * @return Observable that emits when receiving a message published to the given topic. The Observable never completes. If not connected to the broker yet, or if the connect attempt failed, the Observable errors.
    */
@@ -138,9 +138,9 @@ export abstract class SolaceMessageClient {
    *
    * See https://docs.solace.com/PubSub-Basics/Wildcard-Charaters-Topic-Subs.htm for more information and examples.
    *
-   * If a segment begins with a colon (`:`), it is called a named wildcard segment that acts as a placeholder for any value. The characters after the leading colon give the segment its name.
-   * Internally, named wildcard segments are translated to single-level wildcard segments. Named segments allow retrieving substituted segment values when receiving a message in an easy manner.
-   * E.g., the topic 'myhome/:room/temperature' is translated to 'myhome/* /temperature', matching messages sent to topics like 'myhome/kitchen/temperature' or 'myhome/livingroom/temperature'.
+   * If a segment begins with a colon (`:`), it is called a named wildcard segment that acts as a placeholder for any value. The characters after the colon give the segment its name.
+   * Internally, named wildcard segments are translated to single-level wildcard segments. Named segments can be read from the received message
+   * For example, the topic 'myhome/:room/temperature' is translated to 'myhome/* /temperature', matching messages sent to topics like 'myhome/kitchen/temperature' or 'myhome/livingroom/temperature'.
    * Substituted segment values are then available in {@link MessageEnvelope.params}, or as the second element of the tuple when using {@link mapToBinary} or {@link mapToText} RxJS operators.
    *
    * The Observables emits the messages as received by the Solace broker. You can use one of the following custom RxJS operators to map the message to its payload.
@@ -149,8 +149,8 @@ export abstract class SolaceMessageClient {
    *
    * @param topicOrDescriptor - If specifying a `string` literal, then it is used as the subscription topic to create a topic endpoint for, allowing messages to be reliably received even if the
    *        connection is unstable. If passing a descriptor object, it is used as the config to connect to a queue or topic endpoint.
-   *        A topic endpoint subscription allows using wildcards (single-level or multi-level) to subscribe to multiple topics simultaneously. In place of using a single-level wildcard segment (`*`),
-   *        you can also use a named wildcard segment starting with a colon (`:`), allowing you to retrieve substituted values of wildcard segments when receiving a message.
+   *        A topic endpoint subscription allows using wildcards (single-level or multi-level) to subscribe to multiple topics simultaneously.
+   *        As an alternative to the single-level wildcard `*`, named wildcard segments can be used. A named wildcard segment begins with a colon (`:`) followed by a name. Substituted segments can be read from the received message.
    * @return Observable that emits when receiving a message published to the given endpoint. The Observable never completes. If not connected to the broker yet, or if the connect attempt failed, the Observable errors.
    */
   public abstract consume$(topicOrDescriptor: string | (MessageConsumerProperties & ConsumeOptions)): Observable<MessageEnvelope>;

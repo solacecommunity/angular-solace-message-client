@@ -10,7 +10,7 @@ import {createOperationError, createQueueMessage, createRequestError, createTopi
 import {provideSession} from './testing/session-provider';
 import {SolaceSessionProvider} from './solace-session-provider';
 import {OAuthAccessTokenProvider} from './oauth-access-token-provider';
-import {SolaceMessageClientModule} from './solace-message-client.module';
+import {provideSolaceMessageClient} from './solace-message-client.provider';
 
 describe('SolaceMessageClient', () => {
 
@@ -25,15 +25,13 @@ describe('SolaceMessageClient', () => {
     spyOn(console, 'error');
   });
 
-  describe('SolaceMessageClientModule.forRoot(CONFIG)', () => {
+  describe('Setup: provideSolaceMessageClient(config); auto connect', () => {
 
     it('should connect to the Solace message broker when injecting `SolaceMessageClient`', async () => {
       const sessionFixture = new SessionFixture();
       TestBed.configureTestingModule({
-        imports: [
-          SolaceMessageClientModule.forRoot({url: 'url', vpnName: 'vpn'}),
-        ],
         providers: [
+          provideSolaceMessageClient({url: 'url', vpnName: 'vpn'}),
           provideSession(sessionFixture),
         ],
       });
@@ -56,10 +54,8 @@ describe('SolaceMessageClient', () => {
       }
 
       TestBed.configureTestingModule({
-        imports: [
-          SolaceMessageClientModule.forRoot({url: 'url', vpnName: 'vpn'}),
-        ],
         providers: [
+          provideSolaceMessageClient({url: 'url', vpnName: 'vpn'}),
           provideSession(new SessionFixture()),
           {
             provide: SolaceMessageClient,
@@ -75,10 +71,8 @@ describe('SolaceMessageClient', () => {
     it('should allow to disconnect and re-connect from the Solace message broker', async () => {
       const sessionFixture = new SessionFixture();
       TestBed.configureTestingModule({
-        imports: [
-          SolaceMessageClientModule.forRoot({url: 'url', vpnName: 'vpn'}),
-        ],
         providers: [
+          provideSolaceMessageClient({url: 'url', vpnName: 'vpn'}),
           provideSession(sessionFixture),
         ],
       });
@@ -106,13 +100,11 @@ describe('SolaceMessageClient', () => {
       expect(sessionFixture.sessionProvider.provide).toHaveBeenCalledWith(jasmine.objectContaining({url: 'some-other-url', vpnName: 'some-other-vpn'}));
     });
 
-    it('should connect with the config as provided in \'SolaceMessageClientModule.forRoot({...})\'', async () => {
+    it('should connect with the config as provided to \'provideSolaceMessageClient({...})\'', async () => {
       const sessionFixture = new SessionFixture();
       TestBed.configureTestingModule({
-        imports: [
-          SolaceMessageClientModule.forRoot({url: 'url', vpnName: 'vpn'}),
-        ],
         providers: [
+          provideSolaceMessageClient({url: 'url', vpnName: 'vpn'}),
           provideSession(sessionFixture),
         ],
       });
@@ -126,16 +118,14 @@ describe('SolaceMessageClient', () => {
       beforeEach(async () => {
         const sessionFixture = new SessionFixture();
         TestBed.configureTestingModule({
-          imports: [
-            SolaceMessageClientModule.forRoot({url: 'url', vpnName: 'vpn'}),
-          ],
           providers: [
+            provideSolaceMessageClient({url: 'url', vpnName: 'vpn'}),
             provideSession(sessionFixture),
             {provide: SessionFixture, useValue: sessionFixture},
           ],
         });
 
-        // 1. Construct `SolaceMessageClient` via DI; the connection to the broker is automatically established by passing connect properties to `SolaceMessageClientModule.forRoot`.
+        // 1. Inject `SolaceMessageClient`; the connection to the broker is automatically established because passing a config to `provideSolaceMessageClient`.
         TestBed.inject(SolaceMessageClient);
         // 2. Simulate connected to the broker by receiving a 'UP_NOTICE' confirmation from the broker
         await sessionFixture.simulateEvent(SessionEventCode.UP_NOTICE);
@@ -145,15 +135,13 @@ describe('SolaceMessageClient', () => {
     });
   });
 
-  describe('SolaceMessageClientModule.forRoot() [manual connect]', () => {
+  describe('Setup: provideSolaceMessageClient(); manual connect', () => {
 
     it('should not connect to the Solace message broker when injecting `SolaceMessageClient`', async () => {
       const sessionFixture = new SessionFixture();
       TestBed.configureTestingModule({
-        imports: [
-          SolaceMessageClientModule.forRoot(),
-        ],
         providers: [
+          provideSolaceMessageClient(),
           provideSession(sessionFixture),
         ],
       });
@@ -167,10 +155,8 @@ describe('SolaceMessageClient', () => {
     it('should allow to connect and disconnect from the Solace message broker', async () => {
       const sessionFixture = new SessionFixture();
       TestBed.configureTestingModule({
-        imports: [
-          SolaceMessageClientModule.forRoot(),
-        ],
         providers: [
+          provideSolaceMessageClient(),
           provideSession(sessionFixture),
         ],
       });
@@ -209,10 +195,8 @@ describe('SolaceMessageClient', () => {
     it('should reject the connect Promise when the connect attempt fails', async () => {
       const sessionFixture = new SessionFixture();
       TestBed.configureTestingModule({
-        imports: [
-          SolaceMessageClientModule.forRoot(),
-        ],
         providers: [
+          provideSolaceMessageClient(),
           provideSession(sessionFixture),
         ],
       });
@@ -232,16 +216,14 @@ describe('SolaceMessageClient', () => {
       beforeEach(async () => {
         const sessionFixture = new SessionFixture();
         TestBed.configureTestingModule({
-          imports: [
-            SolaceMessageClientModule.forRoot(),
-          ],
           providers: [
+            provideSolaceMessageClient(),
             provideSession(sessionFixture),
             {provide: SessionFixture, useValue: sessionFixture},
           ],
         });
 
-        // 1. Construct `SolaceMessageClient` via DI and connect to the broker
+        // 1. Inject `SolaceMessageClient` and connect to the broker
         TestBed.inject(SolaceMessageClient).connect({url: 'some-url', vpnName: 'some-vpn'});
         // 2. Simulate connected to the broker by receiving a 'UP_NOTICE' confirmation from the broker
         await sessionFixture.simulateEvent(SessionEventCode.UP_NOTICE);
@@ -2115,19 +2097,17 @@ describe('SolaceMessageClient', () => {
 
   describe('OAUTH 2.0 authentication', () => {
 
-    describe('SolaceMessageClientModule.forRoot(CONFIG)', () => {
+    describe('Setup: provideSolaceMessageClient(config); auto connect', () => {
       it('should support configuring a "one-time" access token', async () => {
         const sessionFixture = new SessionFixture();
         TestBed.configureTestingModule({
-          imports: [
-            SolaceMessageClientModule.forRoot({
+          providers: [
+            provideSolaceMessageClient({
               url: 'url',
               vpnName: 'vpn',
               authenticationScheme: AuthenticationScheme.OAUTH2,
               accessToken: 'one-time-access-token',
             }),
-          ],
-          providers: [
             provideSession(sessionFixture),
           ],
         });
@@ -2157,15 +2137,13 @@ describe('SolaceMessageClient', () => {
         }
 
         TestBed.configureTestingModule({
-          imports: [
-            SolaceMessageClientModule.forRoot({
+          providers: [
+            provideSolaceMessageClient({
               url: 'url',
               vpnName: 'vpn',
               authenticationScheme: AuthenticationScheme.OAUTH2,
               accessToken: TestAccessTokenProvider,
             }),
-          ],
-          providers: [
             provideSession(sessionFixture),
           ],
         });
@@ -2214,14 +2192,12 @@ describe('SolaceMessageClient', () => {
       it('should error if not configured an access token or an `OAuthAccessTokenProvider` [NullAccessTokenConfigError]', async () => {
         const sessionFixture = new SessionFixture();
         TestBed.configureTestingModule({
-          imports: [
-            SolaceMessageClientModule.forRoot({
+          providers: [
+            provideSolaceMessageClient({
               url: 'url',
               vpnName: 'vpn',
               authenticationScheme: AuthenticationScheme.OAUTH2,
             }),
-          ],
-          providers: [
             provideSession(sessionFixture),
           ],
         });
@@ -2245,15 +2221,13 @@ describe('SolaceMessageClient', () => {
 
         const sessionFixture = new SessionFixture();
         TestBed.configureTestingModule({
-          imports: [
-            SolaceMessageClientModule.forRoot({
+          providers: [
+            provideSolaceMessageClient({
               url: 'url',
               vpnName: 'vpn',
               authenticationScheme: AuthenticationScheme.OAUTH2,
               accessToken: TestAccessTokenProvider,
             }),
-          ],
-          providers: [
             provideSession(sessionFixture),
           ],
         });
@@ -2276,15 +2250,13 @@ describe('SolaceMessageClient', () => {
 
         const sessionFixture = new SessionFixture();
         TestBed.configureTestingModule({
-          imports: [
-            SolaceMessageClientModule.forRoot({
+          providers: [
+            provideSolaceMessageClient({
               url: 'url',
               vpnName: 'vpn',
               authenticationScheme: AuthenticationScheme.OAUTH2,
               accessToken: TestAccessTokenProvider,
             }),
-          ],
-          providers: [
             provideSession(sessionFixture),
           ],
         });
@@ -2307,15 +2279,13 @@ describe('SolaceMessageClient', () => {
 
         const sessionFixture = new SessionFixture();
         TestBed.configureTestingModule({
-          imports: [
-            SolaceMessageClientModule.forRoot({
+          providers: [
+            provideSolaceMessageClient({
               url: 'url',
               vpnName: 'vpn',
               authenticationScheme: AuthenticationScheme.OAUTH2,
               accessToken: TestAccessTokenProvider,
             }),
-          ],
-          providers: [
             provideSession(sessionFixture),
           ],
         });
@@ -2338,15 +2308,13 @@ describe('SolaceMessageClient', () => {
 
         const sessionFixture = new SessionFixture();
         TestBed.configureTestingModule({
-          imports: [
-            SolaceMessageClientModule.forRoot({
+          providers: [
+            provideSolaceMessageClient({
               url: 'url',
               vpnName: 'vpn',
               authenticationScheme: AuthenticationScheme.OAUTH2,
               accessToken: TestAccessTokenProvider,
             }),
-          ],
-          providers: [
             provideSession(sessionFixture),
           ],
         });
@@ -2369,15 +2337,13 @@ describe('SolaceMessageClient', () => {
 
         const sessionFixture = new SessionFixture();
         TestBed.configureTestingModule({
-          imports: [
-            SolaceMessageClientModule.forRoot({
+          providers: [
+            provideSolaceMessageClient({
               url: 'url',
               vpnName: 'vpn',
               authenticationScheme: AuthenticationScheme.OAUTH2,
               accessToken: TestAccessTokenProvider,
             }),
-          ],
-          providers: [
             provideSession(sessionFixture),
           ],
         });
@@ -2398,15 +2364,13 @@ describe('SolaceMessageClient', () => {
 
         const sessionFixture = new SessionFixture();
         TestBed.configureTestingModule({
-          imports: [
-            SolaceMessageClientModule.forRoot({
+          providers: [
+            provideSolaceMessageClient({
               url: 'url',
               vpnName: 'vpn',
               authenticationScheme: AuthenticationScheme.OAUTH2,
               accessToken: TestAccessTokenProvider,
             }),
-          ],
-          providers: [
             provideSession(sessionFixture),
           ],
         });
@@ -2429,15 +2393,13 @@ describe('SolaceMessageClient', () => {
         }
 
         TestBed.configureTestingModule({
-          imports: [
-            SolaceMessageClientModule.forRoot({
+          providers: [
+            provideSolaceMessageClient({
               url: 'url',
               vpnName: 'vpn',
               authenticationScheme: AuthenticationScheme.OAUTH2,
               accessToken: TestAccessTokenProvider,
             }),
-          ],
-          providers: [
             provideSession(sessionFixture),
           ],
         });
@@ -2454,14 +2416,12 @@ describe('SolaceMessageClient', () => {
       });
     });
 
-    describe('SolaceMessageClientModule.forRoot() [manual connect]', () => {
+    describe('Setup: provideSolaceMessageClient(); manual connect', () => {
       it('should support configuring a "one-time" access token', async () => {
         const sessionFixture = new SessionFixture();
         TestBed.configureTestingModule({
-          imports: [
-            SolaceMessageClientModule.forRoot(),
-          ],
           providers: [
+            provideSolaceMessageClient(),
             provideSession(sessionFixture),
           ],
         });
@@ -2499,10 +2459,8 @@ describe('SolaceMessageClient', () => {
         }
 
         TestBed.configureTestingModule({
-          imports: [
-            SolaceMessageClientModule.forRoot(),
-          ],
           providers: [
+            provideSolaceMessageClient(),
             provideSession(sessionFixture),
           ],
         });
@@ -2565,10 +2523,8 @@ describe('SolaceMessageClient', () => {
       it('should error if not configured an access token or an `OAuthAccessTokenProvider` [NullAccessTokenConfigError]', async () => {
         const sessionFixture = new SessionFixture();
         TestBed.configureTestingModule({
-          imports: [
-            SolaceMessageClientModule.forRoot(),
-          ],
           providers: [
+            provideSolaceMessageClient(),
             provideSession(sessionFixture),
           ],
         });
@@ -2588,10 +2544,8 @@ describe('SolaceMessageClient', () => {
       it('should error if forgotten to register `OAuthAccessTokenProvider` as Angular provider [NullAccessTokenProviderError]', async () => {
         const sessionFixture = new SessionFixture();
         TestBed.configureTestingModule({
-          imports: [
-            SolaceMessageClientModule.forRoot(),
-          ],
           providers: [
+            provideSolaceMessageClient(),
             provideSession(sessionFixture),
           ],
         });
@@ -2620,10 +2574,8 @@ describe('SolaceMessageClient', () => {
       it('should error when emitting `null` as the initial access token [NullAccessTokenError]', async () => {
         const sessionFixture = new SessionFixture();
         TestBed.configureTestingModule({
-          imports: [
-            SolaceMessageClientModule.forRoot(),
-          ],
           providers: [
+            provideSolaceMessageClient(),
             provideSession(sessionFixture),
           ],
         });
@@ -2651,10 +2603,8 @@ describe('SolaceMessageClient', () => {
       it('should error when emitting `undefined` as the initial access token [NullAccessTokenError]', async () => {
         const sessionFixture = new SessionFixture();
         TestBed.configureTestingModule({
-          imports: [
-            SolaceMessageClientModule.forRoot(),
-          ],
           providers: [
+            provideSolaceMessageClient(),
             provideSession(sessionFixture),
           ],
         });
@@ -2682,10 +2632,8 @@ describe('SolaceMessageClient', () => {
       it('should error when the access token Observable completes without having emitted an access token [EmptyAccessTokenError]', async () => {
         const sessionFixture = new SessionFixture();
         TestBed.configureTestingModule({
-          imports: [
-            SolaceMessageClientModule.forRoot(),
-          ],
           providers: [
+            provideSolaceMessageClient(),
             provideSession(sessionFixture),
           ],
         });
@@ -2713,10 +2661,8 @@ describe('SolaceMessageClient', () => {
       it('should warn when the access token Observable completes [AccessTokenProviderCompletedWarning] (1/2)', async () => {
         const sessionFixture = new SessionFixture();
         TestBed.configureTestingModule({
-          imports: [
-            SolaceMessageClientModule.forRoot(),
-          ],
           providers: [
+            provideSolaceMessageClient(),
             provideSession(sessionFixture),
           ],
         });
@@ -2744,10 +2690,8 @@ describe('SolaceMessageClient', () => {
       it('should warn when the access token Observable completes [AccessTokenProviderCompletedWarning] (2/2)', async () => {
         const sessionFixture = new SessionFixture();
         TestBed.configureTestingModule({
-          imports: [
-            SolaceMessageClientModule.forRoot(),
-          ],
           providers: [
+            provideSolaceMessageClient(),
             provideSession(sessionFixture),
           ],
         });
@@ -2775,10 +2719,8 @@ describe('SolaceMessageClient', () => {
       it('should error when emitting `null` as access token [NullAccessTokenError]', async () => {
         const sessionFixture = new SessionFixture();
         TestBed.configureTestingModule({
-          imports: [
-            SolaceMessageClientModule.forRoot(),
-          ],
           providers: [
+            provideSolaceMessageClient(),
             provideSession(sessionFixture),
           ],
         });

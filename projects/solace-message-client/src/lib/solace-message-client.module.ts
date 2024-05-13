@@ -1,132 +1,29 @@
-import {Inject, Injectable, InjectionToken, ModuleWithProviders, NgModule, Optional, SkipSelf} from '@angular/core';
-import {NullSolaceMessageClient, SolaceMessageClient} from './solace-message-client';
-import {ɵSolaceMessageClient} from './ɵsolace-message-client';
-import {SolaceSessionProvider, ɵSolaceSessionProvider} from './solace-session-provider';
-import {SOLACE_MESSAGE_CLIENT_CONFIG, SolaceMessageClientConfig} from './solace-message-client.config';
-import {provideLogger} from './logger';
+import {ModuleWithProviders, NgModule} from '@angular/core';
+import {SolaceMessageClientConfig} from './solace-message-client.config';
+import {provideNullSolaceMessageClient, provideSolaceMessageClient} from './solace-message-client.provider';
 
 /**
- * Allows clients to communicate with a Solace messaging broker for sending and receiving messages using the native SMF protocol (Solace Message Format).
+ * Enables and configures the Angular Solace Message Client.
  *
- * ---
- * Usage:
+ * This class is deprecated and will be removed in a future release. Use {@link provideSolaceMessageClient} instead.
  *
- * #### Importing the module in app module:
- *
- * ```
- * @NgModule({
- *   imports: [
- *     ...
- *     SolaceMessageClientModule.forRoot({
- *       url:      'wss://xxx.messaging.solace.cloud:443',
- *       vpnName:  'xxx',
- *       userName: 'xxx',
- *       password: 'xxx',
- *     });
- *   ],
- *   ...
- * })
- * export class AppModule { }
- * ```
- * If providing a config, this module establishes a connection to the Solace message broker when injecting the {@link SolaceMessageClient} for the first time.
- * To be more flexible in providing the config, invoke this method without config. Then, connect to the Solace message broker by invoking
- * {@link SolaceMessageClient.connect} and provide the connection config. Typically, you do this in an app initializer.
- *
- * #### Publishing a message to a topic:
- *
- * ```
- * @Injectable()
- * public class TemperaturePublisher {
- *
- *   constructor(private solaceMessageClient: SolaceMessageClient) {
- *   }
- *
- *   public publish(temperature: number): void {
- *     this.solaceMessageClient.publish('myhome/kitchen/temperature', '20°C');
- *   }
- * }
- * ```
- *
- *
- * #### Receiving messages sent to a topic:
- *
- * ```
- * public class TemperatureReceiver {
- *
- *   constructor(solaceMessageClient: SolaceMessageClient) {
- *     solaceMessageClient.observe$('myhome/livingroom/temperature').subscribe(envelope => {
- *        ...
- *     });
- *   }
- * }
- * ```
- *
- * #### Log Level
- * The default log level is set to 'WARN' so that only warnings and errors are logged.
- *
- * The default log level can be changed as follows:
- * - Change the log level programmatically by providing it under the DI token {@link LogLevel}:
- *   `{provide: LogLevel, useValue: LogLevel.DEBUG}`
- * - Change the log level at runtime via session storage by adding the following entry and then reloading the application:
- *   key:   `angular-solace-message-client#loglevel`
- *   value: `debug` // supported values are: trace | debug | info | warn | error | fatal
+ * @deprecated since version 17.1.0; Register Angular Solace Message Client using `provideSolaceMessageClient` function; API will be removed in a future release.
  */
 @NgModule({})
 export class SolaceMessageClientModule {
 
-  constructor(@Inject(FORROOT_GUARD) _guard: any) { // eslint-disable-line @typescript-eslint/no-empty-function
-  }
-
   /**
-   * Invoke this method to import this module into the root injector, app module. In lazy loaded modules, invoke {@link SolaceMessageClientModule.forChild}
-   * instead.
-   *
-   * Call `forRoot` only in the root application module. Calling it in any other module, particularly in a lazy-loaded module, will throw a runtime error.
-   *
-   * If providing a config, this module establishes a connection to the Solace message broker when injecting the {@link SolaceMessageClient} for the first time.
-   * To be more flexible in providing the config, invoke this method without config. Then, connect to the Solace message broker by invoking
-   * {@link SolaceMessageClient.connect} and provide the connection config. Typically, you do this in an app initializer.
-   *
-   * ```
-   * @NgModule({
-   *   imports: [
-   *     ...
-   *     SolaceMessageClientModule.forRoot({
-   *       url:      'wss://xxx.messaging.solace.cloud:443',
-   *       vpnName:  '...',
-   *       userName: '..',
-   *       password: '..',
-   *     });
-   *   ],
-   *   ...
-   * })
-   * export class AppModule { }
-   * ```
-   *
-   * @param config - Specifies the config how to connect to the Solace message broker when injecting the {@link SolaceMessageClient} for the first time.
-   *                 If not providing a config, {@link SolaceMessageClient} does not automatically establish a connection. Instead, you need to call
-   *                 {@link SolaceMessageClient.connect} yourself and provide the config.
+   * @deprecated since version 17.1.0; Register Angular Solace Message Client using `provideSolaceMessageClient` function; API will be removed in a future release.
    */
   public static forRoot(config?: SolaceMessageClientConfig): ModuleWithProviders<SolaceMessageClientModule> {
     return {
       ngModule: SolaceMessageClientModule,
-      providers: [
-        ForRootGuardService,
-        {provide: SOLACE_MESSAGE_CLIENT_CONFIG, useValue: config},
-        {provide: SolaceMessageClient, useClass: ɵSolaceMessageClient},
-        {provide: SolaceSessionProvider, useClass: ɵSolaceSessionProvider},
-        provideLogger(),
-        {
-          provide: FORROOT_GUARD,
-          useFactory: provideForRootGuard,
-          deps: [[ForRootGuardService, new Optional(), new SkipSelf()]],
-        },
-      ],
+      providers: [provideSolaceMessageClient(config)],
     };
   }
 
   /**
-   * Invoke this method to import this module into modules others than app module.
+   * @deprecated since version 17.1.0; Register Angular Solace Message Client using `provideSolaceMessageClient` function; API will be removed in a future release.
    */
   public static forChild(): ModuleWithProviders<SolaceMessageClientModule> {
     return {
@@ -136,43 +33,12 @@ export class SolaceMessageClientModule {
   }
 
   /**
-   * Invoke this method to import this module in specs, installing a message client that does nothing.
+   * @deprecated since version 17.1.0; Register Angular Solace Message Client using `provideNullSolaceMessageClient` function; API will be removed in a future release.
    */
   public static forSpec(): ModuleWithProviders<SolaceMessageClientModule> {
     return {
       ngModule: SolaceMessageClientModule,
-      providers: [
-        {
-          provide: SolaceMessageClient,
-          useClass: NullSolaceMessageClient,
-        },
-      ],
+      providers: [provideNullSolaceMessageClient()],
     };
   }
-}
-
-/**
- * DI injection token to ensure `UxProposalFieldModule.forRoot()` is not used in a lazy context.
- *
- * @docs-private
- */
-export const FORROOT_GUARD = new InjectionToken<void>('UX_PROPOSAL_FIELD_FORROOT_GUARD');
-
-/**
- * @docs-private
- *
- * @docs-private
- */
-export function provideForRootGuard(guard: ForRootGuardService): any {
-  if (guard) {
-    throw Error('[ModuleForRootError] SolaceMessageClientModule is not supported in a lazy context.');
-  }
-  return 'guarded';
-}
-
-/**
- * @docs-private
- */
-@Injectable()
-export class ForRootGuardService {
 }
