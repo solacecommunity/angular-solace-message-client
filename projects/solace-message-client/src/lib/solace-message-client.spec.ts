@@ -1,115 +1,144 @@
-import {SolaceMessageClientModule} from './solace-message-client.module';
 import {mapToBinary, mapToText, MessageEnvelope, Params, PublishOptions, SolaceMessageClient} from './solace-message-client';
-import {SolaceSessionProvider} from './solace-session-provider';
 import {ObserveCaptor} from '@scion/toolkit/testing';
 import {TestBed} from '@angular/core/testing';
-import {Injectable, NgZone} from '@angular/core';
-import {AuthenticationScheme, Destination, DestinationType, Message, MessageConsumer, MessageConsumerEvent, MessageConsumerEventName, MessageConsumerProperties, MessageDeliveryModeType, MessageType, OperationError, QueueBrowser, QueueBrowserEventName, QueueBrowserProperties, QueueDescriptor, QueueType, RequestError, SDTField, SDTFieldType, SDTMapContainer, Session, SessionEvent, SessionEventCode, SolclientFactory, SolclientFactoryProfiles, SolclientFactoryProperties} from 'solclientjs';
-import {asyncScheduler, BehaviorSubject, EMPTY, NEVER, noop, Observable, of, Subject} from 'rxjs';
+import {Component, Injectable, NgZone} from '@angular/core';
+import {AuthenticationScheme, DestinationType, Message, MessageConsumerEventName, MessageConsumerProperties, MessageDeliveryModeType, MessageType, QueueBrowserEventName, QueueBrowserProperties, QueueDescriptor, QueueType, SDTField, SDTFieldType, SDTMapContainer, Session, SessionEventCode, SolclientFactory, SolclientFactoryProfiles, SolclientFactoryProperties} from 'solclientjs';
+import {BehaviorSubject, EMPTY, NEVER, Observable, of, Subject} from 'rxjs';
 import {UUID} from '@scion/toolkit/uuid';
+import {SessionFixture} from './testing/session.fixture';
+import {createOperationError, createQueueMessage, createRequestError, createTopicMessage, drainMicrotaskQueue} from './testing/testing.utils';
+import {provideSession} from './testing/session-provider';
+import {SolaceSessionProvider} from './solace-session-provider';
 import {OAuthAccessTokenProvider} from './oauth-access-token-provider';
-
-type SessionEventListener = (() => void) | ((event: SessionEvent) => void) | ((error: OperationError) => void) | ((message: Message) => void);
-type MessageConsumerEventListener = (() => void) | ((event: MessageConsumerEvent) => void) | ((error: OperationError) => void) | ((message: Message) => void);
-type QueueBrowserEventListener = (() => void) | ((error: OperationError) => void) | ((message: Message) => void);
+import {SolaceMessageClientModule} from './solace-message-client.module';
 
 describe('SolaceMessageClient', () => {
-
-  let session: jasmine.SpyObj<Session>;
-  let sessionProvider: jasmine.SpyObj<SolaceSessionProvider>;
-  let sessionEventCallbacks: Map<SessionEventCode, SessionEventListener>;
 
   beforeEach(() => {
     const factoryProperties = new SolclientFactoryProperties();
     factoryProperties.profile = SolclientFactoryProfiles.version10;
     SolclientFactory.init(factoryProperties);
+  });
 
-    // Mock Solace Session and provide it via `SolaceSessionProvider`
-    session = jasmine.createSpyObj('Session', ['on', 'connect', 'subscribe', 'unsubscribe', 'send', 'dispose', 'disconnect', 'createMessageConsumer', 'createQueueBrowser', 'sendRequest', 'sendReply', 'updateAuthenticationOnReconnect']);
-    sessionProvider = jasmine.createSpyObj('SolaceSessionProvider', ['provide']);
-    sessionProvider.provide.and.returnValue(session);
-
-    // Capture session lifecycle hooks
-    sessionEventCallbacks = new Map();
-    session.on.and.callFake((eventCode: SessionEventCode, callback: (event: any) => void): Session => {
-      sessionEventCallbacks.set(eventCode, callback);
-      return session;
-    });
-
-    // Fire 'DISCONNECTED' event when invoking 'disconnect'.
-    session.disconnect.and.callFake(() => simulateLifecycleEvent(SessionEventCode.DISCONNECTED));
-
+  beforeEach(() => {
     spyOn(console, 'warn');
     spyOn(console, 'error');
   });
 
   describe('SolaceMessageClientModule.forRoot(CONFIG)', () => {
 
-    beforeEach(() => {
+    it('should connect to the Solace message broker when injecting `SolaceMessageClient`', async () => {
+      const sessionFixture = new SessionFixture();
       TestBed.configureTestingModule({
-        providers: [
-          {provide: SolaceSessionProvider, useValue: sessionProvider},
-        ],
         imports: [
-          SolaceMessageClientModule.forRoot({url: 'url:forRoot', vpnName: 'vpn:forRoot'}),
+          SolaceMessageClientModule.forRoot({url: 'url', vpnName: 'vpn'}),
+        ],
+        providers: [
+          provideSession(sessionFixture),
         ],
       });
-    });
 
-    it('should connect to the Solace message broker when injecting `SolaceMessageClient`', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+      await sessionFixture.simulateEvent(SessionEventCode.UP_NOTICE);
 
-      expect(session.connect).toHaveBeenCalledTimes(1);
-      expect(sessionProvider.provide).toHaveBeenCalledTimes(1);
+      expect(sessionFixture.session.connect).toHaveBeenCalledTimes(1);
+      expect(sessionFixture.sessionProvider.provide).toHaveBeenCalledOnceWith(jasmine.objectContaining({url: 'url', vpnName: 'vpn'}));
       await expectAsync(solaceMessageClient.session).toBeResolved();
     });
 
     it('should not eagerly construct `SolaceMessageClient`', async () => {
-      TestBed.overrideProvider(SolaceMessageClient, {
-        useFactory: () => {
-          throw Error();
-        },
+      @Component({
+        selector: 'spec-component',
+        template: '',
+        standalone: true,
+      })
+      class SpecComponent {
+      }
+
+      TestBed.configureTestingModule({
+        imports: [
+          SolaceMessageClientModule.forRoot({url: 'url', vpnName: 'vpn'}),
+        ],
+        providers: [
+          provideSession(new SessionFixture()),
+          {
+            provide: SolaceMessageClient,
+            useFactory: () => {
+              throw Error('SolaceMessageClient should not be constructed eagerly.');
+            },
+          },
+        ],
       });
-      expect(() => TestBed.inject(SolaceMessageClientModule)).not.toThrowError();
+      expect(() => TestBed.createComponent(SpecComponent)).not.toThrowError();
     });
 
     it('should allow to disconnect and re-connect from the Solace message broker', async () => {
+      const sessionFixture = new SessionFixture();
+      TestBed.configureTestingModule({
+        imports: [
+          SolaceMessageClientModule.forRoot({url: 'url', vpnName: 'vpn'}),
+        ],
+        providers: [
+          provideSession(sessionFixture),
+        ],
+      });
+
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
-      expect(session.connect).toHaveBeenCalledTimes(1);
-      session.connect.calls.reset();
-      sessionProvider.provide.calls.reset();
+      await sessionFixture.simulateEvent(SessionEventCode.UP_NOTICE);
+      expect(sessionFixture.session.connect).toHaveBeenCalledTimes(1);
+      sessionFixture.session.connect.calls.reset();
+      sessionFixture.sessionProvider.provide.calls.reset();
 
       // Disconnect
       await solaceMessageClient.disconnect();
-      expect(session.dispose).toHaveBeenCalledTimes(1);
-      expect(session.disconnect).toHaveBeenCalledTimes(1);
-      session.dispose.calls.reset();
-      session.disconnect.calls.reset();
+      expect(sessionFixture.session.dispose).toHaveBeenCalledTimes(1);
+      expect(sessionFixture.session.disconnect).toHaveBeenCalledTimes(1);
+      sessionFixture.session.dispose.calls.reset();
+      sessionFixture.session.disconnect.calls.reset();
 
       // Connect
       const connected = solaceMessageClient.connect({url: 'some-other-url', vpnName: 'some-other-vpn'});
-      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+      await sessionFixture.simulateEvent(SessionEventCode.UP_NOTICE);
       await expectAsync(solaceMessageClient.session).toBeResolved();
 
       await connected;
-      expect(session.connect).toHaveBeenCalledTimes(1);
-      expect(sessionProvider.provide).toHaveBeenCalledWith(jasmine.objectContaining({url: 'some-other-url', vpnName: 'some-other-vpn'}));
+      expect(sessionFixture.session.connect).toHaveBeenCalledTimes(1);
+      expect(sessionFixture.sessionProvider.provide).toHaveBeenCalledWith(jasmine.objectContaining({url: 'some-other-url', vpnName: 'some-other-vpn'}));
     });
 
     it('should connect with the config as provided in \'SolaceMessageClientModule.forRoot({...})\'', async () => {
+      const sessionFixture = new SessionFixture();
+      TestBed.configureTestingModule({
+        imports: [
+          SolaceMessageClientModule.forRoot({url: 'url', vpnName: 'vpn'}),
+        ],
+        providers: [
+          provideSession(sessionFixture),
+        ],
+      });
+
       TestBed.inject(SolaceMessageClient);
-      expect(sessionProvider.provide).toHaveBeenCalledWith(jasmine.objectContaining({url: 'url:forRoot', vpnName: 'vpn:forRoot'}));
+      expect(sessionFixture.sessionProvider.provide).toHaveBeenCalledOnceWith(jasmine.objectContaining({url: 'url', vpnName: 'vpn'}));
     });
 
     describe('core functionality', () => {
 
       beforeEach(async () => {
+        const sessionFixture = new SessionFixture();
+        TestBed.configureTestingModule({
+          imports: [
+            SolaceMessageClientModule.forRoot({url: 'url', vpnName: 'vpn'}),
+          ],
+          providers: [
+            provideSession(sessionFixture),
+            {provide: SessionFixture, useValue: sessionFixture},
+          ],
+        });
+
         // 1. Construct `SolaceMessageClient` via DI; the connection to the broker is automatically established by passing connect properties to `SolaceMessageClientModule.forRoot`.
         TestBed.inject(SolaceMessageClient);
         // 2. Simulate connected to the broker by receiving a 'UP_NOTICE' confirmation from the broker
-        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+        await sessionFixture.simulateEvent(SessionEventCode.UP_NOTICE);
       });
 
       testCoreFunctionality();
@@ -117,72 +146,105 @@ describe('SolaceMessageClient', () => {
   });
 
   describe('SolaceMessageClientModule.forRoot() [manual connect]', () => {
-    beforeEach(() => {
+
+    it('should not connect to the Solace message broker when injecting `SolaceMessageClient`', async () => {
+      const sessionFixture = new SessionFixture();
       TestBed.configureTestingModule({
-        providers: [
-          {provide: SolaceSessionProvider, useValue: sessionProvider},
-        ],
         imports: [
           SolaceMessageClientModule.forRoot(),
         ],
+        providers: [
+          provideSession(sessionFixture),
+        ],
       });
-    });
 
-    it('should not connect to the Solace message broker when injecting `SolaceMessageClient`', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
       await expectAsync(solaceMessageClient.session).toBeRejected();
-      expect(session.connect).toHaveBeenCalledTimes(0);
-      expect(sessionProvider.provide).toHaveBeenCalledTimes(0);
+      expect(sessionFixture.session.connect).toHaveBeenCalledTimes(0);
+      expect(sessionFixture.sessionProvider.provide).toHaveBeenCalledTimes(0);
     });
 
     it('should allow to connect and disconnect from the Solace message broker', async () => {
+      const sessionFixture = new SessionFixture();
+      TestBed.configureTestingModule({
+        imports: [
+          SolaceMessageClientModule.forRoot(),
+        ],
+        providers: [
+          provideSession(sessionFixture),
+        ],
+      });
+
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
       // Connect
       const connected1 = solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
-      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+      await sessionFixture.simulateEvent(SessionEventCode.UP_NOTICE);
+
       await expectAsync(connected1).toBeResolved();
       await expectAsync(solaceMessageClient.session).toBeResolved();
 
-      expect(session.connect).toHaveBeenCalledTimes(1);
-      expect(sessionProvider.provide).toHaveBeenCalledWith(jasmine.objectContaining({url: 'some-url', vpnName: 'some-vpn'}));
-      session.connect.calls.reset();
-      sessionProvider.provide.calls.reset();
+      expect(sessionFixture.session.connect).toHaveBeenCalledTimes(1);
+      expect(sessionFixture.sessionProvider.provide).toHaveBeenCalledWith(jasmine.objectContaining({url: 'some-url', vpnName: 'some-vpn'}));
+      sessionFixture.session.connect.calls.reset();
+      sessionFixture.sessionProvider.provide.calls.reset();
 
       // Disconnect
       await solaceMessageClient.disconnect();
-      expect(session.dispose).toHaveBeenCalledTimes(1);
-      expect(session.disconnect).toHaveBeenCalledTimes(1);
-      session.dispose.calls.reset();
-      session.disconnect.calls.reset();
+      expect(sessionFixture.session.dispose).toHaveBeenCalledTimes(1);
+      expect(sessionFixture.session.disconnect).toHaveBeenCalledTimes(1);
+      sessionFixture.session.dispose.calls.reset();
+      sessionFixture.session.disconnect.calls.reset();
 
       // Connect
       const connected2 = solaceMessageClient.connect({url: 'some-other-url', vpnName: 'some-other-vpn'});
-      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+      await sessionFixture.simulateEvent(SessionEventCode.UP_NOTICE);
       await expectAsync(connected2).toBeResolved();
       await expectAsync(solaceMessageClient.session).toBeResolved();
 
-      expect(session.connect).toHaveBeenCalledTimes(1);
-      expect(sessionProvider.provide).toHaveBeenCalledWith(jasmine.objectContaining({url: 'some-other-url', vpnName: 'some-other-vpn'}));
+      expect(sessionFixture.session.connect).toHaveBeenCalledTimes(1);
+      expect(sessionFixture.sessionProvider.provide).toHaveBeenCalledWith(jasmine.objectContaining({url: 'some-other-url', vpnName: 'some-other-vpn'}));
     });
 
     it('should reject the connect Promise when the connect attempt fails', async () => {
+      const sessionFixture = new SessionFixture();
+      TestBed.configureTestingModule({
+        imports: [
+          SolaceMessageClientModule.forRoot(),
+        ],
+        providers: [
+          provideSession(sessionFixture),
+        ],
+      });
+
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
       const connected = solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
-      await simulateLifecycleEvent(SessionEventCode.CONNECT_FAILED_ERROR, undefined);
+      await sessionFixture.simulateEvent(SessionEventCode.CONNECT_FAILED_ERROR);
+
       await expectAsync(connected).toBeRejected();
-      expect(session.connect).toHaveBeenCalledTimes(1);
-      expect(sessionProvider.provide).toHaveBeenCalledWith(jasmine.objectContaining({url: 'some-url', vpnName: 'some-vpn'}));
+      expect(sessionFixture.session.connect).toHaveBeenCalledTimes(1);
+      expect(sessionFixture.sessionProvider.provide).toHaveBeenCalledWith(jasmine.objectContaining({url: 'some-url', vpnName: 'some-vpn'}));
     });
 
     describe('core functionality', () => {
 
       beforeEach(async () => {
+        const sessionFixture = new SessionFixture();
+        TestBed.configureTestingModule({
+          imports: [
+            SolaceMessageClientModule.forRoot(),
+          ],
+          providers: [
+            provideSession(sessionFixture),
+            {provide: SessionFixture, useValue: sessionFixture},
+          ],
+        });
+
         // 1. Construct `SolaceMessageClient` via DI and connect to the broker
         TestBed.inject(SolaceMessageClient).connect({url: 'some-url', vpnName: 'some-vpn'});
         // 2. Simulate connected to the broker by receiving a 'UP_NOTICE' confirmation from the broker
-        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+        await sessionFixture.simulateEvent(SessionEventCode.UP_NOTICE);
       });
 
       testCoreFunctionality();
@@ -193,33 +255,40 @@ describe('SolaceMessageClient', () => {
    * Tests functionality which is independent of the way of connecting to the message broker.
    */
   function testCoreFunctionality(): void {
+    let sessionFixture: SessionFixture;
+    let session: jasmine.SpyObj<Session>;
+
+    beforeEach(async () => {
+      sessionFixture = TestBed.inject(SessionFixture);
+      session = sessionFixture.session;
+    });
+
     it('should clear pending subscriptions when the connection goes down', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
-      const sessionSubscribeCaptor = installSessionSubscribeCaptor();
+      const sessionSubscribeCaptor = sessionFixture.installSessionSubscribeCaptor();
 
       // Subscribe to topic-1 (success)
       solaceMessageClient.observe$('topic-1').subscribe();
       await drainMicrotaskQueue();
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
 
       // Subscribe to topic-2 (pending confirmation)
       solaceMessageClient.observe$('topic-2').subscribe();
-      await drainMicrotaskQueue();
 
       // Simulate the connection to be permanently down
-      await simulateLifecycleEvent(SessionEventCode.DOWN_ERROR);
+      await sessionFixture.simulateEvent(SessionEventCode.DOWN_ERROR);
 
       // Reconnect to the broker
       const connected = solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
-      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+      await sessionFixture.simulateEvent(SessionEventCode.UP_NOTICE);
       await expectAsync(connected).toBeResolved();
       session.subscribe.calls.reset();
 
       // Subscribe to topic-3 (success)
       solaceMessageClient.observe$('topic-3').subscribe();
       await drainMicrotaskQueue();
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
       expect(session.subscribe).toHaveBeenCalledTimes(1);
       expect(session.subscribe).toHaveBeenCalledWith(jasmine.objectContaining({name: 'topic-3'}), true /* requestConfirmation */, sessionSubscribeCaptor.correlationKey /* correlationKey */, undefined /* requestTimeout */);
     });
@@ -228,15 +297,15 @@ describe('SolaceMessageClient', () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
       // Subscribe to topic-1
-      const sessionSubscribeCaptor = installSessionSubscribeCaptor();
-      const sessionUnsubscribeCaptor = installSessionUnsubscribeCaptor();
+      const sessionSubscribeCaptor = sessionFixture.installSessionSubscribeCaptor();
+      const sessionUnsubscribeCaptor = sessionFixture.installSessionUnsubscribeCaptor();
       const subscription1 = solaceMessageClient.observe$('topic-1').subscribe();
       await drainMicrotaskQueue();
 
       expect(sessionSubscribeCaptor.correlationKey).toBeDefined();
       expect(session.subscribe).toHaveBeenCalledTimes(1);
       expect(session.subscribe).toHaveBeenCalledWith(jasmine.objectContaining({name: 'topic-1'}), true /* requestConfirmation */, sessionSubscribeCaptor.correlationKey /* correlationKey */, undefined /* requestTimeout */);
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
       session.subscribe.calls.reset();
       sessionSubscribeCaptor.reset();
 
@@ -265,7 +334,7 @@ describe('SolaceMessageClient', () => {
       expect(sessionSubscribeCaptor.correlationKey).toBeDefined();
       expect(session.subscribe).toHaveBeenCalledTimes(1);
       expect(session.subscribe).toHaveBeenCalledWith(jasmine.objectContaining({name: 'topic-2'}), true /* requestConfirmation */, sessionSubscribeCaptor.correlationKey /* correlationKey */, undefined /* requestTimeout */);
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
       session.subscribe.calls.reset();
       sessionSubscribeCaptor.reset();
 
@@ -285,7 +354,7 @@ describe('SolaceMessageClient', () => {
       expect(sessionUnsubscribeCaptor.correlationKey).toBeDefined();
       expect(session.unsubscribe).toHaveBeenCalledTimes(1);
       expect(session.unsubscribe).toHaveBeenCalledWith(jasmine.objectContaining({name: 'topic-1'}), true /* requestConfirmation */, sessionUnsubscribeCaptor.correlationKey /* correlationKey */, undefined /* requestTimeout */);
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionUnsubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionUnsubscribeCaptor.correlationKey);
       session.unsubscribe.calls.reset();
       sessionUnsubscribeCaptor.reset();
 
@@ -295,14 +364,14 @@ describe('SolaceMessageClient', () => {
       expect(sessionUnsubscribeCaptor.correlationKey).toBeDefined();
       expect(session.unsubscribe).toHaveBeenCalledTimes(1);
       expect(session.unsubscribe).toHaveBeenCalledWith(jasmine.objectContaining({name: 'topic-2'}), true /* requestConfirmation */, sessionUnsubscribeCaptor.correlationKey /* correlationKey */, undefined /* requestTimeout */);
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionUnsubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionUnsubscribeCaptor.correlationKey);
     });
 
     it('should error when failing to subscribe to a topic on the Solace session', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
       const observeCaptor = new ObserveCaptor();
-      const sessionSubscribeCaptor = installSessionSubscribeCaptor();
+      const sessionSubscribeCaptor = sessionFixture.installSessionSubscribeCaptor();
       const subscription = solaceMessageClient.observe$('topic').subscribe(observeCaptor);
       await drainMicrotaskQueue();
 
@@ -311,7 +380,7 @@ describe('SolaceMessageClient', () => {
       expect(session.subscribe).toHaveBeenCalledWith(jasmine.objectContaining({name: 'topic'}), true /* requestConfirmation */, sessionSubscribeCaptor.correlationKey /* correlationKey */, undefined /* requestTimeout */);
 
       // Simulate the subscription to fail
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_ERROR, sessionSubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_ERROR, sessionSubscribeCaptor.correlationKey);
 
       // Expect the Observable to error
       expect(observeCaptor.hasErrored()).toEqual(true);
@@ -326,8 +395,8 @@ describe('SolaceMessageClient', () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
       // Subscribe to a topic
-      const sessionSubscribeCaptor = installSessionSubscribeCaptor();
-      const sessionUnsubscribeCaptor = installSessionUnsubscribeCaptor();
+      const sessionSubscribeCaptor = sessionFixture.installSessionSubscribeCaptor();
+      const sessionUnsubscribeCaptor = sessionFixture.installSessionUnsubscribeCaptor();
       const observeCaptor = new ObserveCaptor();
       solaceMessageClient.observe$('topic').subscribe(observeCaptor);
       await drainMicrotaskQueue();
@@ -337,7 +406,7 @@ describe('SolaceMessageClient', () => {
       expect(session.subscribe).toHaveBeenCalledWith(jasmine.objectContaining({name: 'topic'}), true /* requestConfirmation */, sessionSubscribeCaptor.correlationKey /* correlationKey */, undefined /* requestTimeout */);
 
       // Simulate the subscription to error
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_ERROR, sessionSubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_ERROR, sessionSubscribeCaptor.correlationKey);
       expect(session.unsubscribe).toHaveBeenCalledTimes(0);
       expect(observeCaptor.hasErrored()).toBeTrue();
 
@@ -356,7 +425,7 @@ describe('SolaceMessageClient', () => {
       expect(session.subscribe).toHaveBeenCalledWith(jasmine.objectContaining({name: 'topic'}), true /* requestConfirmation */, sessionSubscribeCaptor.correlationKey /* correlationKey */, undefined /* requestTimeout */);
 
       // Simulate the subscription to succeed
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
       expect(session.unsubscribe).toHaveBeenCalledTimes(0);
       session.unsubscribe.calls.reset();
 
@@ -366,31 +435,31 @@ describe('SolaceMessageClient', () => {
       expect(sessionUnsubscribeCaptor.correlationKey).toBeDefined();
       expect(session.unsubscribe).toHaveBeenCalledTimes(1);
       expect(session.unsubscribe).toHaveBeenCalledWith(jasmine.objectContaining({name: 'topic'}), true /* requestConfirmation */, sessionUnsubscribeCaptor.correlationKey, undefined /* requestTimeout */);
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionUnsubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionUnsubscribeCaptor.correlationKey);
     });
 
     it('should not unsubscribe more specific topics when unsubscribing from a wildcard topic', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-      const sessionSubscribeCaptor = installSessionSubscribeCaptor();
-      const sessionUnsubscribeCaptor = installSessionUnsubscribeCaptor();
+      const sessionSubscribeCaptor = sessionFixture.installSessionSubscribeCaptor();
+      const sessionUnsubscribeCaptor = sessionFixture.installSessionUnsubscribeCaptor();
 
       // Subscribe to topic 'myhome/*/temperature'
       const observeCaptor1 = new ObserveCaptor(extractMessage);
       const wildcardSubscription = solaceMessageClient.observe$('myhome/*/temperature').subscribe(observeCaptor1);
       await drainMicrotaskQueue();
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
       sessionSubscribeCaptor.reset();
 
       // Subscribe to topic 'myhome/livingroom/kitchen'
       const observeCaptor2 = new ObserveCaptor(extractMessage);
       const exactSubscription = solaceMessageClient.observe$('myhome/livingroom/temperature').subscribe(observeCaptor2);
       await drainMicrotaskQueue();
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
       sessionSubscribeCaptor.reset();
 
       // Simulate receiving message published to 'myhome/livingroom/kitchen'
       const message1 = createTopicMessage('myhome/livingroom/temperature');
-      await simulateTopicMessage(message1);
+      await sessionFixture.simulateMessage(message1);
       expect(observeCaptor1.getValues()).toEqual([message1]); // topic: myhome/*/temperature
       expect(observeCaptor2.getValues()).toEqual([message1]); // topic: myhome/livingroom/temperature
 
@@ -403,12 +472,12 @@ describe('SolaceMessageClient', () => {
       expect(sessionUnsubscribeCaptor.correlationKey).toBeDefined();
       expect(session.unsubscribe).toHaveBeenCalledTimes(1);
       expect(session.unsubscribe).toHaveBeenCalledWith(jasmine.objectContaining({name: 'myhome/*/temperature'}), true /* requestConfirmation */, sessionUnsubscribeCaptor.correlationKey, undefined /* requestTimeout */);
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionUnsubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionUnsubscribeCaptor.correlationKey);
       sessionUnsubscribeCaptor.reset();
 
       // Simulate receiving message published to 'myhome/livingroom/temperature'
       const message2 = createTopicMessage('myhome/livingroom/temperature');
-      await simulateTopicMessage(message2);
+      await sessionFixture.simulateMessage(message2);
       expect(observeCaptor1.getValues()).toEqual([]); // topic: myhome/*/temperature
       expect(observeCaptor2.getValues()).toEqual([message2]); // topic: myhome/livingroom/temperature
 
@@ -422,12 +491,12 @@ describe('SolaceMessageClient', () => {
       expect(sessionUnsubscribeCaptor.correlationKey).toBeDefined();
       expect(session.unsubscribe).toHaveBeenCalledTimes(1);
       expect(session.unsubscribe).toHaveBeenCalledWith(jasmine.objectContaining({name: 'myhome/livingroom/temperature'}), true /* requestConfirmation */, sessionUnsubscribeCaptor.correlationKey, undefined /* requestTimeout */);
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionUnsubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionUnsubscribeCaptor.correlationKey);
       sessionSubscribeCaptor.reset();
 
       // Simulate receiving message published to 'myhome/livingroom/temperature'
       const message3 = createTopicMessage('myhome/livingroom/temperature');
-      await simulateTopicMessage(message3);
+      await sessionFixture.simulateMessage(message3);
       expect(observeCaptor1.getValues()).toEqual([]); // topic: myhome/*/temperature
       expect(observeCaptor2.getValues()).toEqual([]); // topic: myhome/livingroom/temperature
     });
@@ -437,49 +506,49 @@ describe('SolaceMessageClient', () => {
 
       // Subscribe to topic-1
       const observeCaptor1_topic1 = new ObserveCaptor(extractMessage);
-      const sessionSubscribeCaptor = installSessionSubscribeCaptor();
-      const sessionUnsubscribeCaptor = installSessionUnsubscribeCaptor();
+      const sessionSubscribeCaptor = sessionFixture.installSessionSubscribeCaptor();
+      const sessionUnsubscribeCaptor = sessionFixture.installSessionUnsubscribeCaptor();
 
       const subscription1_topic1 = solaceMessageClient.observe$('topic-1').subscribe(observeCaptor1_topic1);
       await drainMicrotaskQueue();
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
 
       // Simulate receiving a message from the Solace broker
       const message1 = createTopicMessage('topic-1');
-      await simulateTopicMessage(message1);
+      await sessionFixture.simulateMessage(message1);
       expect(observeCaptor1_topic1.getValues()).toEqual([message1]);
 
       // Simulate receiving a message from the Solace broker
       const message2 = createTopicMessage('topic-1');
-      await simulateTopicMessage(message2);
+      await sessionFixture.simulateMessage(message2);
       expect(observeCaptor1_topic1.getValues()).toEqual([message1, message2]);
 
       // Simulate receiving a message from the Solace broker
       const message3 = createTopicMessage('topic-2');
-      await simulateTopicMessage(message3);
+      await sessionFixture.simulateMessage(message3);
       expect(observeCaptor1_topic1.getValues()).toEqual([message1, message2]);
 
       // Subscribe to topic-2
       const observeCaptor2_topic2 = new ObserveCaptor(extractMessage);
       const subscription2_topic2 = solaceMessageClient.observe$('topic-2').subscribe(observeCaptor2_topic2);
       await drainMicrotaskQueue();
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
 
       // Simulate receiving a message from the Solace broker
       const message4 = createTopicMessage('topic-1');
-      await simulateTopicMessage(message4);
+      await sessionFixture.simulateMessage(message4);
       expect(observeCaptor1_topic1.getValues()).toEqual([message1, message2, message4]);
       expect(observeCaptor2_topic2.getValues()).toEqual([]);
 
       // Simulate receiving a message from the Solace broker
       const message5 = createTopicMessage('topic-2');
-      simulateTopicMessage(message5);
+      await sessionFixture.simulateMessage(message5);
       expect(observeCaptor1_topic1.getValues()).toEqual([message1, message2, message4]);
       expect(observeCaptor2_topic2.getValues()).toEqual([message5]);
 
       // Simulate receiving a message from the Solace broker
       const message6 = createTopicMessage('topic-3');
-      simulateTopicMessage(message6);
+      await sessionFixture.simulateMessage(message6);
       expect(observeCaptor1_topic1.getValues()).toEqual([message1, message2, message4]);
       expect(observeCaptor2_topic2.getValues()).toEqual([message5]);
 
@@ -487,25 +556,25 @@ describe('SolaceMessageClient', () => {
       const observeCaptor3_topic2 = new ObserveCaptor(extractMessage);
       const subscription3_topic2 = solaceMessageClient.observe$('topic-2').subscribe(observeCaptor3_topic2);
       await drainMicrotaskQueue();
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
 
       // Simulate receiving a message from the Solace broker
       const message7 = createTopicMessage('topic-1');
-      simulateTopicMessage(message7);
+      await sessionFixture.simulateMessage(message7);
       expect(observeCaptor1_topic1.getValues()).toEqual([message1, message2, message4, message7]);
       expect(observeCaptor2_topic2.getValues()).toEqual([message5]);
       expect(observeCaptor3_topic2.getValues()).toEqual([]);
 
       // Simulate receiving a message from the Solace broker
       const message8 = createTopicMessage('topic-2');
-      simulateTopicMessage(message8);
+      await sessionFixture.simulateMessage(message8);
       expect(observeCaptor1_topic1.getValues()).toEqual([message1, message2, message4, message7]);
       expect(observeCaptor2_topic2.getValues()).toEqual([message5, message8]);
       expect(observeCaptor3_topic2.getValues()).toEqual([message8]);
 
       // Simulate receiving a message from the Solace broker
       const message9 = createTopicMessage('topic-3');
-      simulateTopicMessage(message9);
+      await sessionFixture.simulateMessage(message9);
       expect(observeCaptor1_topic1.getValues()).toEqual([message1, message2, message4, message7]);
       expect(observeCaptor2_topic2.getValues()).toEqual([message5, message8]);
       expect(observeCaptor3_topic2.getValues()).toEqual([message8]);
@@ -513,25 +582,25 @@ describe('SolaceMessageClient', () => {
       // Unsubscribe subscription 3 (topic-2)
       subscription3_topic2.unsubscribe();
       await drainMicrotaskQueue();
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionUnsubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionUnsubscribeCaptor.correlationKey);
 
       // Simulate receiving a message from the Solace broker
       const message10 = createTopicMessage('topic-1');
-      simulateTopicMessage(message10);
+      await sessionFixture.simulateMessage(message10);
       expect(observeCaptor1_topic1.getValues()).toEqual([message1, message2, message4, message7, message10]);
       expect(observeCaptor2_topic2.getValues()).toEqual([message5, message8]);
       expect(observeCaptor3_topic2.getValues()).toEqual([message8]);
 
       // Simulate receiving a message from the Solace broker
       const message11 = createTopicMessage('topic-2');
-      simulateTopicMessage(message11);
+      await sessionFixture.simulateMessage(message11);
       expect(observeCaptor1_topic1.getValues()).toEqual([message1, message2, message4, message7, message10]);
       expect(observeCaptor2_topic2.getValues()).toEqual([message5, message8, message11]);
       expect(observeCaptor3_topic2.getValues()).toEqual([message8]);
 
       // Simulate receiving a message from the Solace broker
       const message12 = createTopicMessage('topic-3');
-      simulateTopicMessage(message12);
+      await sessionFixture.simulateMessage(message12);
       expect(observeCaptor1_topic1.getValues()).toEqual([message1, message2, message4, message7, message10]);
       expect(observeCaptor2_topic2.getValues()).toEqual([message5, message8, message11]);
       expect(observeCaptor3_topic2.getValues()).toEqual([message8]);
@@ -539,25 +608,25 @@ describe('SolaceMessageClient', () => {
       // Unsubscribe subscription 1 (topic-1)
       subscription1_topic1.unsubscribe();
       await drainMicrotaskQueue();
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionUnsubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionUnsubscribeCaptor.correlationKey);
 
       // Simulate receiving a message from the Solace broker
       const message13 = createTopicMessage('topic-1');
-      simulateTopicMessage(message13);
+      await sessionFixture.simulateMessage(message13);
       expect(observeCaptor1_topic1.getValues()).toEqual([message1, message2, message4, message7, message10]);
       expect(observeCaptor2_topic2.getValues()).toEqual([message5, message8, message11]);
       expect(observeCaptor3_topic2.getValues()).toEqual([message8]);
 
       // Simulate receiving a message from the Solace broker
       const message14 = createTopicMessage('topic-2');
-      simulateTopicMessage(message14);
+      await sessionFixture.simulateMessage(message14);
       expect(observeCaptor1_topic1.getValues()).toEqual([message1, message2, message4, message7, message10]);
       expect(observeCaptor2_topic2.getValues()).toEqual([message5, message8, message11, message14]);
       expect(observeCaptor3_topic2.getValues()).toEqual([message8]);
 
       // Simulate receiving a message from the Solace broker
       const message15 = createTopicMessage('topic-3');
-      simulateTopicMessage(message15);
+      await sessionFixture.simulateMessage(message15);
       expect(observeCaptor1_topic1.getValues()).toEqual([message1, message2, message4, message7, message10]);
       expect(observeCaptor2_topic2.getValues()).toEqual([message5, message8, message11, message14]);
       expect(observeCaptor3_topic2.getValues()).toEqual([message8]);
@@ -565,25 +634,25 @@ describe('SolaceMessageClient', () => {
       // Unsubscribe subscription 2 (topic-2)
       subscription2_topic2.unsubscribe();
       await drainMicrotaskQueue();
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionUnsubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionUnsubscribeCaptor.correlationKey);
 
       // Simulate receiving a message from the Solace broker
       const message16 = createTopicMessage('topic-1');
-      simulateTopicMessage(message16);
+      await sessionFixture.simulateMessage(message16);
       expect(observeCaptor1_topic1.getValues()).toEqual([message1, message2, message4, message7, message10]);
       expect(observeCaptor2_topic2.getValues()).toEqual([message5, message8, message11, message14]);
       expect(observeCaptor3_topic2.getValues()).toEqual([message8]);
 
       // Simulate receiving a message from the Solace broker
       const message17 = createTopicMessage('topic-2');
-      simulateTopicMessage(message17);
+      await sessionFixture.simulateMessage(message17);
       expect(observeCaptor1_topic1.getValues()).toEqual([message1, message2, message4, message7, message10]);
       expect(observeCaptor2_topic2.getValues()).toEqual([message5, message8, message11, message14]);
       expect(observeCaptor3_topic2.getValues()).toEqual([message8]);
 
       // Simulate receiving a message from the Solace broker
       const message18 = createTopicMessage('topic-3');
-      simulateTopicMessage(message18);
+      await sessionFixture.simulateMessage(message18);
       expect(observeCaptor1_topic1.getValues()).toEqual([message1, message2, message4, message7, message10]);
       expect(observeCaptor2_topic2.getValues()).toEqual([message5, message8, message11, message14]);
       expect(observeCaptor3_topic2.getValues()).toEqual([message8]);
@@ -594,13 +663,13 @@ describe('SolaceMessageClient', () => {
       const observeCaptor = new ObserveCaptor(() => NgZone.isInAngularZone());
 
       // Subscribe to topic
-      const sessionSubscribeCaptor = installSessionSubscribeCaptor();
+      const sessionSubscribeCaptor = sessionFixture.installSessionSubscribeCaptor();
       solaceMessageClient.observe$('topic').subscribe(observeCaptor);
       await drainMicrotaskQueue();
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
 
       // Simulate receiving a message from the Solace broker
-      await simulateTopicMessage(createTopicMessage('topic'));
+      await sessionFixture.simulateMessage(createTopicMessage('topic'));
 
       // Expect message to be received inside the Angular zone
       expect(observeCaptor.getValues()).toEqual([true]);
@@ -611,13 +680,13 @@ describe('SolaceMessageClient', () => {
       const observeCaptor = new ObserveCaptor(() => NgZone.isInAngularZone());
 
       // Subscribe to topic
-      const sessionSubscribeCaptor = installSessionSubscribeCaptor();
+      const sessionSubscribeCaptor = sessionFixture.installSessionSubscribeCaptor();
       solaceMessageClient.observe$('topic', {emitOutsideAngularZone: true}).subscribe(observeCaptor);
       await drainMicrotaskQueue();
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
 
       // Simulate receiving a message from the Solace broker
-      await simulateTopicMessage(createTopicMessage('topic'));
+      await sessionFixture.simulateMessage(createTopicMessage('topic'));
 
       // Expect message to be received outside the Angular zone
       expect(observeCaptor.getValues()).toEqual([false]);
@@ -625,47 +694,47 @@ describe('SolaceMessageClient', () => {
 
     it('should allow wildcard subscriptions', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-      const sessionSubscribeCaptor = installSessionSubscribeCaptor();
+      const sessionSubscribeCaptor = sessionFixture.installSessionSubscribeCaptor();
 
       const observeCaptor1 = new ObserveCaptor(extractMessage);
       solaceMessageClient.observe$('myhome/*/temperature').subscribe(observeCaptor1);
       await drainMicrotaskQueue();
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
       sessionSubscribeCaptor.reset();
 
       const observeCaptor2 = new ObserveCaptor(extractMessage);
       solaceMessageClient.observe$('myhome/*/*').subscribe(observeCaptor2);
       await drainMicrotaskQueue();
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
       sessionSubscribeCaptor.reset();
 
       const observeCaptor3 = new ObserveCaptor(extractMessage);
       solaceMessageClient.observe$('myhome/>').subscribe(observeCaptor3);
       await drainMicrotaskQueue();
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
       sessionSubscribeCaptor.reset();
 
       const observeCaptor4 = new ObserveCaptor(extractMessage);
       solaceMessageClient.observe$('myhome/kitchen/*').subscribe(observeCaptor4);
       await drainMicrotaskQueue();
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
       sessionSubscribeCaptor.reset();
 
       const observeCaptor5 = new ObserveCaptor(extractMessage);
       solaceMessageClient.observe$('myhome/kitchen/temperature/>').subscribe(observeCaptor5);
       await drainMicrotaskQueue();
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
       sessionSubscribeCaptor.reset();
 
       const observeCaptor6 = new ObserveCaptor(extractMessage);
       solaceMessageClient.observe$('myhome/floor4/kitchen/temperature/celsius').subscribe(observeCaptor6);
       await drainMicrotaskQueue();
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
       sessionSubscribeCaptor.reset();
 
       // Simulate receiving a message from the Solace broker
       let message = createTopicMessage('myhome/livingroom/temperature');
-      simulateTopicMessage(message);
+      await sessionFixture.simulateMessage(message);
       expect(observeCaptor1.getValues()).toEqual([message]); // topic: myhome/*/temperature
       expect(observeCaptor2.getValues()).toEqual([message]); // topic: myhome/*/*
       expect(observeCaptor3.getValues()).toEqual([message]); // topic: myhome/>
@@ -682,7 +751,7 @@ describe('SolaceMessageClient', () => {
 
       // Simulate receiving a message from the Solace broker
       message = createTopicMessage('myhome/kitchen/temperature');
-      simulateTopicMessage(message);
+      await sessionFixture.simulateMessage(message);
       expect(observeCaptor1.getValues()).toEqual([message]); // topic: myhome/*/temperature
       expect(observeCaptor2.getValues()).toEqual([message]); // topic: myhome/*/*
       expect(observeCaptor3.getValues()).toEqual([message]); // topic: myhome/>
@@ -699,7 +768,7 @@ describe('SolaceMessageClient', () => {
 
       // Simulate receiving a message from the Solace broker
       message = createTopicMessage('myhome/kitchen/humidity');
-      simulateTopicMessage(message);
+      await sessionFixture.simulateMessage(message);
       expect(observeCaptor1.getValues()).toEqual([]); // topic: myhome/*/temperature
       expect(observeCaptor2.getValues()).toEqual([message]); // topic: myhome/*/*
       expect(observeCaptor3.getValues()).toEqual([message]); // topic: myhome/>
@@ -716,7 +785,7 @@ describe('SolaceMessageClient', () => {
 
       // Simulate receiving a message from the Solace broker
       message = createTopicMessage('myhome/floor4/kitchen/temperature');
-      simulateTopicMessage(message);
+      await sessionFixture.simulateMessage(message);
       expect(observeCaptor1.getValues()).toEqual([]); // topic: myhome/*/temperature
       expect(observeCaptor2.getValues()).toEqual([]); // topic: myhome/*/*
       expect(observeCaptor3.getValues()).toEqual([message]); // topic: myhome/>
@@ -734,28 +803,28 @@ describe('SolaceMessageClient', () => {
 
     it('should provide substituted values of named wildcard segments', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-      const sessionSubscribeCaptor = installSessionSubscribeCaptor();
+      const sessionSubscribeCaptor = sessionFixture.installSessionSubscribeCaptor();
 
       const observeCaptor1 = new ObserveCaptor<MessageEnvelope>();
       solaceMessageClient.observe$('myhome/:room/temperature').subscribe(observeCaptor1);
       await drainMicrotaskQueue();
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
 
       const observeCaptor2 = new ObserveCaptor<MessageEnvelope>();
       solaceMessageClient.observe$('myhome/:room/:measurement').subscribe(observeCaptor2);
       await drainMicrotaskQueue();
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
 
       const observeCaptor3 = new ObserveCaptor<[string, Params, Message]>();
       solaceMessageClient.observe$('myhome/:room/temperature').pipe(mapToText()).subscribe(observeCaptor3);
       await drainMicrotaskQueue();
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
 
       // Simulate receiving a message from the Solace broker
       const message = createTopicMessage('myhome/livingroom/temperature');
       message.setSdtContainer(SDTField.create(SDTFieldType.STRING, '20°C'));
 
-      simulateTopicMessage(message);
+      await sessionFixture.simulateMessage(message);
       expect(observeCaptor1.getValues()).toEqual([jasmine.objectContaining({message, params: new Map().set('room', 'livingroom')})]);
       expect(observeCaptor2.getValues()).toEqual([jasmine.objectContaining({message, params: new Map().set('room', 'livingroom').set('measurement', 'temperature')})]);
       expect(observeCaptor3.getValues()).toEqual([['20°C', new Map().set('room', 'livingroom'), message]]);
@@ -764,7 +833,7 @@ describe('SolaceMessageClient', () => {
     it('should notify when subscribed to topic destination', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
-      const sessionSubscribeCaptor = installSessionSubscribeCaptor();
+      const sessionSubscribeCaptor = sessionFixture.installSessionSubscribeCaptor();
 
       // Subscribe to topic
       const onSubscribedCallback1 = jasmine.createSpy('onSubscribed');
@@ -773,7 +842,7 @@ describe('SolaceMessageClient', () => {
 
       // Expect `onSubscribed` callback to be invoked after the receipt of `SUBSCRIPTION_OK` event
       expect(onSubscribedCallback1).toHaveBeenCalledTimes(0);
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
       expect(onSubscribedCallback1).toHaveBeenCalledTimes(1);
       expect(onSubscribedCallback1).toHaveBeenCalledWith();
       sessionSubscribeCaptor.reset();
@@ -791,7 +860,7 @@ describe('SolaceMessageClient', () => {
     it('should not notify when subscription to topic destination failed', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
-      const sessionSubscribeCaptor = installSessionSubscribeCaptor();
+      const sessionSubscribeCaptor = sessionFixture.installSessionSubscribeCaptor();
 
       // Subscribe to topic
       const onSubscribedCallback = jasmine.createSpy('onSubscribed');
@@ -800,13 +869,13 @@ describe('SolaceMessageClient', () => {
 
       // Expect `onSubscribed` callback not to be invoked after the receipt of `SUBSCRIPTION_ERROR` event
       expect(onSubscribedCallback).toHaveBeenCalledTimes(0);
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_ERROR, sessionSubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_ERROR, sessionSubscribeCaptor.correlationKey);
       expect(onSubscribedCallback).toHaveBeenCalledTimes(0);
     });
 
     it('should publish a message to a topic', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-      const sessionSendCaptor = installSessionSendCaptor();
+      const sessionSendCaptor = sessionFixture.installSessionSendCaptor();
 
       // publish the message to a topic
       await expectAsync(solaceMessageClient.publish('topic', 'payload')).toBeResolved();
@@ -818,7 +887,7 @@ describe('SolaceMessageClient', () => {
 
     it('should publish a message to a queue', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-      const sessionSendCaptor = installSessionSendCaptor();
+      const sessionSendCaptor = sessionFixture.installSessionSendCaptor();
 
       // publish the message to a queue
       await expectAsync(solaceMessageClient.publish(SolclientFactory.createDurableQueueDestination('queue'), 'payload')).toBeResolved();
@@ -830,7 +899,7 @@ describe('SolaceMessageClient', () => {
 
     it('should publish a message as binary message (by default)', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-      const sessionSendCaptor = installSessionSendCaptor();
+      const sessionSendCaptor = sessionFixture.installSessionSendCaptor();
 
       // publish the message
       await expectAsync(solaceMessageClient.publish('topic', 'payload')).toBeResolved();
@@ -843,7 +912,7 @@ describe('SolaceMessageClient', () => {
 
     it('should allow publishing a message as structured text message (SDT Structured Data Type)', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-      const sessionSendCaptor = installSessionSendCaptor();
+      const sessionSendCaptor = sessionFixture.installSessionSendCaptor();
 
       // publish the message
       await expectAsync(solaceMessageClient.publish('topic', SDTField.create(SDTFieldType.STRING, 'payload'))).toBeResolved();
@@ -856,7 +925,7 @@ describe('SolaceMessageClient', () => {
 
     it('should allow publishing a message as structured map message (SDT Structured Data Type)', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-      const sessionSendCaptor = installSessionSendCaptor();
+      const sessionSendCaptor = sessionFixture.installSessionSendCaptor();
 
       // publish the message
       const mapContainer = new SDTMapContainer();
@@ -871,7 +940,7 @@ describe('SolaceMessageClient', () => {
 
     it('should allow publishing a message as given', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-      const sessionSendCaptor = installSessionSendCaptor();
+      const sessionSendCaptor = sessionFixture.installSessionSendCaptor();
 
       // publish the message
       const message = SolclientFactory.createMessage();
@@ -887,7 +956,7 @@ describe('SolaceMessageClient', () => {
 
     it('should ignore the topic set on the message', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-      const sessionSendCaptor = installSessionSendCaptor();
+      const sessionSendCaptor = sessionFixture.installSessionSendCaptor();
 
       // publish the message
       const message = SolclientFactory.createMessage();
@@ -902,7 +971,7 @@ describe('SolaceMessageClient', () => {
 
     it('should allow intercepting the message before sent over the network', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-      const sessionSendCaptor = installSessionSendCaptor();
+      const sessionSendCaptor = sessionFixture.installSessionSendCaptor();
 
       // publish the message
       await expectAsync(solaceMessageClient.publish('topic', 'payload', {
@@ -919,7 +988,7 @@ describe('SolaceMessageClient', () => {
 
     it('should publish a message as direct message (by default)', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-      const sessionSendCaptor = installSessionSendCaptor();
+      const sessionSendCaptor = sessionFixture.installSessionSendCaptor();
 
       // publish the message
       await expectAsync(solaceMessageClient.publish('topic')).toBeResolved();
@@ -929,7 +998,7 @@ describe('SolaceMessageClient', () => {
 
     it('should allow controlling publishing of the message by passing options', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-      const sessionSendCaptor = installSessionSendCaptor();
+      const sessionSendCaptor = sessionFixture.installSessionSendCaptor();
 
       const publishOptions: PublishOptions = {
         dmqEligible: true,
@@ -962,16 +1031,16 @@ describe('SolaceMessageClient', () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
       // Subscribe to topic 'myhome/:room/temperature'
-      const sessionSubscribeCaptor = installSessionSubscribeCaptor();
+      const sessionSubscribeCaptor = sessionFixture.installSessionSubscribeCaptor();
       const observeCaptor = new ObserveCaptor<[string, Params, Message]>();
       solaceMessageClient.observe$('myhome/:room/temperature').pipe(mapToText()).subscribe(observeCaptor);
       await drainMicrotaskQueue();
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
 
       // Simulate receiving message published to 'myhome/kitchen/temperature'
       const message = createTopicMessage('myhome/kitchen/temperature');
       message.setSdtContainer(SDTField.create(SDTFieldType.STRING, 'textual-payload'));
-      simulateTopicMessage(message);
+      await sessionFixture.simulateMessage(message);
 
       await observeCaptor.waitUntilEmitCount(1);
       expect<[string, Params, Message]>(observeCaptor.getValues()).toEqual([['textual-payload', new Map().set('room', 'kitchen'), message]]);
@@ -981,17 +1050,17 @@ describe('SolaceMessageClient', () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
       // Subscribe to topic 'myhome/:room/temperature'
-      const sessionSubscribeCaptor = installSessionSubscribeCaptor();
+      const sessionSubscribeCaptor = sessionFixture.installSessionSubscribeCaptor();
       const observeCaptor = new ObserveCaptor<[string, Params, Message]>();
 
       solaceMessageClient.observe$('myhome/:room/temperature').pipe(mapToBinary<string>()).subscribe(observeCaptor);
       await drainMicrotaskQueue();
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
 
       // Simulate receiving message published to 'myhome/kitchen/temperature'
       const message = createTopicMessage('myhome/kitchen/temperature');
       message.setBinaryAttachment('binary');
-      simulateTopicMessage(message);
+      await sessionFixture.simulateMessage(message);
 
       expect<[string, Params, Message]>(observeCaptor.getValues()).toEqual([['binary', new Map().set('room', 'kitchen'), message]]);
     });
@@ -1000,12 +1069,12 @@ describe('SolaceMessageClient', () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
       // Subscribe to a topic
-      const sessionSubscribeCaptor = installSessionSubscribeCaptor();
+      const sessionSubscribeCaptor = sessionFixture.installSessionSubscribeCaptor();
       const observeCaptor = new ObserveCaptor();
 
       solaceMessageClient.observe$('topic').subscribe(observeCaptor);
       await drainMicrotaskQueue();
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
 
       await solaceMessageClient.disconnect();
       expect(observeCaptor.hasCompleted()).toBeTrue();
@@ -1024,7 +1093,7 @@ describe('SolaceMessageClient', () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
       // Subscribe to 'topic'
-      const sessionSubscribeCaptor = installSessionSubscribeCaptor();
+      const sessionSubscribeCaptor = sessionFixture.installSessionSubscribeCaptor();
       const observeCaptor = new ObserveCaptor(extractMessage);
 
       solaceMessageClient.observe$('topic').subscribe(observeCaptor);
@@ -1032,7 +1101,7 @@ describe('SolaceMessageClient', () => {
       expect(sessionSubscribeCaptor.correlationKey).toBeDefined();
       expect(session.subscribe).toHaveBeenCalledTimes(1);
       expect(session.subscribe).toHaveBeenCalledWith(jasmine.objectContaining({name: 'topic'}), true /* requestConfirmation */, sessionSubscribeCaptor.correlationKey /* correlationKey */, undefined /* requestTimeout */);
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
       session.subscribe.calls.reset();
       sessionSubscribeCaptor.reset();
 
@@ -1041,7 +1110,7 @@ describe('SolaceMessageClient', () => {
 
       // Connect
       const connected = solaceMessageClient.connect({url: 'some-url', vpnName: 'some-vpn'});
-      await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+      await sessionFixture.simulateEvent(SessionEventCode.UP_NOTICE);
       await connected;
 
       // Subscribe again to 'topic', but after a re-connect, expecting a new subscription to be created
@@ -1059,10 +1128,9 @@ describe('SolaceMessageClient', () => {
       const observeCaptor = new ObserveCaptor(extractMessage);
 
       solaceMessageClient.observe$('topic').subscribe(observeCaptor);
-      await drainMicrotaskQueue();
 
       // Simulate the connection to be permanently down
-      await simulateLifecycleEvent(SessionEventCode.DOWN_ERROR);
+      await sessionFixture.simulateEvent(SessionEventCode.DOWN_ERROR);
 
       expect(session.disconnect).toHaveBeenCalledTimes(0); // not invoked as already disconnected with the router
       expect(session.dispose).toHaveBeenCalledTimes(1);
@@ -1079,10 +1147,9 @@ describe('SolaceMessageClient', () => {
       const observeCaptor = new ObserveCaptor(extractMessage);
 
       solaceMessageClient.observe$('topic').subscribe(observeCaptor);
-      await drainMicrotaskQueue();
 
       // Simulate connection interruption
-      await simulateLifecycleEvent(SessionEventCode.RECONNECTING_NOTICE);
+      await sessionFixture.simulateEvent(SessionEventCode.RECONNECTING_NOTICE);
       session.subscribe.calls.reset();
 
       expect(session.dispose).toHaveBeenCalledTimes(0);
@@ -1091,7 +1158,7 @@ describe('SolaceMessageClient', () => {
       expect(observeCaptor.hasCompleted()).toBeFalse();
 
       // Simulate connection reconnected
-      await simulateLifecycleEvent(SessionEventCode.RECONNECTED_NOTICE);
+      await sessionFixture.simulateEvent(SessionEventCode.RECONNECTED_NOTICE);
 
       expect(session.dispose).toHaveBeenCalledTimes(0);
       expect(session.disconnect).toHaveBeenCalledTimes(0);
@@ -1110,7 +1177,7 @@ describe('SolaceMessageClient', () => {
       await drainMicrotaskQueue();
 
       // Simulate connection interruption
-      await simulateLifecycleEvent(SessionEventCode.RECONNECTING_NOTICE);
+      await sessionFixture.simulateEvent(SessionEventCode.RECONNECTING_NOTICE);
       session.subscribe.calls.reset();
 
       expect(session.dispose).toHaveBeenCalledTimes(0);
@@ -1119,7 +1186,7 @@ describe('SolaceMessageClient', () => {
       expect(observeCaptor.hasCompleted()).toBeFalse();
 
       // Simulate maximal retry count limit exceeded
-      await simulateLifecycleEvent(SessionEventCode.DOWN_ERROR);
+      await sessionFixture.simulateEvent(SessionEventCode.DOWN_ERROR);
 
       expect(session.disconnect).toHaveBeenCalledTimes(0); // not invoked as already disconnected with the router
       expect(session.dispose).toHaveBeenCalledTimes(1);
@@ -1129,7 +1196,7 @@ describe('SolaceMessageClient', () => {
 
     it(`should dispose the Solace session but not invoke 'solace.session.disconnect()' when the connection goes irreparably down`, async () => {
       // Simulate the connection goes irreparably down
-      await simulateLifecycleEvent(SessionEventCode.DOWN_ERROR);
+      await sessionFixture.simulateEvent(SessionEventCode.DOWN_ERROR);
 
       expect(session.disconnect).toHaveBeenCalledTimes(0); // not invoked as already disconnected with the router
       expect(session.dispose).toHaveBeenCalledTimes(1);
@@ -1137,7 +1204,7 @@ describe('SolaceMessageClient', () => {
 
     it(`should invoke 'solace.session.dispose()' but not 'solace.session.disconnect()' when receiving DISCONNECT confirmation event`, async () => {
       // Simulate the session to be disconnected
-      await simulateLifecycleEvent(SessionEventCode.DISCONNECTED);
+      await sessionFixture.simulateEvent(SessionEventCode.DISCONNECTED);
 
       expect(session.disconnect).toHaveBeenCalledTimes(0);
       expect(session.dispose).toHaveBeenCalledTimes(1);
@@ -1145,8 +1212,7 @@ describe('SolaceMessageClient', () => {
 
     it(`should invoke 'solace.session.dispose()' only when received DISCONNECT confirmation event from the broker`, async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-      // Disable the opinionated test behavior that when `session.disconnect` is called, an automatic `SessionEventCode.DISCONNECTED` event is fired.
-      session.disconnect.and.callFake(noop);
+      sessionFixture.disableFiringDownEventOnDisconnect();
 
       // Disconnect
       let resolved = false;
@@ -1158,7 +1224,7 @@ describe('SolaceMessageClient', () => {
       expect(resolved).toBeFalse();
 
       // Simulate the session to be disconnected
-      await simulateLifecycleEvent(SessionEventCode.DISCONNECTED);
+      await sessionFixture.simulateEvent(SessionEventCode.DISCONNECTED);
       await expectAsync(whenDisconnected).toBeResolved();
       expect(session.dispose).toHaveBeenCalledTimes(1);
       expect(resolved).toBeTrue();
@@ -1167,7 +1233,7 @@ describe('SolaceMessageClient', () => {
     it('should subscribe sequentially', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
-      const sessionSubscribeCaptor = installSessionSubscribeCaptor();
+      const sessionSubscribeCaptor = sessionFixture.installSessionSubscribeCaptor();
 
       // subscribe to `topic 1`
       solaceMessageClient.observe$('topic-1').subscribe();
@@ -1192,7 +1258,7 @@ describe('SolaceMessageClient', () => {
       session.subscribe.calls.reset();
 
       // simulate confirmation of subscription for topic `topic-1`
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
 
       // expect single call to `session.subscribe` for subscription of `topic-2`
       expect(session.subscribe).toHaveBeenCalledTimes(1);
@@ -1200,7 +1266,7 @@ describe('SolaceMessageClient', () => {
       session.subscribe.calls.reset();
 
       // simulate confirmation of subscription for topic `topic-2`
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
 
       // expect single call to `session.subscribe` for subscription of `topic-3`
       expect(session.subscribe).toHaveBeenCalledTimes(1);
@@ -1208,7 +1274,7 @@ describe('SolaceMessageClient', () => {
       session.subscribe.calls.reset();
 
       // simulate error confirmation of subscription for topic `topic-3`
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_ERROR, sessionSubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_ERROR, sessionSubscribeCaptor.correlationKey);
       expect(topic3SubscribeCaptor.hasErrored()).toBeTrue();
 
       // expect single call to `session.subscribe` for subscription of `topic-4`
@@ -1221,8 +1287,8 @@ describe('SolaceMessageClient', () => {
     it('should subscribe and unsubscribe sequentially on the same topic', async () => {
       const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
-      const sessionSubscribeCaptor = installSessionSubscribeCaptor();
-      const sessionUnsubscribeCaptor = installSessionUnsubscribeCaptor();
+      const sessionSubscribeCaptor = sessionFixture.installSessionSubscribeCaptor();
+      const sessionUnsubscribeCaptor = sessionFixture.installSessionUnsubscribeCaptor();
 
       // subscribe to `topic`
       const subscription1 = solaceMessageClient.observe$('topic').subscribe();
@@ -1247,7 +1313,7 @@ describe('SolaceMessageClient', () => {
       session.unsubscribe.calls.reset();
 
       // simulate confirmation of subscription 1
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
 
       // expect single call to `session.unsubscribe` (subscription 1)
       expect(session.subscribe).toHaveBeenCalledTimes(0);
@@ -1257,7 +1323,7 @@ describe('SolaceMessageClient', () => {
       session.unsubscribe.calls.reset();
 
       // simulate confirmation of unsubscription 1
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionUnsubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionUnsubscribeCaptor.correlationKey);
 
       // expect single call to `session.subscribe` (subscription 2)
       expect(session.subscribe).toHaveBeenCalledTimes(1);
@@ -1267,7 +1333,7 @@ describe('SolaceMessageClient', () => {
       session.unsubscribe.calls.reset();
 
       // simulate confirmation of subscription 2
-      await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+      await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
 
       // expect single call to `session.unsubscribe` (subscription 2)
       expect(session.subscribe).toHaveBeenCalledTimes(0);
@@ -1287,7 +1353,7 @@ describe('SolaceMessageClient', () => {
         await drainMicrotaskQueue();
         expect(resolved).toBeFalse();
 
-        await simulateLifecycleEvent(SessionEventCode.ACKNOWLEDGED_MESSAGE, correlationKey);
+        await sessionFixture.simulateEvent(SessionEventCode.ACKNOWLEDGED_MESSAGE, correlationKey);
         expect(resolved).toBeTrue();
         await expectAsync(whenPublished).toBeResolved();
       });
@@ -1301,7 +1367,7 @@ describe('SolaceMessageClient', () => {
         await drainMicrotaskQueue();
         expect(resolved).toBeFalse();
 
-        await simulateLifecycleEvent(SessionEventCode.REJECTED_MESSAGE_ERROR, correlationKey);
+        await sessionFixture.simulateEvent(SessionEventCode.REJECTED_MESSAGE_ERROR, correlationKey);
         expect(resolved).toBeFalse();
         await expectAsync(whenPublished).toBeRejected();
       });
@@ -1321,7 +1387,7 @@ describe('SolaceMessageClient', () => {
 
       it('should publish message headers (user properties)', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-        const sessionSendCaptor = installSessionSendCaptor();
+        const sessionSendCaptor = sessionFixture.installSessionSendCaptor();
 
         // publish the message
         const headers = new Map()
@@ -1374,11 +1440,11 @@ describe('SolaceMessageClient', () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
         // Subscribe to topic 'topic'
-        const sessionSubscribeCaptor = installSessionSubscribeCaptor();
+        const sessionSubscribeCaptor = sessionFixture.installSessionSubscribeCaptor();
         const observeCaptor = new ObserveCaptor<MessageEnvelope>();
         solaceMessageClient.observe$('topic').subscribe(observeCaptor);
         await drainMicrotaskQueue();
-        await simulateLifecycleEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
+        await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
 
         // Simulate receiving message published to 'topic'
         const message = createTopicMessage('topic');
@@ -1392,7 +1458,7 @@ describe('SolaceMessageClient', () => {
         userPropertyMap.addField('key7', SDTFieldType.UNKNOWN, '!UNKNOWN!');
         message.setUserPropertyMap(userPropertyMap);
 
-        simulateTopicMessage(message);
+        await sessionFixture.simulateMessage(message);
 
         await observeCaptor.waitUntilEmitCount(1);
         expect(observeCaptor.getLastValue().headers).toEqual(new Map()
@@ -1411,18 +1477,18 @@ describe('SolaceMessageClient', () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
         // Subscribe to a non-durable topic endpoint
-        const messageConsumerMock = installMessageConsumerMock();
+        const messageConsumerFixture = sessionFixture.messageConsumerFixture;
         solaceMessageClient.consume$('topic').subscribe();
         await drainMicrotaskQueue();
 
         // Expect the message consumer to connect to the broker
-        expect(messageConsumerMock.messageConsumer.connect).toHaveBeenCalledTimes(1);
+        expect(messageConsumerFixture.messageConsumer.connect).toHaveBeenCalledTimes(1);
 
         // Simulate the message consumer to be connected to the broker
-        await messageConsumerMock.simulateLifecycleEvent(MessageConsumerEventName.UP);
+        await messageConsumerFixture.simulateEvent(MessageConsumerEventName.UP);
 
         // Expect connected to a non-durable topic endpoint
-        expect(messageConsumerMock.messageConsumerProperties).toEqual({
+        expect(messageConsumerFixture.messageConsumerProperties).toEqual({
           topicEndpointSubscription: SolclientFactory.createTopicDestination('topic'),
           queueDescriptor: new QueueDescriptor({type: QueueType.TOPIC_ENDPOINT, durable: false}),
         });
@@ -1432,7 +1498,7 @@ describe('SolaceMessageClient', () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
         // Subscribe to a durable queue endpoint
-        const messageConsumerMock = installMessageConsumerMock();
+        const messageConsumerFixture = sessionFixture.messageConsumerFixture;
         const config: MessageConsumerProperties = {
           queueDescriptor: new QueueDescriptor({type: QueueType.QUEUE, name: 'queue', durable: true}),
         };
@@ -1440,13 +1506,13 @@ describe('SolaceMessageClient', () => {
         await drainMicrotaskQueue();
 
         // Expect the message consumer to connect to the broker
-        expect(messageConsumerMock.messageConsumer.connect).toHaveBeenCalledTimes(1);
+        expect(messageConsumerFixture.messageConsumer.connect).toHaveBeenCalledTimes(1);
 
         // Simulate the message consumer to be connected to the broker
-        await messageConsumerMock.simulateLifecycleEvent(MessageConsumerEventName.UP);
+        await messageConsumerFixture.simulateEvent(MessageConsumerEventName.UP);
 
         // Expect connected to a durable queue endpoint
-        expect(messageConsumerMock.messageConsumerProperties).toEqual({
+        expect(messageConsumerFixture.messageConsumerProperties).toEqual({
           queueDescriptor: new QueueDescriptor({type: QueueType.QUEUE, name: 'queue', durable: true}),
         });
       });
@@ -1455,7 +1521,7 @@ describe('SolaceMessageClient', () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
         // Subscribe to a durable topic endpoint
-        const messageConsumerMock = installMessageConsumerMock();
+        const messageConsumerFixture = sessionFixture.messageConsumerFixture;
         const config: MessageConsumerProperties = {
           topicEndpointSubscription: SolclientFactory.createTopicDestination('topic'),
           queueDescriptor: new QueueDescriptor({type: QueueType.TOPIC_ENDPOINT, name: 'topic-endpoint', durable: true}),
@@ -1464,13 +1530,13 @@ describe('SolaceMessageClient', () => {
         await drainMicrotaskQueue();
 
         // Expect the message consumer to connect to the broker
-        expect(messageConsumerMock.messageConsumer.connect).toHaveBeenCalledTimes(1);
+        expect(messageConsumerFixture.messageConsumer.connect).toHaveBeenCalledTimes(1);
 
         // Simulate the message consumer to be connected to the broker
-        await messageConsumerMock.simulateLifecycleEvent(MessageConsumerEventName.UP);
+        await messageConsumerFixture.simulateEvent(MessageConsumerEventName.UP);
 
         // Expect connected to a durable topic endpoint
-        expect(messageConsumerMock.messageConsumerProperties).toEqual({
+        expect(messageConsumerFixture.messageConsumerProperties).toEqual({
           topicEndpointSubscription: SolclientFactory.createTopicDestination('topic'),
           queueDescriptor: new QueueDescriptor({type: QueueType.TOPIC_ENDPOINT, name: 'topic-endpoint', durable: true}),
         });
@@ -1480,23 +1546,22 @@ describe('SolaceMessageClient', () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
         // Subscribe to a topic endpoint
-        const messageConsumerMock = installMessageConsumerMock();
+        const messageConsumerFixture = sessionFixture.messageConsumerFixture;
         const messageCaptor = new ObserveCaptor<MessageEnvelope>();
         solaceMessageClient.consume$('topic/*').subscribe(messageCaptor);
-        await drainMicrotaskQueue();
 
         // Simulate the message consumer to be connected to the broker
-        await messageConsumerMock.simulateLifecycleEvent(MessageConsumerEventName.UP);
+        await messageConsumerFixture.simulateEvent(MessageConsumerEventName.UP);
 
         // Simulate to receive a message
         const message1 = createTopicMessage('topic/1');
-        await messageConsumerMock.simulateMessage(message1);
+        await messageConsumerFixture.simulateMessage(message1);
 
         expect(messageCaptor.getValues()).toEqual([jasmine.objectContaining<MessageEnvelope>({message: message1})]);
 
         // Simulate to receive another message
         const message2 = createTopicMessage('topic/2');
-        await messageConsumerMock.simulateMessage(message2);
+        await messageConsumerFixture.simulateMessage(message2);
 
         expect(messageCaptor.getValues()).toEqual([
           jasmine.objectContaining<MessageEnvelope>({message: message1}),
@@ -1509,15 +1574,14 @@ describe('SolaceMessageClient', () => {
         const observeCaptor = new ObserveCaptor(() => NgZone.isInAngularZone());
 
         // Subscribe to a topic endpoint
-        const messageConsumerMock = installMessageConsumerMock();
+        const messageConsumerFixture = sessionFixture.messageConsumerFixture;
         solaceMessageClient.consume$('topic').subscribe(observeCaptor);
-        await drainMicrotaskQueue();
 
         // Simulate the message consumer to be connected to the broker
-        await messageConsumerMock.simulateLifecycleEvent(MessageConsumerEventName.UP);
+        await messageConsumerFixture.simulateEvent(MessageConsumerEventName.UP);
 
         // Simulate to receive a message
-        await messageConsumerMock.simulateMessage(createTopicMessage('topic'));
+        await messageConsumerFixture.simulateMessage(createTopicMessage('topic'));
 
         // Expect message to be received inside the Angular zone
         expect(observeCaptor.getValues()).toEqual([true]);
@@ -1528,19 +1592,18 @@ describe('SolaceMessageClient', () => {
         const observeCaptor = new ObserveCaptor(() => NgZone.isInAngularZone());
 
         // Subscribe to a topic endpoint
-        const messageConsumerMock = installMessageConsumerMock();
+        const messageConsumerFixture = sessionFixture.messageConsumerFixture;
         solaceMessageClient.consume$({
           topicEndpointSubscription: SolclientFactory.createTopicDestination('topic'),
           queueDescriptor: new QueueDescriptor({type: QueueType.TOPIC_ENDPOINT, durable: false}),
           emitOutsideAngularZone: true,
         }).subscribe(observeCaptor);
-        await drainMicrotaskQueue();
 
         // Simulate the message consumer to be connected to the broker
-        await messageConsumerMock.simulateLifecycleEvent(MessageConsumerEventName.UP);
+        await messageConsumerFixture.simulateEvent(MessageConsumerEventName.UP);
 
         // Simulate to receive a message
-        await messageConsumerMock.simulateMessage(createTopicMessage('topic'));
+        await messageConsumerFixture.simulateMessage(createTopicMessage('topic'));
 
         // Expect message to be received outside the Angular zone
         expect(observeCaptor.getValues()).toEqual([false]);
@@ -1550,92 +1613,91 @@ describe('SolaceMessageClient', () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
         // Subscribe to a non-durable topic endpoint
-        const messageConsumerMock = installMessageConsumerMock();
+        const messageConsumerFixture = sessionFixture.messageConsumerFixture;
         const messageCaptor = new ObserveCaptor<MessageEnvelope>();
         solaceMessageClient.consume$('topic').subscribe(messageCaptor);
         await drainMicrotaskQueue();
 
         // Expect the message consumer to connect to the broker
-        expect(messageConsumerMock.messageConsumer.connect).toHaveBeenCalledTimes(1);
+        expect(messageConsumerFixture.messageConsumer.connect).toHaveBeenCalledTimes(1);
 
         // Simulate that the connection cannot be established
-        await messageConsumerMock.simulateLifecycleEvent(MessageConsumerEventName.CONNECT_FAILED_ERROR, createOperationError());
+        await messageConsumerFixture.simulateEvent(MessageConsumerEventName.CONNECT_FAILED_ERROR, createOperationError());
 
         // Expect the Observable to error
         expect(messageCaptor.hasErrored()).toBeTrue();
 
         // Expect to disconnect from the broker
-        expect(messageConsumerMock.messageConsumer.disconnect).toHaveBeenCalledTimes(1);
-        expect(messageConsumerMock.messageConsumer.dispose).toHaveBeenCalledTimes(1);
+        expect(messageConsumerFixture.messageConsumer.disconnect).toHaveBeenCalledTimes(1);
+        expect(messageConsumerFixture.messageConsumer.dispose).toHaveBeenCalledTimes(1);
       });
 
       it('should complete the Observable when the connection goes down (DOWN), e.g., after a successful session disconnect', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
         // Subscribe to a non-durable topic endpoint
-        const messageConsumerMock = installMessageConsumerMock();
+        const messageConsumerFixture = sessionFixture.messageConsumerFixture;
         const messageCaptor = new ObserveCaptor<MessageEnvelope>();
         solaceMessageClient.consume$('topic').subscribe(messageCaptor);
         await drainMicrotaskQueue();
 
         // Expect the message consumer to connect to the broker
-        expect(messageConsumerMock.messageConsumer.connect).toHaveBeenCalledTimes(1);
+        expect(messageConsumerFixture.messageConsumer.connect).toHaveBeenCalledTimes(1);
 
         // Simulate the message consumer to be connected to the broker
-        await messageConsumerMock.simulateLifecycleEvent(MessageConsumerEventName.UP);
+        await messageConsumerFixture.simulateEvent(MessageConsumerEventName.UP);
 
         // Simulate the connection going down
-        await messageConsumerMock.simulateLifecycleEvent(MessageConsumerEventName.DOWN, createOperationError());
+        await messageConsumerFixture.simulateEvent(MessageConsumerEventName.DOWN, createOperationError());
 
         // Expect the Observable to complete
         expect(messageCaptor.hasCompleted()).toBeTrue();
-        expect(messageConsumerMock.messageConsumer.disconnect).toHaveBeenCalledTimes(0);
-        expect(messageConsumerMock.messageConsumer.dispose).toHaveBeenCalledTimes(1);
+        expect(messageConsumerFixture.messageConsumer.disconnect).toHaveBeenCalledTimes(0);
+        expect(messageConsumerFixture.messageConsumer.dispose).toHaveBeenCalledTimes(1);
       });
 
       it('should gracefully disconnect from the broker when unsubscribing from the Observable', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
         // Subscribe to a non-durable topic endpoint
-        const messageConsumerMock = installMessageConsumerMock();
+        const messageConsumerFixture = sessionFixture.messageConsumerFixture;
         const subscription = solaceMessageClient.consume$('topic').subscribe();
         await drainMicrotaskQueue();
 
         // Expect the message consumer to connect to the broker
-        expect(messageConsumerMock.messageConsumer.connect).toHaveBeenCalledTimes(1);
+        expect(messageConsumerFixture.messageConsumer.connect).toHaveBeenCalledTimes(1);
 
         // Unsubscribe from the Observable
-        messageConsumerMock.disableFiringDownEventOnDisconnect();
+        messageConsumerFixture.disableFiringDownEventOnDisconnect();
         subscription.unsubscribe();
         await drainMicrotaskQueue();
 
         // Expect a graceful disconnect
-        expect(messageConsumerMock.messageConsumer.disconnect).toHaveBeenCalledTimes(1);
-        expect(messageConsumerMock.messageConsumer.dispose).toHaveBeenCalledTimes(0);
+        expect(messageConsumerFixture.messageConsumer.disconnect).toHaveBeenCalledTimes(1);
+        expect(messageConsumerFixture.messageConsumer.dispose).toHaveBeenCalledTimes(0);
 
-        messageConsumerMock.messageConsumer.disconnect.calls.reset();
+        messageConsumerFixture.messageConsumer.disconnect.calls.reset();
 
         // Simulate receiving 'MessageConsumerEventName.DOWN' event
-        await messageConsumerMock.simulateLifecycleEvent(MessageConsumerEventName.DOWN);
-        expect(messageConsumerMock.messageConsumer.disconnect).toHaveBeenCalledTimes(0);
-        expect(messageConsumerMock.messageConsumer.dispose).toHaveBeenCalledTimes(1);
+        await messageConsumerFixture.simulateEvent(MessageConsumerEventName.DOWN);
+        expect(messageConsumerFixture.messageConsumer.disconnect).toHaveBeenCalledTimes(0);
+        expect(messageConsumerFixture.messageConsumer.dispose).toHaveBeenCalledTimes(1);
       });
 
       it('should provide substituted values of named wildcard segments', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
         // Subscribe to a topic endpoint
-        const messageConsumerMock = installMessageConsumerMock();
+        const messageConsumerFixture = sessionFixture.messageConsumerFixture;
         const messageCaptor = new ObserveCaptor<MessageEnvelope>();
         solaceMessageClient.consume$('myhome/:room/temperature').subscribe(messageCaptor);
-        await drainMicrotaskQueue();
 
         // Simulate the message consumer to be connected to the broker
-        await messageConsumerMock.simulateLifecycleEvent(MessageConsumerEventName.UP);
+        await messageConsumerFixture.simulateEvent(MessageConsumerEventName.UP);
 
         // Simulate to receive a message
         const message = createTopicMessage('myhome/kitchen/temperature');
-        await messageConsumerMock.simulateMessage(message);
+        await messageConsumerFixture.simulateMessage(message);
 
         // Expect params to be contained in the envelope
         expect(messageCaptor.getValues()).toEqual([jasmine.objectContaining<MessageEnvelope>({
@@ -1648,13 +1710,12 @@ describe('SolaceMessageClient', () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
         // Subscribe to a topic endpoint
-        const messageConsumerMock = installMessageConsumerMock();
+        const messageConsumerFixture = sessionFixture.messageConsumerFixture;
         const messageCaptor = new ObserveCaptor<MessageEnvelope>();
         solaceMessageClient.consume$('topic').subscribe(messageCaptor);
-        await drainMicrotaskQueue();
 
         // Simulate the message consumer to be connected to the broker
-        await messageConsumerMock.simulateLifecycleEvent(MessageConsumerEventName.UP);
+        await messageConsumerFixture.simulateEvent(MessageConsumerEventName.UP);
 
         // Simulate to receive a message
         const message = createTopicMessage('topic');
@@ -1664,7 +1725,7 @@ describe('SolaceMessageClient', () => {
         userPropertyMap.addField('key3', SDTFieldType.INT32, 123);
         message.setUserPropertyMap(userPropertyMap);
 
-        await messageConsumerMock.simulateMessage(message);
+        await messageConsumerFixture.simulateMessage(message);
 
         // Expect headers to be contained in the envelope
         expect(messageCaptor.getValues()).toEqual([jasmine.objectContaining<MessageEnvelope>({
@@ -1680,7 +1741,7 @@ describe('SolaceMessageClient', () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
         // Subscribe to endoint
-        const messageConsumerMock = installMessageConsumerMock();
+        const messageConsumerFixture = sessionFixture.messageConsumerFixture;
         const onSubscribedCallback1 = jasmine.createSpy('onSubscribed');
         solaceMessageClient.consume$({
           queueDescriptor: new QueueDescriptor({type: QueueType.QUEUE, name: 'queue'}),
@@ -1690,9 +1751,9 @@ describe('SolaceMessageClient', () => {
 
         // Simulate the message consumer to be connected to the broker
         expect(onSubscribedCallback1).toHaveBeenCalledTimes(0);
-        await messageConsumerMock.simulateLifecycleEvent(MessageConsumerEventName.UP);
+        await messageConsumerFixture.simulateEvent(MessageConsumerEventName.UP);
         expect(onSubscribedCallback1).toHaveBeenCalledTimes(1);
-        expect(onSubscribedCallback1).toHaveBeenCalledWith(messageConsumerMock.messageConsumer);
+        expect(onSubscribedCallback1).toHaveBeenCalledWith(messageConsumerFixture.messageConsumer);
 
         // Subscribe to endpoint anew
         const onSubscribedCallback2 = jasmine.createSpy('onSubscribed');
@@ -1704,16 +1765,16 @@ describe('SolaceMessageClient', () => {
 
         // Simulate the message consumer to be connected to the broker
         expect(onSubscribedCallback2).toHaveBeenCalledTimes(0);
-        await messageConsumerMock.simulateLifecycleEvent(MessageConsumerEventName.UP);
+        await messageConsumerFixture.simulateEvent(MessageConsumerEventName.UP);
         expect(onSubscribedCallback2).toHaveBeenCalledTimes(1);
-        expect(onSubscribedCallback2).toHaveBeenCalledWith(messageConsumerMock.messageConsumer);
+        expect(onSubscribedCallback2).toHaveBeenCalledWith(messageConsumerFixture.messageConsumer);
       });
 
       it('should not notify when subscription to endpoint failed', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
         // Subscribe to endpoint
-        const messageConsumerMock = installMessageConsumerMock();
+        const messageConsumerFixture = sessionFixture.messageConsumerFixture;
         const onSubscribedCallback = jasmine.createSpy('onSubscribed');
         solaceMessageClient.consume$({
           queueDescriptor: new QueueDescriptor({type: QueueType.QUEUE, name: 'queue'}),
@@ -1723,7 +1784,7 @@ describe('SolaceMessageClient', () => {
 
         // Simulate the message consumer to be connected to the broker
         expect(onSubscribedCallback).toHaveBeenCalledTimes(0);
-        await messageConsumerMock.simulateLifecycleEvent(MessageConsumerEventName.CONNECT_FAILED_ERROR);
+        await messageConsumerFixture.simulateEvent(MessageConsumerEventName.CONNECT_FAILED_ERROR);
         expect(onSubscribedCallback).toHaveBeenCalledTimes(0);
       });
     });
@@ -1734,18 +1795,18 @@ describe('SolaceMessageClient', () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
         // Connect to the queue browser
-        const queueBrowserMock = installQueueBrowserMock();
+        const queueBrowserFixture = sessionFixture.queueBrowserFixture;
         solaceMessageClient.browse$('queue').subscribe();
         await drainMicrotaskQueue();
 
         // Expect the queue browser to connect to the broker
-        expect(queueBrowserMock.queueBrowser.connect).toHaveBeenCalledTimes(1);
+        expect(queueBrowserFixture.queueBrowser.connect).toHaveBeenCalledTimes(1);
 
         // Simulate the queue browser to be connected to the broker
-        await queueBrowserMock.simulateLifecycleEvent(QueueBrowserEventName.UP);
+        await queueBrowserFixture.simulateEvent(QueueBrowserEventName.UP);
 
         // Expect connected to the queue browser
-        expect(queueBrowserMock.queueBrowserProperties).toEqual({
+        expect(queueBrowserFixture.queueBrowserProperties).toEqual({
           queueDescriptor: new QueueDescriptor({type: QueueType.QUEUE, name: 'queue'}),
         });
       });
@@ -1754,7 +1815,7 @@ describe('SolaceMessageClient', () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
         // Connect to the queue browser
-        const queueBrowserMock = installQueueBrowserMock();
+        const queueBrowserFixture = sessionFixture.queueBrowserFixture;
         const properties: QueueBrowserProperties = {
           queueDescriptor: new QueueDescriptor({type: QueueType.QUEUE, name: 'queue'}),
         };
@@ -1762,35 +1823,34 @@ describe('SolaceMessageClient', () => {
         await drainMicrotaskQueue();
 
         // Expect the queue browser to connect to the broker
-        expect(queueBrowserMock.queueBrowser.connect).toHaveBeenCalledTimes(1);
+        expect(queueBrowserFixture.queueBrowser.connect).toHaveBeenCalledTimes(1);
 
         // Simulate the queue browser to be connected to the broker
-        await queueBrowserMock.simulateLifecycleEvent(QueueBrowserEventName.UP);
+        await queueBrowserFixture.simulateEvent(QueueBrowserEventName.UP);
 
         // Expect connected to the queue browser
-        expect(queueBrowserMock.queueBrowserProperties).toEqual(properties);
+        expect(queueBrowserFixture.queueBrowserProperties).toEqual(properties);
       });
 
       it('should allow browsing messages', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
         // Connect to the queue browser
-        const queueBrowserMock = installQueueBrowserMock();
+        const queueBrowserFixture = sessionFixture.queueBrowserFixture;
         const messageCaptor = new ObserveCaptor<MessageEnvelope>();
         solaceMessageClient.browse$('queue').subscribe(messageCaptor);
-        await drainMicrotaskQueue();
 
         // Simulate the queue browser to be connected to the broker
-        await queueBrowserMock.simulateLifecycleEvent(QueueBrowserEventName.UP);
+        await queueBrowserFixture.simulateEvent(QueueBrowserEventName.UP);
 
         // Simulate to receive a message
         const msg1 = createQueueMessage('queue');
         const msg2 = createQueueMessage('queue');
         const msg3 = createQueueMessage('queue');
 
-        await queueBrowserMock.simulateMessage(msg1);
-        await queueBrowserMock.simulateMessage(msg2);
-        await queueBrowserMock.simulateMessage(msg3);
+        await queueBrowserFixture.simulateMessage(msg1);
+        await queueBrowserFixture.simulateMessage(msg2);
+        await queueBrowserFixture.simulateMessage(msg3);
 
         expect(messageCaptor.getValues()).toEqual([
           jasmine.objectContaining<MessageEnvelope>({message: msg1}),
@@ -1804,15 +1864,14 @@ describe('SolaceMessageClient', () => {
         const observeCaptor = new ObserveCaptor(() => NgZone.isInAngularZone());
 
         // Connect to the queue browser
-        const queueBrowserMock = installQueueBrowserMock();
+        const queueBrowserFixture = sessionFixture.queueBrowserFixture;
         solaceMessageClient.browse$('queue').subscribe(observeCaptor);
-        await drainMicrotaskQueue();
 
         // Simulate the queue browser to be connected to the broker
-        await queueBrowserMock.simulateLifecycleEvent(QueueBrowserEventName.UP);
+        await queueBrowserFixture.simulateEvent(QueueBrowserEventName.UP);
 
         // Simulate to receive a message
-        await queueBrowserMock.simulateMessage(createQueueMessage('queue'));
+        await queueBrowserFixture.simulateMessage(createQueueMessage('queue'));
 
         // Expect message to be received inside the Angular zone
         expect(observeCaptor.getValues()).toEqual([true]);
@@ -1823,18 +1882,17 @@ describe('SolaceMessageClient', () => {
         const observeCaptor = new ObserveCaptor(() => NgZone.isInAngularZone());
 
         // Connect to the queue browser
-        const queueBrowserMock = installQueueBrowserMock();
+        const queueBrowserFixture = sessionFixture.queueBrowserFixture;
         solaceMessageClient.browse$({
           queueDescriptor: new QueueDescriptor({type: QueueType.QUEUE, name: 'queue'}),
           emitOutsideAngularZone: true,
         }).subscribe(observeCaptor);
-        await drainMicrotaskQueue();
 
         // Simulate the queue browser to be connected to the broker
-        await queueBrowserMock.simulateLifecycleEvent(QueueBrowserEventName.UP);
+        await queueBrowserFixture.simulateEvent(QueueBrowserEventName.UP);
 
         // Simulate to receive a message
-        await queueBrowserMock.simulateMessage(createQueueMessage('queue'));
+        await queueBrowserFixture.simulateMessage(createQueueMessage('queue'));
 
         // Expect message to be received outside the Angular zone
         expect(observeCaptor.getValues()).toEqual([false]);
@@ -1844,60 +1902,60 @@ describe('SolaceMessageClient', () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
         // Connect to the queue browser
-        const queueBrowserMock = installQueueBrowserMock();
+        const queueBrowserFixture = sessionFixture.queueBrowserFixture;
         solaceMessageClient.browse$('queue').subscribe();
         await drainMicrotaskQueue();
 
         // Expect the queue browser to connect to the broker
-        expect(queueBrowserMock.queueBrowser.connect).toHaveBeenCalledTimes(1);
+        expect(queueBrowserFixture.queueBrowser.connect).toHaveBeenCalledTimes(1);
 
         // Simulate the queue browser to be connected to the broker
-        await queueBrowserMock.simulateLifecycleEvent(QueueBrowserEventName.UP, createOperationError());
+        await queueBrowserFixture.simulateEvent(QueueBrowserEventName.UP, createOperationError());
 
         // Expect the queue browser to be started
-        expect(queueBrowserMock.queueBrowser.start).toHaveBeenCalledTimes(1);
+        expect(queueBrowserFixture.queueBrowser.start).toHaveBeenCalledTimes(1);
       });
 
       it('should error on connection error (CONNECT_FAILED_ERROR)', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
         // Connect to the queue browser
-        const queueBrowserMock = installQueueBrowserMock();
+        const queueBrowserFixture = sessionFixture.queueBrowserFixture;
         const messageCaptor = new ObserveCaptor<MessageEnvelope>();
         solaceMessageClient.browse$('queue').subscribe(messageCaptor);
         await drainMicrotaskQueue();
 
         // Expect the queue browser to connect to the broker
-        expect(queueBrowserMock.queueBrowser.connect).toHaveBeenCalledTimes(1);
+        expect(queueBrowserFixture.queueBrowser.connect).toHaveBeenCalledTimes(1);
 
         // Simulate that the connection cannot be established
-        await queueBrowserMock.simulateLifecycleEvent(QueueBrowserEventName.CONNECT_FAILED_ERROR, createOperationError());
+        await queueBrowserFixture.simulateEvent(QueueBrowserEventName.CONNECT_FAILED_ERROR, createOperationError());
 
         // Expect the Observable to error
         expect(messageCaptor.hasErrored()).toBeTrue();
 
         // Expect to disconnect from the broker
-        expect(queueBrowserMock.queueBrowser.stop).toHaveBeenCalledTimes(1);
-        expect(queueBrowserMock.queueBrowser.disconnect).toHaveBeenCalledTimes(1);
+        expect(queueBrowserFixture.queueBrowser.stop).toHaveBeenCalledTimes(1);
+        expect(queueBrowserFixture.queueBrowser.disconnect).toHaveBeenCalledTimes(1);
       });
 
       it('should complete the Observable when the connection goes down (DOWN), e.g., after a successful session disconnect', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
         // Connect to the queue browser
-        const queueBrowserMock = installQueueBrowserMock();
+        const queueBrowserFixture = sessionFixture.queueBrowserFixture;
         const messageCaptor = new ObserveCaptor<MessageEnvelope>();
         solaceMessageClient.browse$('queue').subscribe(messageCaptor);
         await drainMicrotaskQueue();
 
         // Expect the queue browser to connect to the broker
-        expect(queueBrowserMock.queueBrowser.connect).toHaveBeenCalledTimes(1);
+        expect(queueBrowserFixture.queueBrowser.connect).toHaveBeenCalledTimes(1);
 
         // Simulate the queue browser to be connected to the broker
-        await queueBrowserMock.simulateLifecycleEvent(QueueBrowserEventName.UP);
+        await queueBrowserFixture.simulateEvent(QueueBrowserEventName.UP);
 
         // Simulate connection going down
-        await queueBrowserMock.simulateLifecycleEvent(QueueBrowserEventName.DOWN, createOperationError());
+        await queueBrowserFixture.simulateEvent(QueueBrowserEventName.DOWN, createOperationError());
 
         // Expect the Observable to complete
         expect(messageCaptor.hasCompleted()).toBeTrue();
@@ -1907,13 +1965,12 @@ describe('SolaceMessageClient', () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
         // Connect to the queue browser
-        const queueBrowserMock = installQueueBrowserMock();
+        const queueBrowserFixture = sessionFixture.queueBrowserFixture;
         const messageCaptor = new ObserveCaptor<MessageEnvelope>();
         solaceMessageClient.browse$('queue').subscribe(messageCaptor);
-        await drainMicrotaskQueue();
 
         // Simulate the queue browser to be connected to the broker
-        await queueBrowserMock.simulateLifecycleEvent(QueueBrowserEventName.UP);
+        await queueBrowserFixture.simulateEvent(QueueBrowserEventName.UP);
 
         // Simulate to receive a message
         const message = createQueueMessage('queue');
@@ -1923,7 +1980,7 @@ describe('SolaceMessageClient', () => {
         userPropertyMap.addField('key3', SDTFieldType.INT32, 123);
         message.setUserPropertyMap(userPropertyMap);
 
-        await queueBrowserMock.simulateMessage(message);
+        await queueBrowserFixture.simulateMessage(message);
 
         // Expect headers to be contained in the envelope
         expect(messageCaptor.getValues()).toEqual([jasmine.objectContaining<MessageEnvelope>({
@@ -1941,14 +1998,14 @@ describe('SolaceMessageClient', () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
         // Send a request
-        const sendRequestMock = installSendRequestMock();
+        const sendRequestFixture = sessionFixture.sendRequestFixture;
         const replyCaptor = new ObserveCaptor<MessageEnvelope>();
         solaceMessageClient.request$('topic').subscribe(replyCaptor);
         await drainMicrotaskQueue();
 
         // Simulate to receive a reply
         const reply = createTopicMessage('reply');
-        await sendRequestMock.simulateReply(reply);
+        await sendRequestFixture.simulateReply(reply);
 
         expect(session.sendRequest).toHaveBeenCalledTimes(1);
         expect(replyCaptor.getValues()).toEqual([jasmine.objectContaining<MessageEnvelope>({message: reply})]);
@@ -1959,14 +2016,14 @@ describe('SolaceMessageClient', () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
         // Send a request
-        const sendRequestMock = installSendRequestMock();
+        const sendRequestFixture = sessionFixture.sendRequestFixture;
         const replyCaptor = new ObserveCaptor<MessageEnvelope>();
         solaceMessageClient.request$('topic').subscribe(replyCaptor);
         await drainMicrotaskQueue();
 
         // Simulate to receive a reply
         const error = createRequestError();
-        await sendRequestMock.simulateError(error);
+        await sendRequestFixture.simulateError(error);
 
         expect(session.sendRequest).toHaveBeenCalledTimes(1);
         expect(replyCaptor.getValues()).toEqual([]);
@@ -1978,8 +2035,8 @@ describe('SolaceMessageClient', () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
         // Send a request
-        const sendRequestMock = installSendRequestMock();
-        sendRequestMock.throwErrorOnSend = true;
+        const sendRequestFixture = sessionFixture.sendRequestFixture;
+        sendRequestFixture.throwErrorOnSend = true;
         const replyCaptor = new ObserveCaptor<MessageEnvelope>();
         solaceMessageClient.request$('topic').subscribe(replyCaptor);
         await drainMicrotaskQueue();
@@ -1993,13 +2050,13 @@ describe('SolaceMessageClient', () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
         // Send a request
-        const sendRequestMock = installSendRequestMock();
+        const sendRequestFixture = sessionFixture.sendRequestFixture;
         const zoneCaptor = new ObserveCaptor<MessageEnvelope, boolean>(() => NgZone.isInAngularZone());
         solaceMessageClient.request$('topic').subscribe(zoneCaptor);
         await drainMicrotaskQueue();
 
         // Simulate to receive a reply
-        await sendRequestMock.simulateReply(createTopicMessage('reply'));
+        await sendRequestFixture.simulateReply(createTopicMessage('reply'));
 
         expect(zoneCaptor.getValues()).toEqual([true]);
       });
@@ -2008,13 +2065,13 @@ describe('SolaceMessageClient', () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
         // Send a request
-        const sendRequestMock = installSendRequestMock();
+        const sendRequestFixture = sessionFixture.sendRequestFixture;
         const zoneCaptor = new ObserveCaptor<MessageEnvelope, boolean>(() => NgZone.isInAngularZone());
         solaceMessageClient.request$('topic', undefined, {emitOutsideAngularZone: true}).subscribe(zoneCaptor);
         await drainMicrotaskQueue();
 
         // Simulate to receive a reply
-        await sendRequestMock.simulateReply(createTopicMessage('reply'));
+        await sendRequestFixture.simulateReply(createTopicMessage('reply'));
 
         expect(zoneCaptor.getValues()).toEqual([false]);
       });
@@ -2023,22 +2080,22 @@ describe('SolaceMessageClient', () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
         // Send a request
-        const sendRequestMock = installSendRequestMock();
+        const sendRequestFixture = sessionFixture.sendRequestFixture;
         solaceMessageClient.request$('topic').subscribe();
         await drainMicrotaskQueue();
 
-        expect(sendRequestMock.requestMessage!.getDestination()).toEqual(SolclientFactory.createTopicDestination('topic'));
+        expect(sendRequestFixture.requestMessage!.getDestination()).toEqual(SolclientFactory.createTopicDestination('topic'));
       });
 
       it('should send the request to the specified queue', async () => {
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
         // Send a request
-        const sendRequestMock = installSendRequestMock();
+        const sendRequestFixture = sessionFixture.sendRequestFixture;
         solaceMessageClient.request$(SolclientFactory.createDurableQueueDestination('queue')).subscribe();
         await drainMicrotaskQueue();
 
-        expect(sendRequestMock.requestMessage!.getDestination()).toEqual(SolclientFactory.createDurableQueueDestination('queue'));
+        expect(sendRequestFixture.requestMessage!.getDestination()).toEqual(SolclientFactory.createDurableQueueDestination('queue'));
       });
     });
 
@@ -2060,34 +2117,36 @@ describe('SolaceMessageClient', () => {
 
     describe('SolaceMessageClientModule.forRoot(CONFIG)', () => {
       it('should support configuring a "one-time" access token', async () => {
+        const sessionFixture = new SessionFixture();
         TestBed.configureTestingModule({
-          providers: [
-            {provide: SolaceSessionProvider, useValue: sessionProvider},
-          ],
           imports: [
             SolaceMessageClientModule.forRoot({
-              url: 'url:forRoot',
-              vpnName: 'vpn:forRoot',
+              url: 'url',
+              vpnName: 'vpn',
               authenticationScheme: AuthenticationScheme.OAUTH2,
               accessToken: 'one-time-access-token',
             }),
           ],
+          providers: [
+            provideSession(sessionFixture),
+          ],
         });
 
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+        await sessionFixture.simulateEvent(SessionEventCode.UP_NOTICE);
         await expectAsync(solaceMessageClient.session).toBeResolved();
 
         // expect "solclientjs" to be initialized with the "one-time" access time
-        expect(sessionProvider.provide).toHaveBeenCalledWith(jasmine.objectContaining({
+        expect(sessionFixture.sessionProvider.provide).toHaveBeenCalledWith(jasmine.objectContaining({
           authenticationScheme: AuthenticationScheme.OAUTH2,
           accessToken: 'one-time-access-token',
         }));
-        expect(session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
+        expect(sessionFixture.session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
         expect(console.warn).toHaveBeenCalledWith(jasmine.stringMatching(/\[AccessTokenProviderCompletedWarning]/));
       });
 
       it('should inject the access token into the Solace session', async () => {
+        const sessionFixture = new SessionFixture();
         const accessToken$ = new Subject<string>();
 
         @Injectable({providedIn: 'root'})
@@ -2098,71 +2157,72 @@ describe('SolaceMessageClient', () => {
         }
 
         TestBed.configureTestingModule({
-          providers: [
-            {provide: SolaceSessionProvider, useValue: sessionProvider},
-          ],
           imports: [
             SolaceMessageClientModule.forRoot({
-              url: 'url:forRoot',
-              vpnName: 'vpn:forRoot',
+              url: 'url',
+              vpnName: 'vpn',
               authenticationScheme: AuthenticationScheme.OAUTH2,
               accessToken: TestAccessTokenProvider,
             }),
+          ],
+          providers: [
+            provideSession(sessionFixture),
           ],
         });
 
         // WHEN injected the message client
         TestBed.inject(SolaceMessageClient);
         // THEN expect "solclientjs" not to be initialized yet, but only after having emitted the access token
-        expect(sessionProvider.provide).toHaveBeenCalledTimes(0);
-        expect(session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
+        expect(sessionFixture.sessionProvider.provide).toHaveBeenCalledTimes(0);
+        expect(sessionFixture.session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
 
         // WHEN emitted the initial access token
         accessToken$.next('access-token-1');
         await drainMicrotaskQueue();
         // THEN
         // expect "solclientjs" to be initialized with the "one-time" access time
-        expect(sessionProvider.provide).toHaveBeenCalledWith(jasmine.objectContaining({
+        expect(sessionFixture.sessionProvider.provide).toHaveBeenCalledWith(jasmine.objectContaining({
           authenticationScheme: AuthenticationScheme.OAUTH2,
           accessToken: 'access-token-1',
         }));
         // expect the access token not to be updated
-        expect(session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
+        expect(sessionFixture.session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
 
-        sessionProvider.provide.calls.reset();
-        session.updateAuthenticationOnReconnect.calls.reset();
+        sessionFixture.sessionProvider.provide.calls.reset();
+        sessionFixture.session.updateAuthenticationOnReconnect.calls.reset();
 
         // WHEN emitted a renewed access token
         accessToken$.next('access-token-2');
         // THEN
         // expect "solclientjs" not to be initialized anew
-        expect(sessionProvider.provide).toHaveBeenCalledTimes(0);
+        expect(sessionFixture.sessionProvider.provide).toHaveBeenCalledTimes(0);
         // expect the access token to be updated
-        expect(session.updateAuthenticationOnReconnect).toHaveBeenCalledWith(jasmine.objectContaining({accessToken: 'access-token-2'}));
+        expect(sessionFixture.session.updateAuthenticationOnReconnect).toHaveBeenCalledWith(jasmine.objectContaining({accessToken: 'access-token-2'}));
 
-        sessionProvider.provide.calls.reset();
-        session.updateAuthenticationOnReconnect.calls.reset();
+        sessionFixture.sessionProvider.provide.calls.reset();
+        sessionFixture.session.updateAuthenticationOnReconnect.calls.reset();
 
         // WHEN emitted a renewed access token
         accessToken$.next('access-token-3');
         // THEN
         // expect "solclientjs" not to be initialized anew
-        expect(sessionProvider.provide).toHaveBeenCalledTimes(0);
+        expect(sessionFixture.sessionProvider.provide).toHaveBeenCalledTimes(0);
         // expect the access token to be updated
-        expect(session.updateAuthenticationOnReconnect).toHaveBeenCalledWith(jasmine.objectContaining({accessToken: 'access-token-3'}));
+        expect(sessionFixture.session.updateAuthenticationOnReconnect).toHaveBeenCalledWith(jasmine.objectContaining({accessToken: 'access-token-3'}));
       });
 
       it('should error if not configured an access token or an `OAuthAccessTokenProvider` [NullAccessTokenConfigError]', async () => {
+        const sessionFixture = new SessionFixture();
         TestBed.configureTestingModule({
-          providers: [
-            {provide: SolaceSessionProvider, useValue: sessionProvider},
-          ],
           imports: [
             SolaceMessageClientModule.forRoot({
-              url: 'url:forRoot',
-              vpnName: 'vpn:forRoot',
+              url: 'url',
+              vpnName: 'vpn',
               authenticationScheme: AuthenticationScheme.OAUTH2,
             }),
+          ],
+          providers: [
+            provideSession(sessionFixture),
           ],
         });
 
@@ -2170,8 +2230,8 @@ describe('SolaceMessageClient', () => {
         await drainMicrotaskQueue();
 
         expect(console.error).toHaveBeenCalledWith(jasmine.stringMatching(/\[SolaceMessageClient]/), jasmine.stringMatching(/\[NullAccessTokenConfigError]/));
-        expect(sessionProvider.provide).toHaveBeenCalledTimes(0);
-        expect(session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
+        expect(TestBed.inject(SolaceSessionProvider).provide).toHaveBeenCalledTimes(0);
+        expect(sessionFixture.session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
       });
 
       it('should error if forgotten to register `OAuthAccessTokenProvider` as Angular provider [NullAccessTokenProviderError]', async () => {
@@ -2183,17 +2243,18 @@ describe('SolaceMessageClient', () => {
           }
         }
 
+        const sessionFixture = new SessionFixture();
         TestBed.configureTestingModule({
-          providers: [
-            {provide: SolaceSessionProvider, useValue: sessionProvider},
-          ],
           imports: [
             SolaceMessageClientModule.forRoot({
-              url: 'url:forRoot',
-              vpnName: 'vpn:forRoot',
+              url: 'url',
+              vpnName: 'vpn',
               authenticationScheme: AuthenticationScheme.OAUTH2,
               accessToken: TestAccessTokenProvider,
             }),
+          ],
+          providers: [
+            provideSession(sessionFixture),
           ],
         });
 
@@ -2201,8 +2262,8 @@ describe('SolaceMessageClient', () => {
         await drainMicrotaskQueue();
 
         expect(console.error).toHaveBeenCalledWith(jasmine.stringMatching(/\[SolaceMessageClient]/), jasmine.stringMatching(/\[NullAccessTokenProviderError]/));
-        expect(sessionProvider.provide).toHaveBeenCalledTimes(0);
-        expect(session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
+        expect(sessionFixture.sessionProvider.provide).toHaveBeenCalledTimes(0);
+        expect(sessionFixture.session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
       });
 
       it('should error when emitting `null` as the initial access token [NullAccessTokenError]', async () => {
@@ -2213,17 +2274,18 @@ describe('SolaceMessageClient', () => {
           }
         }
 
+        const sessionFixture = new SessionFixture();
         TestBed.configureTestingModule({
-          providers: [
-            {provide: SolaceSessionProvider, useValue: sessionProvider},
-          ],
           imports: [
             SolaceMessageClientModule.forRoot({
-              url: 'url:forRoot',
-              vpnName: 'vpn:forRoot',
+              url: 'url',
+              vpnName: 'vpn',
               authenticationScheme: AuthenticationScheme.OAUTH2,
               accessToken: TestAccessTokenProvider,
             }),
+          ],
+          providers: [
+            provideSession(sessionFixture),
           ],
         });
 
@@ -2231,8 +2293,8 @@ describe('SolaceMessageClient', () => {
         await drainMicrotaskQueue();
 
         expect(console.error).toHaveBeenCalledWith(jasmine.stringMatching(/\[SolaceMessageClient]/), jasmine.stringMatching(/\[NullAccessTokenError]/));
-        expect(sessionProvider.provide).toHaveBeenCalledTimes(0);
-        expect(session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
+        expect(sessionFixture.sessionProvider.provide).toHaveBeenCalledTimes(0);
+        expect(sessionFixture.session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
       });
 
       it('should error when emitting `undefined` as the initial access token [NullAccessTokenError]', async () => {
@@ -2243,17 +2305,18 @@ describe('SolaceMessageClient', () => {
           }
         }
 
+        const sessionFixture = new SessionFixture();
         TestBed.configureTestingModule({
-          providers: [
-            {provide: SolaceSessionProvider, useValue: sessionProvider},
-          ],
           imports: [
             SolaceMessageClientModule.forRoot({
-              url: 'url:forRoot',
-              vpnName: 'vpn:forRoot',
+              url: 'url',
+              vpnName: 'vpn',
               authenticationScheme: AuthenticationScheme.OAUTH2,
               accessToken: TestAccessTokenProvider,
             }),
+          ],
+          providers: [
+            provideSession(sessionFixture),
           ],
         });
 
@@ -2261,8 +2324,8 @@ describe('SolaceMessageClient', () => {
         await drainMicrotaskQueue();
 
         expect(console.error).toHaveBeenCalledWith(jasmine.stringMatching(/\[SolaceMessageClient]/), jasmine.stringMatching(/\[NullAccessTokenError]/));
-        expect(sessionProvider.provide).toHaveBeenCalledTimes(0);
-        expect(session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
+        expect(sessionFixture.sessionProvider.provide).toHaveBeenCalledTimes(0);
+        expect(sessionFixture.session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
       });
 
       it('should error when the access token Observable completes without having having emitted an access token [EmptyAccessTokenError]', async () => {
@@ -2273,17 +2336,18 @@ describe('SolaceMessageClient', () => {
           }
         }
 
+        const sessionFixture = new SessionFixture();
         TestBed.configureTestingModule({
-          providers: [
-            {provide: SolaceSessionProvider, useValue: sessionProvider},
-          ],
           imports: [
             SolaceMessageClientModule.forRoot({
-              url: 'url:forRoot',
-              vpnName: 'vpn:forRoot',
+              url: 'url',
+              vpnName: 'vpn',
               authenticationScheme: AuthenticationScheme.OAUTH2,
               accessToken: TestAccessTokenProvider,
             }),
+          ],
+          providers: [
+            provideSession(sessionFixture),
           ],
         });
 
@@ -2291,8 +2355,8 @@ describe('SolaceMessageClient', () => {
         await drainMicrotaskQueue();
 
         expect(console.error).toHaveBeenCalledWith(jasmine.stringMatching(/\[SolaceMessageClient]/), jasmine.stringMatching(/\[EmptyAccessTokenError]/));
-        expect(sessionProvider.provide).toHaveBeenCalledTimes(0);
-        expect(session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
+        expect(sessionFixture.sessionProvider.provide).toHaveBeenCalledTimes(0);
+        expect(sessionFixture.session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
       });
 
       it('should warn when the access token Observable completes [AccessTokenProviderCompletedWarning] (1/2)', async () => {
@@ -2303,22 +2367,23 @@ describe('SolaceMessageClient', () => {
           }
         }
 
+        const sessionFixture = new SessionFixture();
         TestBed.configureTestingModule({
-          providers: [
-            {provide: SolaceSessionProvider, useValue: sessionProvider},
-          ],
           imports: [
             SolaceMessageClientModule.forRoot({
-              url: 'url:forRoot',
-              vpnName: 'vpn:forRoot',
+              url: 'url',
+              vpnName: 'vpn',
               authenticationScheme: AuthenticationScheme.OAUTH2,
               accessToken: TestAccessTokenProvider,
             }),
           ],
+          providers: [
+            provideSession(sessionFixture),
+          ],
         });
 
         TestBed.inject(SolaceMessageClient);
-        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+        await sessionFixture.simulateEvent(SessionEventCode.UP_NOTICE);
 
         expect(console.warn).toHaveBeenCalledWith(jasmine.stringMatching(/\[AccessTokenProviderCompletedWarning]/));
       });
@@ -2331,27 +2396,29 @@ describe('SolaceMessageClient', () => {
           }
         }
 
+        const sessionFixture = new SessionFixture();
         TestBed.configureTestingModule({
-          providers: [
-            {provide: SolaceSessionProvider, useValue: sessionProvider},
-          ],
           imports: [
             SolaceMessageClientModule.forRoot({
-              url: 'url:forRoot',
-              vpnName: 'vpn:forRoot',
+              url: 'url',
+              vpnName: 'vpn',
               authenticationScheme: AuthenticationScheme.OAUTH2,
               accessToken: TestAccessTokenProvider,
             }),
           ],
+          providers: [
+            provideSession(sessionFixture),
+          ],
         });
 
         TestBed.inject(SolaceMessageClient);
-        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+        await sessionFixture.simulateEvent(SessionEventCode.UP_NOTICE);
 
         expect(console.warn).toHaveBeenCalledWith(jasmine.stringMatching(/\[AccessTokenProviderCompletedWarning]/));
       });
 
       it('should error when emitting `null` as access token [NullAccessTokenError]', async () => {
+        const sessionFixture = new SessionFixture();
         const accessToken$ = new BehaviorSubject<string>('access-token-1');
 
         @Injectable({providedIn: 'root'})
@@ -2362,21 +2429,21 @@ describe('SolaceMessageClient', () => {
         }
 
         TestBed.configureTestingModule({
-          providers: [
-            {provide: SolaceSessionProvider, useValue: sessionProvider},
-          ],
           imports: [
             SolaceMessageClientModule.forRoot({
-              url: 'url:forRoot',
-              vpnName: 'vpn:forRoot',
+              url: 'url',
+              vpnName: 'vpn',
               authenticationScheme: AuthenticationScheme.OAUTH2,
               accessToken: TestAccessTokenProvider,
             }),
           ],
+          providers: [
+            provideSession(sessionFixture),
+          ],
         });
 
         TestBed.inject(SolaceMessageClient);
-        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+        await sessionFixture.simulateEvent(SessionEventCode.UP_NOTICE);
 
         accessToken$.next('access-token-2');
         accessToken$.next('access-token-3');
@@ -2389,37 +2456,39 @@ describe('SolaceMessageClient', () => {
 
     describe('SolaceMessageClientModule.forRoot() [manual connect]', () => {
       it('should support configuring a "one-time" access token', async () => {
+        const sessionFixture = new SessionFixture();
         TestBed.configureTestingModule({
-          providers: [
-            {provide: SolaceSessionProvider, useValue: sessionProvider},
-          ],
           imports: [
             SolaceMessageClientModule.forRoot(),
+          ],
+          providers: [
+            provideSession(sessionFixture),
           ],
         });
 
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
 
         const connected = solaceMessageClient.connect({
-          url: 'url:forRoot',
-          vpnName: 'vpn:forRoot',
+          url: 'url',
+          vpnName: 'vpn',
           authenticationScheme: AuthenticationScheme.OAUTH2,
           accessToken: 'one-time-access-token',
         });
 
-        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+        await sessionFixture.simulateEvent(SessionEventCode.UP_NOTICE);
         await expectAsync(connected).toBeResolved();
 
         // expect "solclientjs" to be initialized with the "one-time" access time
-        expect(sessionProvider.provide).toHaveBeenCalledWith(jasmine.objectContaining({
+        expect(sessionFixture.sessionProvider.provide).toHaveBeenCalledWith(jasmine.objectContaining({
           authenticationScheme: AuthenticationScheme.OAUTH2,
           accessToken: 'one-time-access-token',
         }));
-        expect(session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
+        expect(sessionFixture.session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
         expect(console.warn).toHaveBeenCalledWith(jasmine.stringMatching(/\[AccessTokenProviderCompletedWarning]/));
       });
 
       it('should inject the access token into the Solace session', async () => {
+        const sessionFixture = new SessionFixture();
         const accessToken$ = new Subject<string>();
 
         @Injectable({providedIn: 'root'})
@@ -2430,99 +2499,100 @@ describe('SolaceMessageClient', () => {
         }
 
         TestBed.configureTestingModule({
-          providers: [
-            {provide: SolaceSessionProvider, useValue: sessionProvider},
-          ],
           imports: [
             SolaceMessageClientModule.forRoot(),
+          ],
+          providers: [
+            provideSession(sessionFixture),
           ],
         });
 
         // WHEN injected the message client
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
         // THEN expect "solclientjs" not to be initialized yet, but only after having emitted the access token
-        expect(sessionProvider.provide).toHaveBeenCalledTimes(0);
-        expect(session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
+        expect(sessionFixture.sessionProvider.provide).toHaveBeenCalledTimes(0);
+        expect(sessionFixture.session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
 
         // WHEN connected to the Solace broker
         const connected = solaceMessageClient.connect({
-          url: 'url:forRoot',
-          vpnName: 'vpn:forRoot',
+          url: 'url',
+          vpnName: 'vpn',
           authenticationScheme: AuthenticationScheme.OAUTH2,
           accessToken: TestAccessTokenProvider,
         });
         await drainMicrotaskQueue();
 
         // THEN expect "solclientjs" not to be initialized yet, but only after having emitted the access token
-        expect(sessionProvider.provide).toHaveBeenCalledTimes(0);
-        expect(session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
+        expect(sessionFixture.sessionProvider.provide).toHaveBeenCalledTimes(0);
+        expect(sessionFixture.session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
 
         // WHEN emitted the initial access token
         accessToken$.next('access-token-1');
-        await drainMicrotaskQueue();
         // THEN expect "solclientjs" to be connected to the broker
-        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+        await sessionFixture.simulateEvent(SessionEventCode.UP_NOTICE);
         await connected;
         // expect "solclientjs" to be initialized with the "one-time" access time
-        expect(sessionProvider.provide).toHaveBeenCalledWith(jasmine.objectContaining({
+        expect(sessionFixture.sessionProvider.provide).toHaveBeenCalledWith(jasmine.objectContaining({
           authenticationScheme: AuthenticationScheme.OAUTH2,
           accessToken: 'access-token-1',
         }));
         // expect the access token not to be updated
-        expect(session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
+        expect(sessionFixture.session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
 
-        sessionProvider.provide.calls.reset();
-        session.updateAuthenticationOnReconnect.calls.reset();
+        sessionFixture.sessionProvider.provide.calls.reset();
+        sessionFixture.session.updateAuthenticationOnReconnect.calls.reset();
 
         // WHEN emitted a renewed access token
         accessToken$.next('access-token-2');
         // THEN
         // expect "solclientjs" not to be initialized anew
-        expect(sessionProvider.provide).toHaveBeenCalledTimes(0);
+        expect(sessionFixture.sessionProvider.provide).toHaveBeenCalledTimes(0);
         // expect the access token to be updated
-        expect(session.updateAuthenticationOnReconnect).toHaveBeenCalledWith(jasmine.objectContaining({accessToken: 'access-token-2'}));
+        expect(sessionFixture.session.updateAuthenticationOnReconnect).toHaveBeenCalledWith(jasmine.objectContaining({accessToken: 'access-token-2'}));
 
-        sessionProvider.provide.calls.reset();
-        session.updateAuthenticationOnReconnect.calls.reset();
+        sessionFixture.sessionProvider.provide.calls.reset();
+        sessionFixture.session.updateAuthenticationOnReconnect.calls.reset();
 
         // WHEN emitted a renewed access token
         accessToken$.next('access-token-3');
         // THEN
         // expect "solclientjs" not to be initialized anew
-        expect(sessionProvider.provide).toHaveBeenCalledTimes(0);
+        expect(sessionFixture.sessionProvider.provide).toHaveBeenCalledTimes(0);
         // expect the access token to be updated
-        expect(session.updateAuthenticationOnReconnect).toHaveBeenCalledWith(jasmine.objectContaining({accessToken: 'access-token-3'}));
+        expect(sessionFixture.session.updateAuthenticationOnReconnect).toHaveBeenCalledWith(jasmine.objectContaining({accessToken: 'access-token-3'}));
       });
 
       it('should error if not configured an access token or an `OAuthAccessTokenProvider` [NullAccessTokenConfigError]', async () => {
+        const sessionFixture = new SessionFixture();
         TestBed.configureTestingModule({
-          providers: [
-            {provide: SolaceSessionProvider, useValue: sessionProvider},
-          ],
           imports: [
             SolaceMessageClientModule.forRoot(),
+          ],
+          providers: [
+            provideSession(sessionFixture),
           ],
         });
 
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
         const connected = solaceMessageClient.connect({
-          url: 'url:forRoot',
-          vpnName: 'vpn:forRoot',
+          url: 'url',
+          vpnName: 'vpn',
           authenticationScheme: AuthenticationScheme.OAUTH2,
         });
 
         await expectAsync(connected).toBeRejectedWithError(/\[NullAccessTokenConfigError]/);
-        expect(sessionProvider.provide).toHaveBeenCalledTimes(0);
-        expect(session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
+        expect(sessionFixture.sessionProvider.provide).toHaveBeenCalledTimes(0);
+        expect(sessionFixture.session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
       });
 
       it('should error if forgotten to register `OAuthAccessTokenProvider` as Angular provider [NullAccessTokenProviderError]', async () => {
+        const sessionFixture = new SessionFixture();
         TestBed.configureTestingModule({
-          providers: [
-            {provide: SolaceSessionProvider, useValue: sessionProvider},
-          ],
           imports: [
             SolaceMessageClientModule.forRoot(),
+          ],
+          providers: [
+            provideSession(sessionFixture),
           ],
         });
 
@@ -2536,24 +2606,25 @@ describe('SolaceMessageClient', () => {
 
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
         const connected = solaceMessageClient.connect({
-          url: 'url:forRoot',
-          vpnName: 'vpn:forRoot',
+          url: 'url',
+          vpnName: 'vpn',
           authenticationScheme: AuthenticationScheme.OAUTH2,
           accessToken: TestAccessTokenProvider,
         });
 
         await expectAsync(connected).toBeRejectedWithError(/\[NullAccessTokenProviderError]/);
-        expect(sessionProvider.provide).toHaveBeenCalledTimes(0);
-        expect(session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
+        expect(sessionFixture.sessionProvider.provide).toHaveBeenCalledTimes(0);
+        expect(sessionFixture.session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
       });
 
       it('should error when emitting `null` as the initial access token [NullAccessTokenError]', async () => {
+        const sessionFixture = new SessionFixture();
         TestBed.configureTestingModule({
-          providers: [
-            {provide: SolaceSessionProvider, useValue: sessionProvider},
-          ],
           imports: [
             SolaceMessageClientModule.forRoot(),
+          ],
+          providers: [
+            provideSession(sessionFixture),
           ],
         });
 
@@ -2566,24 +2637,25 @@ describe('SolaceMessageClient', () => {
 
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
         const connected = solaceMessageClient.connect({
-          url: 'url:forRoot',
-          vpnName: 'vpn:forRoot',
+          url: 'url',
+          vpnName: 'vpn',
           authenticationScheme: AuthenticationScheme.OAUTH2,
           accessToken: TestAccessTokenProvider,
         });
 
         await expectAsync(connected).toBeRejectedWithError(/\[NullAccessTokenError]/);
-        expect(sessionProvider.provide).toHaveBeenCalledTimes(0);
-        expect(session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
+        expect(sessionFixture.sessionProvider.provide).toHaveBeenCalledTimes(0);
+        expect(sessionFixture.session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
       });
 
       it('should error when emitting `undefined` as the initial access token [NullAccessTokenError]', async () => {
+        const sessionFixture = new SessionFixture();
         TestBed.configureTestingModule({
-          providers: [
-            {provide: SolaceSessionProvider, useValue: sessionProvider},
-          ],
           imports: [
             SolaceMessageClientModule.forRoot(),
+          ],
+          providers: [
+            provideSession(sessionFixture),
           ],
         });
 
@@ -2596,24 +2668,25 @@ describe('SolaceMessageClient', () => {
 
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
         const connected = solaceMessageClient.connect({
-          url: 'url:forRoot',
-          vpnName: 'vpn:forRoot',
+          url: 'url',
+          vpnName: 'vpn',
           authenticationScheme: AuthenticationScheme.OAUTH2,
           accessToken: TestAccessTokenProvider,
         });
 
         await expectAsync(connected).toBeRejectedWithError(/\[NullAccessTokenError]/);
-        expect(sessionProvider.provide).toHaveBeenCalledTimes(0);
-        expect(session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
+        expect(sessionFixture.sessionProvider.provide).toHaveBeenCalledTimes(0);
+        expect(sessionFixture.session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
       });
 
       it('should error when the access token Observable completes without having emitted an access token [EmptyAccessTokenError]', async () => {
+        const sessionFixture = new SessionFixture();
         TestBed.configureTestingModule({
-          providers: [
-            {provide: SolaceSessionProvider, useValue: sessionProvider},
-          ],
           imports: [
             SolaceMessageClientModule.forRoot(),
+          ],
+          providers: [
+            provideSession(sessionFixture),
           ],
         });
 
@@ -2626,24 +2699,25 @@ describe('SolaceMessageClient', () => {
 
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
         const connected = solaceMessageClient.connect({
-          url: 'url:forRoot',
-          vpnName: 'vpn:forRoot',
+          url: 'url',
+          vpnName: 'vpn',
           authenticationScheme: AuthenticationScheme.OAUTH2,
           accessToken: TestAccessTokenProvider,
         });
 
         await expectAsync(connected).toBeRejectedWithError(/\[EmptyAccessTokenError]/);
-        expect(sessionProvider.provide).toHaveBeenCalledTimes(0);
-        expect(session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
+        expect(sessionFixture.sessionProvider.provide).toHaveBeenCalledTimes(0);
+        expect(sessionFixture.session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
       });
 
       it('should warn when the access token Observable completes [AccessTokenProviderCompletedWarning] (1/2)', async () => {
+        const sessionFixture = new SessionFixture();
         TestBed.configureTestingModule({
-          providers: [
-            {provide: SolaceSessionProvider, useValue: sessionProvider},
-          ],
           imports: [
             SolaceMessageClientModule.forRoot(),
+          ],
+          providers: [
+            provideSession(sessionFixture),
           ],
         });
 
@@ -2656,24 +2730,25 @@ describe('SolaceMessageClient', () => {
 
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
         const connected = solaceMessageClient.connect({
-          url: 'url:forRoot',
-          vpnName: 'vpn:forRoot',
+          url: 'url',
+          vpnName: 'vpn',
           authenticationScheme: AuthenticationScheme.OAUTH2,
           accessToken: TestAccessTokenProvider,
         });
-        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+        await sessionFixture.simulateEvent(SessionEventCode.UP_NOTICE);
         await connected;
 
         expect(console.warn).toHaveBeenCalledWith(jasmine.stringMatching(/\[AccessTokenProviderCompletedWarning]/));
       });
 
       it('should warn when the access token Observable completes [AccessTokenProviderCompletedWarning] (2/2)', async () => {
+        const sessionFixture = new SessionFixture();
         TestBed.configureTestingModule({
-          providers: [
-            {provide: SolaceSessionProvider, useValue: sessionProvider},
-          ],
           imports: [
             SolaceMessageClientModule.forRoot(),
+          ],
+          providers: [
+            provideSession(sessionFixture),
           ],
         });
 
@@ -2686,24 +2761,25 @@ describe('SolaceMessageClient', () => {
 
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
         const connected = solaceMessageClient.connect({
-          url: 'url:forRoot',
-          vpnName: 'vpn:forRoot',
+          url: 'url',
+          vpnName: 'vpn',
           authenticationScheme: AuthenticationScheme.OAUTH2,
           accessToken: TestAccessTokenProvider,
         });
-        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+        await sessionFixture.simulateEvent(SessionEventCode.UP_NOTICE);
         await connected;
 
         expect(console.warn).toHaveBeenCalledWith(jasmine.stringMatching(/\[AccessTokenProviderCompletedWarning]/));
       });
 
       it('should error when emitting `null` as access token [NullAccessTokenError]', async () => {
+        const sessionFixture = new SessionFixture();
         TestBed.configureTestingModule({
-          providers: [
-            {provide: SolaceSessionProvider, useValue: sessionProvider},
-          ],
           imports: [
             SolaceMessageClientModule.forRoot(),
+          ],
+          providers: [
+            provideSession(sessionFixture),
           ],
         });
 
@@ -2718,12 +2794,12 @@ describe('SolaceMessageClient', () => {
 
         const solaceMessageClient = TestBed.inject(SolaceMessageClient);
         const connected = solaceMessageClient.connect({
-          url: 'url:forRoot',
-          vpnName: 'vpn:forRoot',
+          url: 'url',
+          vpnName: 'vpn',
           authenticationScheme: AuthenticationScheme.OAUTH2,
           accessToken: TestAccessTokenProvider,
         });
-        await simulateLifecycleEvent(SessionEventCode.UP_NOTICE);
+        await sessionFixture.simulateEvent(SessionEventCode.UP_NOTICE);
         await connected;
 
         accessToken$.next('access-token-2');
@@ -2735,337 +2811,8 @@ describe('SolaceMessageClient', () => {
       });
     });
   });
-
-  /**
-   * Simulates the Solace message broker to publish a message to the Solace session.
-   */
-  async function simulateTopicMessage(message: Message): Promise<void> {
-    const callback = sessionEventCallbacks.get(SessionEventCode.MESSAGE) as ((message: Message) => void);
-    if (!callback) {
-      throw Error(`[SpecError] No callback registered for event '${SessionEventCode.MESSAGE}'`);
-    }
-    callback(message);
-    await drainMicrotaskQueue();
-  }
-
-  /**
-   * Simulates the Solace message broker to send a message to the Solace session.
-   */
-  async function simulateLifecycleEvent(eventCode: SessionEventCode, correlationKey?: object | string): Promise<void> {
-    await drainMicrotaskQueue();
-
-    const callback = sessionEventCallbacks.get(eventCode) as (event: SessionEvent) => void;
-    if (!callback) {
-      throw Error(`[SpecError] No callback registered for event '${eventCode}'`);
-    }
-    callback(createSessionEvent(eventCode, correlationKey));
-    await drainMicrotaskQueue();
-  }
-
-  function createTopicMessage(topic: string): Message {
-    const message = SolclientFactory.createMessage();
-    message.setDestination(SolclientFactory.createTopicDestination(topic));
-    return message;
-  }
-
-  function createQueueMessage(queue: string): Message {
-    const message = SolclientFactory.createMessage();
-    message.setDestination(SolclientFactory.createDurableQueueDestination(queue));
-    return message;
-  }
-
-  /**
-   * Captures the most recent invocation to {@link Session.subscribe}.
-   */
-  function installSessionSubscribeCaptor(): SessionSubscribeCaptor {
-    const captor = new SessionSubscribeCaptor();
-    session.subscribe.and.callFake((topic: Destination, requestConfirmation: boolean, correlationKey: string | object | undefined, _requestTimeout: number) => {
-      captor.topic = topic.getName();
-      captor.correlationKey = correlationKey;
-    });
-    return captor;
-  }
-
-  /**
-   * Captures the most recent invocation to {@link Session.unsubscribe}.
-   */
-  function installSessionUnsubscribeCaptor(): SessionSubscribeCaptor {
-    const captor = new SessionSubscribeCaptor();
-    session.unsubscribe.and.callFake((topic: Destination, requestConfirmation: boolean, correlationKey: string | object | undefined, _requestTimeout: number) => {
-      captor.topic = topic.getName();
-      captor.correlationKey = correlationKey;
-    });
-    return captor;
-  }
-
-  /**
-   * Captures the most recent invocation to {@link Session.send}.
-   */
-  function installSessionSendCaptor(): SessionSendCaptor {
-    const captor = new SessionSendCaptor();
-    session.send.and.callFake((message: Message) => {
-      captor.message = message;
-      captor.destination = message.getDestination()!;
-      captor.type = message.getType();
-    });
-    return captor;
-  }
-
-  /**
-   * Installs a message consumer mock;
-   */
-  function installMessageConsumerMock(): MessageConsumerMock {
-    return new MessageConsumerMock(session);
-  }
-
-  /**
-   * Installs a queue browser mock;
-   */
-  function installQueueBrowserMock(): QueueBrowserMock {
-    return new QueueBrowserMock(session);
-  }
-
-  /**
-   * Installs a mock for sending a request.
-   */
-  function installSendRequestMock(): SendRequestMock {
-    return new SendRequestMock(session);
-  }
 });
-
-class SessionSubscribeCaptor {
-
-  public topic: string | undefined;
-  public correlationKey: string | object | undefined;
-
-  public reset(): void {
-    this.topic = undefined;
-    this.correlationKey = undefined;
-  }
-}
-
-class SessionSendCaptor {
-
-  public message: Message | undefined;
-  public destination: Destination | undefined;
-  public type: MessageType | undefined;
-
-  public resset(): void {
-    this.message = undefined;
-    this.destination = undefined;
-    this.type = undefined;
-  }
-}
 
 function extractMessage(envelope: MessageEnvelope): Message {
   return envelope.message;
-}
-
-/**
- * Waits until all microtasks currently in the microtask queue completed. When this method returns,
- * the microtask queue may still not be empty, that is, when microtasks are scheduling other microtasks.
- */
-async function drainMicrotaskQueue(): Promise<void> {
-  await new Promise(resolve => asyncScheduler.schedule(resolve));
-}
-
-class MessageConsumerMock {
-
-  private _callbacks = new Map<MessageConsumerEventName, MessageConsumerEventListener>();
-
-  public messageConsumer: jasmine.SpyObj<Omit<MessageConsumer, 'disposed'> & {disposed: boolean}>;
-  public messageConsumerProperties: MessageConsumerProperties | undefined;
-
-  constructor(session: jasmine.SpyObj<Session>) {
-    this.messageConsumer = jasmine.createSpyObj('messageConsumer', ['on', 'connect', 'disconnect', 'dispose']);
-    this.messageConsumer.disposed = false;
-
-    // Configure session to return a message consumer mock and capture the passed config
-    session.createMessageConsumer.and.callFake((messageConsumerProperties: MessageConsumerProperties): MessageConsumer => {
-      this.messageConsumerProperties = messageConsumerProperties;
-      return this.messageConsumer;
-    });
-
-    this.messageConsumer.on.and.callFake((eventName: MessageConsumerEventName, callback: MessageConsumerEventListener): MessageConsumer => {
-      this._callbacks.set(eventName, callback);
-      return this.messageConsumer;
-    });
-
-    this.installMockDefaultBehavior();
-  }
-
-  private installMockDefaultBehavior(): void {
-    // Fire 'DOWN' event when invoking 'disconnect'
-    this.messageConsumer.disconnect.and.callFake(() => this.simulateLifecycleEvent(MessageConsumerEventName.DOWN));
-
-    // Mark message consumer disposed if calling 'dispose'
-    this.messageConsumer.dispose.and.callFake(() => {
-      this.messageConsumer.disposed = true;
-    });
-  }
-
-  /**
-   * Disables automatically firing 'MessageConsumerEventName.DOWN' event when calling 'disconnect'.
-   */
-  public disableFiringDownEventOnDisconnect(): void {
-    this.messageConsumer.disconnect.and.callFake(noop);
-  }
-
-  /**
-   * Simulates the Solace message broker to send a message to the Solace message consumer.
-   */
-  public async simulateLifecycleEvent(eventName: MessageConsumerEventName, event?: OperationError | MessageConsumerEvent): Promise<void> {
-    await drainMicrotaskQueue();
-
-    const callback = this._callbacks.get(eventName);
-    if (!callback) {
-      throw Error(`[SpecError] No callback registered for event '${eventName}'`);
-    }
-    callback(event as any);
-    await drainMicrotaskQueue();
-  }
-
-  /**
-   * Simulates the Solace message broker to publish a message to the Solace message consumer.
-   */
-  public async simulateMessage(message: Message): Promise<void> {
-    const callback = this._callbacks.get(MessageConsumerEventName.MESSAGE) as (message: Message) => void;
-    if (!callback) {
-      throw Error(`[SpecError] No callback registered for event '${MessageConsumerEventName.MESSAGE}'`);
-    }
-    callback(message);
-    await drainMicrotaskQueue();
-  }
-}
-
-class QueueBrowserMock {
-
-  private _callbacks = new Map<QueueBrowserEventName, QueueBrowserEventListener>();
-
-  public queueBrowser: jasmine.SpyObj<QueueBrowser>;
-  public queueBrowserProperties: QueueBrowserProperties | undefined;
-
-  constructor(session: jasmine.SpyObj<Session>) {
-    this.queueBrowser = jasmine.createSpyObj('queueBrowser', ['on', 'connect', 'disconnect', 'start', 'stop']);
-
-    // Configure session to return a queue browser mock and capture the passed config
-    session.createQueueBrowser.and.callFake((queueBrowserProperties: QueueBrowserProperties): QueueBrowser => {
-      this.queueBrowserProperties = queueBrowserProperties;
-      return this.queueBrowser;
-    });
-
-    // Capture Solace lifecycle hooks
-    this.queueBrowser.on.and.callFake((eventName: QueueBrowserEventName, callback: QueueBrowserEventListener) => {
-      this._callbacks.set(eventName, callback);
-      return this.queueBrowser;
-    });
-
-    this.installMockDefaultBehavior();
-  }
-
-  private installMockDefaultBehavior(): void {
-    // Fire 'DOWN' event when invoking 'disconnect'
-    this.queueBrowser.disconnect.and.callFake(() => {
-      this.simulateLifecycleEvent(QueueBrowserEventName.DOWN);
-      this.simulateLifecycleEvent(QueueBrowserEventName.DISPOSED);
-    });
-  }
-
-  /**
-   * Simulates the Solace message broker to send a message to the Solace queue browser.
-   */
-  public async simulateLifecycleEvent(eventName: QueueBrowserEventName, error?: OperationError): Promise<void> {
-    await drainMicrotaskQueue();
-
-    const callback = this._callbacks.get(eventName);
-    if (!callback) {
-      throw Error(`[SpecError] No callback registered for event '${eventName}'`);
-    }
-    else if (error instanceof OperationError) {
-      ((callback) as (error: OperationError) => void)(error);
-    }
-    else {
-      ((callback) as () => void)();
-    }
-    await drainMicrotaskQueue();
-  }
-
-  /**
-   * Simulates the Solace message broker to publish a message to the Solace queue browser.
-   */
-  public async simulateMessage(message: Message): Promise<void> {
-    const callback = this._callbacks.get(QueueBrowserEventName.MESSAGE) as (message: Message) => void;
-    if (!callback) {
-      throw Error(`[SpecError] No callback registered for event '${QueueBrowserEventName.MESSAGE}'`);
-    }
-    callback(message);
-    await drainMicrotaskQueue();
-  }
-}
-
-class SendRequestMock {
-
-  private _onResponseCallback?: (session: Session, message: Message, userObject: object) => void;
-  private _onErrorCallback?: (session: Session, error: RequestError, userObject: object) => void;
-
-  public throwErrorOnSend = false;
-  public requestTimeout: number | undefined;
-  public requestMessage: Message | undefined;
-
-  constructor(private _session: jasmine.SpyObj<Session>) {
-    this._session.sendRequest.and.callFake((request, timeout, onResponseCallback, onErrorCallback) => {
-      this._onResponseCallback = onResponseCallback;
-      this._onErrorCallback = onErrorCallback;
-      this.requestMessage = request;
-      this.requestTimeout = timeout;
-      if (this.throwErrorOnSend) {
-        throw Error('Error while sending the request');
-      }
-    });
-  }
-
-  /**
-   * Simulates the Solace message broker to send a response.
-   */
-  public async simulateReply(message: Message): Promise<void> {
-    if (!this._onResponseCallback) {
-      throw Error('[SpecError] No \'replyReceivedCBFunction\' registered');
-    }
-
-    this._onResponseCallback(this._session, message, undefined!);
-  }
-
-  /**
-   * Simulates the Solace message broker to send an error.
-   */
-  public async simulateError(error: RequestError): Promise<void> {
-    if (!this._onErrorCallback) {
-      throw Error('[SpecError] No \'requestFailedCBFunction\' registered');
-    }
-
-    this._onErrorCallback(this._session, error, undefined!);
-  }
-}
-
-function createSessionEvent(sessionEventCode: SessionEventCode, correlationKey?: object | string): SessionEvent {
-  // @ts-expect-error: constructor of {@link SessionEvent} is protected.
-  return new SessionEvent(
-    [] /* superclassArgs */,
-    sessionEventCode,
-    null /* infoStr */,
-    null /* responseCode */,
-    null /* errorSubcode */,
-    correlationKey,
-    null/* reason */,
-  );
-}
-
-function createOperationError(): OperationError {
-  // @ts-expect-error: constructor of {@link OperationError} is protected.
-  return new OperationError();
-}
-
-function createRequestError(): RequestError {
-  // @ts-expect-error: constructor of {@link RequestError} is protected.
-  return new RequestError();
 }
