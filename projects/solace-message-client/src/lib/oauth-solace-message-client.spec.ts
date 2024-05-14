@@ -1,21 +1,17 @@
 import {SolaceMessageClient} from './solace-message-client';
 import {provideSolaceMessageClient} from './solace-message-client.provider';
-import {AuthenticationScheme, SessionEventCode, SolclientFactory, SolclientFactoryProfiles, SolclientFactoryProperties} from 'solclientjs';
+import {AuthenticationScheme, SessionEventCode} from 'solclientjs';
 import {SessionFixture} from './testing/session.fixture';
 import {provideSession} from './testing/session-provider';
 import {TestBed} from '@angular/core/testing';
 import {Observable} from 'rxjs';
 import {inject, Injectable, InjectionToken, NgZone} from '@angular/core';
 import {OAuthAccessTokenProvider} from './oauth-access-token-provider';
-import {drainMicrotaskQueue} from './testing/testing.utils';
+import {drainMicrotaskQueue, initSolclientFactory} from './testing/testing.utils';
 
 describe('OAuth 2.0', () => {
 
-  beforeEach(() => {
-    const factoryProperties = new SolclientFactoryProperties();
-    factoryProperties.profile = SolclientFactoryProfiles.version10;
-    SolclientFactory.init(factoryProperties);
-  });
+  beforeEach(() => initSolclientFactory());
 
   beforeEach(() => {
     spyOn(console, 'warn');

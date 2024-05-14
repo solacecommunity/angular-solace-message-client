@@ -1,20 +1,17 @@
 import {SolaceMessageClient} from './solace-message-client';
 import {TestBed} from '@angular/core/testing';
-import {DestinationType, SessionEventCode, SolclientFactory, SolclientFactoryProfiles, SolclientFactoryProperties} from 'solclientjs';
+import {DestinationType, SessionEventCode} from 'solclientjs';
 import {SessionFixture} from './testing/session.fixture';
 import {provideSession} from './testing/session-provider';
 import {provideSolaceMessageClient} from './solace-message-client.provider';
 import {inject, InjectionToken, NgZone} from '@angular/core';
 import {of, Subject} from 'rxjs';
-import {SolaceMessageClientConfig} from '@solace-community/angular-solace-message-client';
+import {initSolclientFactory} from './testing/testing.utils';
+import {SolaceMessageClientConfig} from './solace-message-client.config';
 
 describe('SolaceMessageClient Configuration', () => {
 
-  beforeEach(() => {
-    const factoryProperties = new SolclientFactoryProperties();
-    factoryProperties.profile = SolclientFactoryProfiles.version10;
-    SolclientFactory.init(factoryProperties);
-  });
+  beforeEach(() => initSolclientFactory());
 
   it('should create Session Promise in constructor to enable interaction before loaded the config', async () => {
     const asyncConfig$ = new Subject<SolaceMessageClientConfig>();

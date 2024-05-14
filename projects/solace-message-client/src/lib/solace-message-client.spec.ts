@@ -2,11 +2,11 @@ import {mapToBinary, mapToText, MessageEnvelope, Params, PublishOptions, SolaceM
 import {ObserveCaptor} from '@scion/toolkit/testing';
 import {TestBed} from '@angular/core/testing';
 import {Component, Injectable, NgZone} from '@angular/core';
-import {AuthenticationScheme, DestinationType, Message, MessageConsumerEventName, MessageConsumerProperties, MessageDeliveryModeType, MessageType, QueueBrowserEventName, QueueBrowserProperties, QueueDescriptor, QueueType, SDTField, SDTFieldType, SDTMapContainer, Session, SessionEventCode, SolclientFactory, SolclientFactoryProfiles, SolclientFactoryProperties} from 'solclientjs';
+import {AuthenticationScheme, DestinationType, Message, MessageConsumerEventName, MessageConsumerProperties, MessageDeliveryModeType, MessageType, QueueBrowserEventName, QueueBrowserProperties, QueueDescriptor, QueueType, SDTField, SDTFieldType, SDTMapContainer, Session, SessionEventCode, SolclientFactory} from 'solclientjs';
 import {BehaviorSubject, EMPTY, NEVER, Observable, of, Subject} from 'rxjs';
 import {UUID} from '@scion/toolkit/uuid';
 import {SessionFixture} from './testing/session.fixture';
-import {createOperationError, createQueueMessage, createRequestError, createTopicMessage, drainMicrotaskQueue} from './testing/testing.utils';
+import {createOperationError, createQueueMessage, createRequestError, createTopicMessage, drainMicrotaskQueue, initSolclientFactory} from './testing/testing.utils';
 import {provideSession} from './testing/session-provider';
 import {SolaceSessionProvider} from './solace-session-provider';
 import {OAuthAccessTokenProvider} from './oauth-access-token-provider';
@@ -14,11 +14,7 @@ import {provideSolaceMessageClient} from './solace-message-client.provider';
 
 describe('SolaceMessageClient', () => {
 
-  beforeEach(() => {
-    const factoryProperties = new SolclientFactoryProperties();
-    factoryProperties.profile = SolclientFactoryProfiles.version10;
-    SolclientFactory.init(factoryProperties);
-  });
+  beforeEach(() => initSolclientFactory());
 
   beforeEach(() => {
     spyOn(console, 'warn');
@@ -930,7 +926,7 @@ describe('SolaceMessageClient', () => {
       expect(session.send).toHaveBeenCalledTimes(1);
       expect(sessionSendCaptor.destination!.getName()).toEqual('topic');
       expect(sessionSendCaptor.type).toEqual(MessageType.BINARY);
-      expect(sessionSendCaptor.message!.getBinaryAttachment()).toEqual('payload');
+      expect(new TextDecoder().decode(sessionSendCaptor.message!.getBinaryAttachment() as Uint8Array)).toEqual('payload');
     });
 
     it('should allow publishing a message as structured text message (SDT Structured Data Type)', async () => {
@@ -1074,9 +1070,10 @@ describe('SolaceMessageClient', () => {
 
       // Subscribe to topic 'myhome/:room/temperature'
       const sessionSubscribeCaptor = sessionFixture.installSessionSubscribeCaptor();
-      const observeCaptor = new ObserveCaptor<[string, Params, Message]>();
+      const projectBinaryToText = ([binary, params, msg]: [Uint8Array, Params, Message]): [string, Params, Message] => [new TextDecoder().decode(binary), params, msg];
+      const observeCaptor = new ObserveCaptor(projectBinaryToText);
 
-      solaceMessageClient.observe$('myhome/:room/temperature').pipe(mapToBinary<string>()).subscribe(observeCaptor);
+      solaceMessageClient.observe$('myhome/:room/temperature').pipe(mapToBinary()).subscribe(observeCaptor);
       await drainMicrotaskQueue();
       await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
 

@@ -8,7 +8,7 @@ import {observeInside, subscribeInside} from '@scion/toolkit/operators';
 import {SolaceSessionProvider} from './solace-session-provider';
 import {OAuthAccessTokenFn, OAuthAccessTokenProvider} from './oauth-access-token-provider';
 import {SOLACE_MESSAGE_CLIENT_CONFIG, SolaceMessageClientConfig, SolaceMessageClientConfigFn} from './solace-message-client.config';
-import {AuthenticationScheme, Destination, Message, MessageConsumer, MessageConsumerEventName, MessageConsumerProperties, MessageDeliveryModeType, OperationError, QueueBrowser, QueueBrowserEventName, QueueBrowserProperties, QueueDescriptor, QueueType, RequestError, SDTField, SDTFieldType, SDTMapContainer, Session, SessionEvent, SessionEventCode, SessionProperties as SolaceSessionProperties, SolclientFactory, SolclientFactoryProfiles, SolclientFactoryProperties} from 'solclientjs';
+import {AuthenticationScheme, Destination, Message, MessageConsumer, MessageConsumerEventName, MessageConsumerProperties, MessageDeliveryModeType, OperationError, QueueBrowser, QueueBrowserEventName, QueueBrowserProperties, QueueDescriptor, QueueType, RequestError, SDTField, SDTFieldType, SDTMapContainer, Session, SessionEvent, SessionEventCode, SessionProperties as SolaceSessionProperties, SolclientFactory} from 'solclientjs';
 import {TopicSubscriptionCounter} from './topic-subscription-counter';
 import {SerialExecutor} from './serial-executor.service';
 import {Logger} from './logger';
@@ -36,7 +36,6 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
   private _destroyRef = inject(DestroyRef);
 
   constructor() {
-    this.initSolaceClientFactory();
     this.disposeWhenSolaceSessionDied();
     this.logSolaceSessionEvents();
     this.connected$ = this.monitorConnectionState$();
@@ -644,13 +643,6 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
           complete: noop, // do not resolve the Promise when the session is disposed
         });
     });
-  }
-
-  private initSolaceClientFactory(): void {
-    const factoryProperties = new SolclientFactoryProperties();
-    factoryProperties.profile = SolclientFactoryProfiles.version10_5;
-    factoryProperties.logLevel = this._logger.logLevel;
-    SolclientFactory.init(factoryProperties);
   }
 
   private disposeWhenSolaceSessionDied(): void {
