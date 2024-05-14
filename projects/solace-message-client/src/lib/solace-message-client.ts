@@ -559,7 +559,7 @@ export function mapToText(): OperatorFunction<MessageEnvelope, [string, Params, 
  *
  * Note: Messages must be published as {@link MessageType.BINARY} messages, otherwise an error is thrown.
  */
-export function mapToBinary<T extends Uint8Array | string = Uint8Array>(): OperatorFunction<MessageEnvelope, [T | string, Params, Message]> {
+export function mapToBinary<T extends Uint8Array | string = Uint8Array>(): OperatorFunction<MessageEnvelope, [T, Params, Message]> {
   return map((envelope: MessageEnvelope) => {
     const message: Message = envelope.message;
     if (message.getType() !== MessageType.BINARY) {

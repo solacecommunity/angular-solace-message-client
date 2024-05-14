@@ -1,5 +1,15 @@
 import {asyncScheduler} from 'rxjs';
-import {Message, OperationError, RequestError, SolclientFactory} from 'solclientjs';
+import {LogLevel, Message, OperationError, RequestError, SolclientFactory, SolclientFactoryProfiles, SolclientFactoryProperties} from 'solclientjs';
+
+/**
+ * Initializes `SolclientFactory`.
+ */
+export function initSolclientFactory(): void {
+  const factoryProperties = new SolclientFactoryProperties();
+  factoryProperties.profile = SolclientFactoryProfiles.version10_5;
+  factoryProperties.logLevel = LogLevel.TRACE;
+  SolclientFactory.init(factoryProperties);
+}
 
 /**
  * Waits until all microtasks (Promise) and elapsed macrotasks (setTimeout) completed.

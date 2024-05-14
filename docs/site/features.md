@@ -8,12 +8,10 @@
 This page gives you an overview of features provided by Angular Solace Message Client library. If a feature you need is not listed here, please check the API of [SolaceMessageClient](https://solacecommunity.github.io/angular-solace-message-client/api/classes/SolaceMessageClient.html), or file a GitHub issue otherwise.
 
 <details>
-  <summary><strong>Send message to a topic destination</strong></summary>
+  <summary><strong>Send Message to a Topic Destination</strong></summary>
   <br>
 
 When publishing a message to a topic, it will be transported to all consumers subscribed to the topic. A message may contain unstructured byte data, or a structured container.
-
-#### Examples:
 
 **Publish Binary Message**
 ```ts
@@ -75,12 +73,8 @@ inject(SolaceMessageClient).publish('myhome/livingroom/temperature', '20°C', {
 </details>
 
 <details>
-  <summary><strong>Receive messages published to a topic</strong></summary>
+  <summary><strong>Receive Messages Published to a Topic</strong></summary>
   <br>
-
-You can subscribe to multiple topics simultaneously by using wildcard segments in the topic.
-
-#### Examples:
 
 **Receive Messages on Exact Topic**
 ```ts
@@ -92,7 +86,7 @@ inject(SolaceMessageClient).observe$('myhome/livingroom/temperature').subscribe(
 });
 ```
 
-**Receive Messages For Any Room (Wildcard Segments)**
+**Receive Messages for any Room (Wildcard Segments)**
 ```ts
 import {inject} from '@angular/core';
 import {SolaceMessageClient} from '@solace-community/angular-solace-message-client';
@@ -102,7 +96,7 @@ inject(SolaceMessageClient).observe$('myhome/*/temperature').subscribe(envelope 
 });
 ```
 
-**Receive Messages For Any Room (Named Wildcard Segments)**
+**Receive Messages for any Room (Named Wildcard Segments)**
 ```ts
 import {inject} from '@angular/core';
 import {SolaceMessageClient} from '@solace-community/angular-solace-message-client';
@@ -127,7 +121,7 @@ inject(SolaceMessageClient).observe$('myhome/*/temperature').subscribe(envelope 
 </details>
 
 <details>
-  <summary><strong>Consume messages published to a topic via a non-durable topic endpoint</strong></summary>
+  <summary><strong>Consume Messages Published to a Topic via a Non-Durable Topic Endpoint</strong></summary>
   <br>
 
 Instead of observing messages published to a topic via [SolaceMessageClient#observe$](https://solacecommunity.github.io/angular-solace-message-client/api/classes/SolaceMessageClient.html#observe_), you can consume messages via a temporary, non-durable topic endpoint, so that messages are not lost even in the event of short connection interruptions as messages are retained on the broker until consumed by the consumer. The lifecycle of a non-durable topic endpoint is bound to the client that created it, with an additional 60s in case of unexpected disconnect.
@@ -158,14 +152,12 @@ It is important to understand that a topic is not the same thing as a topic endp
 </details>
 
 <details>
-  <summary><strong>Send message to a queue endpoint</strong></summary>
+  <summary><strong>Send Message to a Queue Endpoint</strong></summary>
   <br>
 
 A queue is typically used in a point-to-point (P2P) messaging environment. A queue differs from the topic distribution mechanism that the message is transported to exactly a single consumer, i.e., the message is load balanced to a single consumer in round‑robin fashion, or for exclusive queues, it is always transported to the same subscription. When sending a message to a queue, the broker retains the message until it is consumed, or until it expires.
 
 > Refer to [SolaceMessageClient#publish](https://solacecommunity.github.io/angular-solace-message-client/api/classes/SolaceMessageClient.html#publish) for more information about the API.
-
-#### Examples:
 
 **Send Binary Message**
 ```ts
@@ -231,7 +223,7 @@ inject(SolaceMessageClient).publish(queue, '20°C', {
 </details>
 
 <details>
-  <summary><strong>Consume messages sent to a durable queue</strong></summary>
+  <summary><strong>Consume Messages Sent to a Durable Queue</strong></summary>
   <br>
 
 ```ts
@@ -251,7 +243,7 @@ inject(SolaceMessageClient).consume$({
 </details>
 
 <details>
-  <summary><strong>Browse messages sent to a durable queue</strong></summary>
+  <summary><strong>Browse Messages Sent to a Durable Queue</strong></summary>
   <br>
 Browses messages in a queue, without removing/consuming the messages.
 
@@ -319,71 +311,13 @@ solaceMessageClient.observe$('request-topic').subscribe(request => {
 </details>
 
 <details>
-  <summary><strong>Control Angular Zone</strong></summary>
-  <br>
-
-Messages are received in the zone in which subscribed to the Observable.
-
-The following example receives messages outside the Angular zone:
-
-```ts
-import {inject, NgZone} from '@angular/core';
-import {SolaceMessageClient} from '@solace-community/angular-solace-message-client';
-
-// Run the following code outside of Angular
-inject(NgZone).runOutsideAngular(() => {
-  // Subscribe to topic outside of Angular
-  inject(SolaceMessageClient).observe$('topic').subscribe(() => {
-    // Message is received outside of Angular
-    NgZone.assertNotInAngularZone();
-  });
-});
-```
-
-</details>
-
-<details>
-  <summary><strong>Monitor connectivity to the message broker</strong></summary>
-  <br>
-
-```ts
-import {inject} from '@angular/core';
-import {SolaceMessageClient} from '@solace-community/angular-solace-message-client';
-
-inject(SolaceMessageClient).connected$.subscribe(connected => {
-  console.log('connected to the broker', connected);
-});
-```
-
-> Refer to [SolaceMessageClient#connected$](https://solacecommunity.github.io/angular-solace-message-client/api/classes/SolaceMessageClient.html#connected_) for more information about the API.
-
-</details>
-
-<details>
-  <summary><strong>Obtain Solace session for full functionality of *solclient* library</strong></summary>
-  <br>
-
-You can obtain the native Solace session to get the full functionality of the underlying *solclient* library.
-
-```ts
-import {inject} from '@angular/core';
-import {SolaceMessageClient} from '@solace-community/angular-solace-message-client';
-
-const session = await inject(SolaceMessageClient).session
-```
-
-> Refer to [SolaceMessageClient#session](https://solacecommunity.github.io/angular-solace-message-client/api/interfaces/Session.html) for more information about the API.
-
-</details>
-
-<details>
-  <summary><strong>Enable OAuth 2.0 authentication</strong></summary>
+  <summary><strong>Enable OAuth 2.0 Authentication</strong></summary>
   <br>
 
 Enable OAuth 2.0 authentication in the config passed to `provideSolaceMessageClient` function.
 
 1. Set `SolaceMessageClientConfig.authenticationScheme` to `AuthenticationScheme.OAUTH2`.
-2. Register a function in `SolaceMessageClientConfig.accessToken` that provides the access token. 
+2. Register a function in `SolaceMessageClientConfig.accessToken` that provides the access token.
 
 The function should return an Observable that emits the user's access token upon subscription, and then continuously emits it when the token is renewed.
 The Observable should never complete, enabling the connection to the broker to be re-established in the event of a network interruption.
@@ -413,7 +347,61 @@ bootstrapApplication(AppComponent, {
 </details>
 
 <details>
-  <summary><strong>Connect to multiple Solace Message Brokers</strong></summary>
+  <summary><strong>Advanced Configuration</strong></summary>
+  <br>
+
+This chapter covers some advanced topics for configuring the Solace Message Client.
+
+<details>
+  <summary><strong>Control Session Creation</strong></summary>
+  <br>
+
+The Solace session is created by the `SolaceSessionProvider`, which initializes `SolclientFactory` and creates session instances based on the properties passed to the `provideSolaceMessageClient` function.
+
+The default session provider can be replaced as follows:
+
+```ts
+import {bootstrapApplication} from '@angular/platform-browser';
+import {provideSolaceMessageClient, SolaceSessionProvider} from '@solace-community/angular-solace-message-client';
+
+bootstrapApplication(AppComponent, {
+  providers: [
+    provideSolaceMessageClient({
+      url: 'wss://YOUR-SOLACE-BROKER-URL:443',
+      vpnName: 'YOUR VPN',
+    }),
+    // Replace default session provider 
+    {provide: SolaceSessionProvider, useClass: CustomSolaceSessionProvider},
+  ],
+});
+```
+
+A custom implementation could look as follows: 
+
+```ts
+import {Injectable} from '@angular/core';
+import {LogLevel, Session, SessionProperties, SolclientFactory, SolclientFactoryProfiles, SolclientFactoryProperties} from 'solclientjs';
+import {SolaceSessionProvider} from '@solace-community/angular-solace-message-client';
+
+@Injectable()
+export class CustomSolaceSessionProvider implements SolaceSessionProvider {
+
+  constructor() {
+    const factoryProperties = new SolclientFactoryProperties();
+    factoryProperties.profile = SolclientFactoryProfiles.version10_5;
+    factoryProperties.logLevel = LogLevel.WARN;
+    SolclientFactory.init(factoryProperties);
+  }
+
+  public provide(sessionProperties: SessionProperties): Session {
+    return SolclientFactory.createSession(sessionProperties);
+  }
+}
+```
+</details>
+
+<details>
+  <summary><strong>Connect to Multiple Solace Message Brokers</strong></summary>
   <br>
 
 An application is not limited to connecting to a single Solace Message Broker. Different injection environments can be used to connect to different brokers.
@@ -448,7 +436,65 @@ environment2.destroy();
 </details>
 
 <details>
-  <summary><strong>Change Log Level</strong></summary>
+  <summary><strong>Control Angular Zone</strong></summary>
+  <br>
+
+Messages are received in the zone in which subscribed to the Observable.
+
+The following example receives messages outside the Angular zone:
+
+```ts
+import {inject, NgZone} from '@angular/core';
+import {SolaceMessageClient} from '@solace-community/angular-solace-message-client';
+
+// Run the following code outside of Angular
+inject(NgZone).runOutsideAngular(() => {
+  // Subscribe to topic outside of Angular
+  inject(SolaceMessageClient).observe$('topic').subscribe(() => {
+    // Message is received outside of Angular
+    NgZone.assertNotInAngularZone();
+  });
+});
+```
+
+</details>
+
+<details>
+  <summary><strong>Monitor Connectivity to the Message Broker</strong></summary>
+  <br>
+
+```ts
+import {inject} from '@angular/core';
+import {SolaceMessageClient} from '@solace-community/angular-solace-message-client';
+
+inject(SolaceMessageClient).connected$.subscribe(connected => {
+  console.log('connected to the broker', connected);
+});
+```
+
+> Refer to [SolaceMessageClient#connected$](https://solacecommunity.github.io/angular-solace-message-client/api/classes/SolaceMessageClient.html#connected_) for more information about the API.
+
+</details>
+
+<details>
+  <summary><strong>Reference to Solace Session</strong></summary>
+  <br>
+
+A reference to the native Solace session can be obtained via `SolaceMessageClient.session` to have full control over the functionality of `solclient`.  
+
+```ts
+import {inject} from '@angular/core';
+import {SolaceMessageClient} from '@solace-community/angular-solace-message-client';
+
+const session = await inject(SolaceMessageClient).session
+```
+
+> Refer to [SolaceMessageClient#session](https://solacecommunity.github.io/angular-solace-message-client/api/interfaces/Session.html) for more information about the API.
+
+</details>
+
+<details>
+  <summary><strong>Log Level</strong></summary>
   <br>
 
 The default log level is set to `WARN` so that only warnings and errors are logged.
@@ -472,6 +518,8 @@ To change the log level at runtime, add the `angular-solace-message-client#logle
 Storage Key: `angular-solace-message-client#loglevel`
 Storage Value: `info`
 ```
+
+</details>
 
 </details>
 
