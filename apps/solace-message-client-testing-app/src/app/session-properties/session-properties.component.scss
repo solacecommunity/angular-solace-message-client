@@ -8,17 +8,17 @@
 
   > header {
     grid-column: 1/-1;
-    font-size: mat.font-size(app-theme.$typography, subtitle-1);
+    font-size: mat.m2-font-size(app-theme.$typography, subtitle-1);
     font-weight: bold;
     margin-bottom: 1em;
   }
 
   > div.buttons {
-    border-top: 1px solid mat.get-color-from-palette(app-theme.$foreground, light-secondary-text);
+    border-top: 1px solid mat.m2-get-color-from-palette(app-theme.$foreground, light-secondary-text);
     margin-top: 3em;
     padding-top: .75em;
     grid-column: 1/-1;
-    color: mat.get-color-from-palette(app-theme.$foreground, light-dividers);
+    color: mat.m2-get-color-from-palette(app-theme.$foreground, light-dividers);
     display: flex;
     justify-content: space-between;
   }

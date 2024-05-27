@@ -1,8 +1,9 @@
 @use '@angular/material' as mat;
 @use '@angular/cdk' as cdk;
 @use 'styles/solace-client-theme' as app-theme;
+@use '@scion/components';
 
-$theme: mat.define-light-theme((
+$theme: mat.m2-define-light-theme((
   color: (
     primary: app-theme.$primary,
     accent: app-theme.$accent,
@@ -18,7 +19,7 @@ $theme: mat.define-light-theme((
 body {
   position: absolute;
   inset: 0;
-  font-size: mat.font-size(app-theme.$typography, body-1);
-  font-family: mat.font-family(app-theme.$typography, body-1);
+  font-size: mat.m2-font-size(app-theme.$typography, body-1);
+  font-family: mat.m2-font-family(app-theme.$typography, body-1);
 }
 
