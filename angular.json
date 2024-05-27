@@ -70,7 +70,10 @@
             "tsConfig": "apps/solace-message-client-testing-app/tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [
-              "apps/solace-message-client-testing-app/src/assets",
+              {
+                "glob": "**/*",
+                "input": "apps/solace-message-client-testing-app/public"
+              },
               {
                 "glob": "favicon.ico",
                 "input": "resources/branding",
@@ -92,13 +95,13 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kb",
-                  "maximumError": "2mb"
+                  "maximumWarning": "500kB",
+                  "maximumError": "2MB"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "2kb",
-                  "maximumError": "4kb"
+                  "maximumWarning": "2kB",
+                  "maximumError": "4kB"
                 }
               ],
               "outputHashing": "all",

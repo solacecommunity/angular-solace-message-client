@@ -16,14 +16,14 @@
 
       > header {
         flex: none;
-        font-size: mat.font-size(app-theme.$typography, headline-6);
+        font-size: mat.m2-font-size(app-theme.$typography, headline-6);
         margin-bottom: .25em;
       }
 
       > span.sub-title {
         flex: none;
-        font-size: mat.font-size(app-theme.$typography, subtitle-2);
-        color: mat.get-color-from-palette(app-theme.$foreground, secondary-text);
+        font-size: mat.m2-font-size(app-theme.$typography, subtitle-2);
+        color: mat.m2-get-color-from-palette(app-theme.$foreground, secondary-text);
       }
 
       > sci-viewport {
@@ -65,7 +65,7 @@
           display: flex;
           flex-direction: column;
           padding: 1em;
-          border: 1px solid mat.get-color-from-palette(app-theme.$foreground, divider);
+          border: 1px solid mat.m2-get-color-from-palette(app-theme.$foreground, divider);
           border-radius: 5px;
 
           > sci-viewport {
@@ -79,7 +79,7 @@
             }
 
             app-message-list-item {
-              border-bottom: 1px solid mat.get-color-from-palette(app-theme.$foreground, divider);
+              border-bottom: 1px solid mat.m2-get-color-from-palette(app-theme.$foreground, divider);
             }
           }
 
@@ -95,9 +95,9 @@
 
       > section.sending {
         margin: .75em;
-        color: mat.get-color-from-palette(app-theme.$foreground, secondary-text);
-        background-color: mat.get-color-from-palette(app-theme.$foreground, secondary-text, .0125);
-        border: 1px solid mat.get-color-from-palette(app-theme.$foreground, secondary-text, .12);
+        color: mat.m2-get-color-from-palette(app-theme.$foreground, secondary-text);
+        background-color: mat.m2-get-color-from-palette(app-theme.$foreground, secondary-text, .0125);
+        border: 1px solid mat.m2-get-color-from-palette(app-theme.$foreground, secondary-text, .12);
         border-radius: 3px;
         padding: 1em;
         font-style: italic;
@@ -106,9 +106,9 @@
 
       > section.error {
         margin: .75em;
-        border: 1px solid mat.get-color-from-palette(app-theme.$warn);
+        border: 1px solid mat.m2-get-color-from-palette(app-theme.$warn);
         border-radius: 3px;
-        background-color: mat.get-color-from-palette(app-theme.$warn, 100);
+        background-color: mat.m2-get-color-from-palette(app-theme.$warn, 100);
         padding: 1em;
       }
     }

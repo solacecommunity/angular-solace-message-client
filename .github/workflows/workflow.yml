@@ -1,7 +1,7 @@
 name: Continuous Integration and Delivery
 on: [push, pull_request]
 env:
-  NODE_VERSION: 20.9.0
+  NODE_VERSION: 20.14.0
   PUPPETEER_CACHE_DIR: ${{ github.workspace }}/node_modules/.cache/puppeteer
 jobs:
   install:
@@ -13,7 +13,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: 'Running npm ci (if node_modules not cached)'
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         id: node-modules-cache
         with:
           path: ./node_modules
@@ -30,7 +30,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: 'Restoring NPM modules from cache'
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ./node_modules
           key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -52,7 +52,7 @@ jobs:
         with:
           path: projects/solace-message-client/package.json
       - name: 'Restoring NPM modules from cache'
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ./node_modules
           key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -60,11 +60,11 @@ jobs:
         run: npm run solace-message-client:build
       - name: 'Building API Documentation (TypeDoc)'
         run: npm run solace-message-client:typedoc
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: solace-message-client
           path: dist/@solace-community/angular-solace-message-client
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: solace-message-client-api
           path: dist/solace-message-client-api
@@ -78,18 +78,18 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: 'Restoring NPM modules from cache'
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ./node_modules
           key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
       - name: 'Downloading solace-message-client'
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: solace-message-client
           path: dist/@solace-community/angular-solace-message-client
       - name: 'Building TryMe App'
         run: npm run solace-message-client-testing-app:build
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: tryme-app
           path: dist/solace-message-client-testing-app/browser
@@ -103,7 +103,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: 'Restoring NPM modules from cache'
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ./node_modules
           key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -135,7 +135,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: 'Downloading API'
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: solace-message-client-api
           path: dist/api
@@ -160,7 +160,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: 'Downloading TryMe App'
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: tryme-app
           path: dist/tryme
@@ -181,7 +181,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: 'Downloading dist/solace-message-client'
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: solace-message-client
           path: dist/@solace-community/angular-solace-message-client

@@ -20,13 +20,13 @@
         margin-bottom: 2em;
 
         > span.title {
-          font-size: mat.font-size(app-theme.$typography, headline-6);
+          font-size: mat.m2-font-size(app-theme.$typography, headline-6);
           margin-bottom: .25em;
         }
 
         > span.sub-title {
-          font-size: mat.font-size(app-theme.$typography, subtitle-2);
-          color: mat.get-color-from-palette(app-theme.$foreground, secondary-text);
+          font-size: mat.m2-font-size(app-theme.$typography, subtitle-2);
+          color: mat.m2-get-color-from-palette(app-theme.$foreground, secondary-text);
         }
       }
 
@@ -58,7 +58,7 @@
         min-width: 0; // set min-width to 0 to not overflow flex container horizontally
 
         ::ng-deep mat-tab-header {
-          border-bottom: 1px solid mat.get-color-from-palette(app-theme.$background, status-bar);
+          border-bottom: 1px solid mat.m2-get-color-from-palette(app-theme.$background, status-bar);
         }
 
         div.tab {

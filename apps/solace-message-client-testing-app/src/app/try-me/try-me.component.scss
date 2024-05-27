@@ -20,8 +20,8 @@
       }
 
       &:not(.connected) {
-        border: 1px solid mat.get-color-from-palette(app-theme.$warn);
-        background-color: mat.get-color-from-palette(app-theme.$warn, 100);
+        border: 1px solid mat.m2-get-color-from-palette(app-theme.$warn);
+        background-color: mat.m2-get-color-from-palette(app-theme.$warn, 100);
       }
     }
   }
