@@ -4,7 +4,7 @@ import {distinctUntilChanged, filter, finalize, map, mergeMap, take, takeUntil, 
 import {UUID} from '@scion/toolkit/uuid';
 import {BrowseOptions, ConsumeOptions, Data, MessageEnvelope, ObserveOptions, PublishOptions, RequestOptions, SolaceMessageClient} from './solace-message-client';
 import {TopicMatcher} from './topic-matcher';
-import {observeInside, subscribeInside} from '@scion/toolkit/operators';
+import {observeIn, subscribeIn} from '@scion/toolkit/operators';
 import {SolaceSessionProvider} from './solace-session-provider';
 import {OAuthAccessTokenFn, OAuthAccessTokenProvider} from './oauth-access-token-provider';
 import {SOLACE_MESSAGE_CLIENT_CONFIG, SolaceMessageClientConfig, SolaceMessageClientConfigFn} from './solace-message-client.config';
@@ -71,7 +71,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
 
         // If using OAUTH2 authentication scheme, set the initial access token via session properties.
         if (accessToken$) {
-          sessionProperties.accessToken = await firstValueFrom(accessToken$.pipe(subscribeInside(fn => this._zone.run(fn)))).catch(mapEmptyError(() => Error('[EmptyAccessTokenError] Access token Observable has completed without emitted an access token.')));
+          sessionProperties.accessToken = await firstValueFrom(accessToken$.pipe(subscribeIn(fn => this._zone.run(fn)))).catch(mapEmptyError(() => Error('[EmptyAccessTokenError] Access token Observable has completed without emitted an access token.')));
         }
 
         // Create the Solace session.
@@ -677,7 +677,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
         filter(event => CONNECTION_ESTABLISHED_EVENTS.has(event) || CONNECTION_LOST_EVENTS.has(event)),
         map(event => CONNECTION_ESTABLISHED_EVENTS.has(event)),
         distinctUntilChanged(),
-        observeInside(continueFn => this._zone.run(continueFn)),
+        observeIn(continueFn => this._zone.run(continueFn)),
         share({
           connector: () => new ReplaySubject<boolean>(1),
           resetOnRefCountZero: false,
@@ -825,7 +825,7 @@ function synchronizeNgZone<T>(zone: NgZone): MonoTypeOperatorFunction<T> {
     return new Observable<T>(observer => {
       const insideAngular = NgZone.isInAngularZone();
       const subscription = source$
-        .pipe(observeInside(fn => insideAngular ? runInsideAngular(fn) : runOutsideAngular(fn)))
+        .pipe(observeIn(fn => insideAngular ? runInsideAngular(fn) : runOutsideAngular(fn)))
         .subscribe(observer);
       return () => subscription.unsubscribe();
     });
@@ -849,7 +849,7 @@ function synchronizeNgZoneLegacy<T>(zone: NgZone, emitOutsideAngular: boolean | 
   if (emitOutsideAngular === undefined) {
     return identity;
   }
-  return observeInside(fn => emitOutsideAngular ? runOutsideAngular(fn) : runInsideAngular(fn));
+  return observeIn(fn => emitOutsideAngular ? runOutsideAngular(fn) : runInsideAngular(fn));
 
   function runInsideAngular(fn: () => void): void {
     NgZone.isInAngularZone() ? fn() : zone.run(fn);

@@ -5,8 +5,7 @@ import {asyncScheduler} from 'rxjs';
  * Use this directive to set the focus to the host element.
  */
 @Directive({
-  selector: '[appAutoFocus]',
-  standalone: true,
+  selector: '[appAutoFocus]'
 })
 export class AutofocusDirective {
 

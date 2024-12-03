@@ -13,7 +13,6 @@ import {MatTooltipModule} from '@angular/material/tooltip';
   selector: 'app-subscribers',
   templateUrl: './subscribers.component.html',
   styleUrls: ['./subscribers.component.scss'],
-  standalone: true,
   imports: [
     MatCardModule,
     MatDividerModule,

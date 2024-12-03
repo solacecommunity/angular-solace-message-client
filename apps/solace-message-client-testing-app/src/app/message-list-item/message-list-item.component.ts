@@ -13,7 +13,6 @@ import {MatButtonModule} from '@angular/material/button';
   templateUrl: './message-list-item.component.html',
   styleUrls: ['./message-list-item.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: true,
   imports: [
     DatePipe,
     StringifyMapPipe,

@@ -22,7 +22,6 @@ describe('SolaceMessageClient', () => {
     @Component({
       selector: 'spec-component',
       template: '',
-      standalone: true,
     })
     class SpecComponent {
     }
