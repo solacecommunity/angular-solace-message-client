@@ -19,7 +19,6 @@ import {MatTooltipModule} from '@angular/material/tooltip';
   selector: 'app-try-me',
   templateUrl: './try-me.component.html',
   styleUrls: ['./try-me.component.scss'],
-  standalone: true,
   imports: [
     AsyncPipe,
     MatIconModule,

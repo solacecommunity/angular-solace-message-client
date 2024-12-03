@@ -10,7 +10,6 @@ import {MatButtonModule} from '@angular/material/button';
   selector: 'app-session-properties',
   templateUrl: './session-properties.component.html',
   styleUrls: ['./session-properties.component.scss'],
-  standalone: true,
   imports: [
     KeyValuePipe,
     MatIconModule,

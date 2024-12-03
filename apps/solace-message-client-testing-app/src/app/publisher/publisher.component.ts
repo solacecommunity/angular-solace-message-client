@@ -5,7 +5,6 @@ import {Data, MessageEnvelope, PublishOptions, SolaceMessageClient} from '@solac
 import {defer, Observable, Subject, Subscription, tap, throwError} from 'rxjs';
 import {finalize, takeUntil} from 'rxjs/operators';
 import {Arrays} from '@scion/toolkit/util';
-import {observeInside} from '@scion/toolkit/operators';
 import {MatCardModule} from '@angular/material/card';
 import {SciViewportComponent} from '@scion/components/viewport';
 import {MatFormFieldModule} from '@angular/material/form-field';
@@ -28,7 +27,6 @@ export const REQUEST_REPLY = 'request/reply';
   templateUrl: './publisher.component.html',
   styleUrls: ['./publisher.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: true,
   imports: [
     ReactiveFormsModule,
     SciViewportComponent,
@@ -81,9 +79,10 @@ export class PublisherComponent implements OnDestroy {
     this.publishError = null;
     this._publishSubscription = this.publish$()
       .pipe(
-        observeInside(continueFn => {
-          continueFn();
-          this._cd.markForCheck();
+        tap({
+          next: () => this._cd.markForCheck(),
+          error: () => this._cd.markForCheck(),
+          complete: () => this._cd.markForCheck(),
         }),
         finalize(() => {
           this.form.enable();

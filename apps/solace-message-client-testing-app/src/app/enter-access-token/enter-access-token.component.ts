@@ -10,7 +10,6 @@ import {MatButtonModule} from '@angular/material/button';
   selector: 'app-enter-access-token',
   templateUrl: './enter-access-token.component.html',
   styleUrls: ['./enter-access-token.component.scss'],
-  standalone: true,
   imports: [
     MatDialogTitle,
     MatDialogContent,

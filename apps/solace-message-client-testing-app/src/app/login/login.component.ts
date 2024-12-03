@@ -26,7 +26,6 @@ export const RECONNECT_RETRIES = 'reconnectRetries';
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
-  standalone: true,
   imports: [
     ReactiveFormsModule,
     MatCardModule,

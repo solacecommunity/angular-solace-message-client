@@ -23,7 +23,6 @@ export const FOLLOW_TAIL = 'followTail';
   selector: 'app-subscriber',
   templateUrl: './subscriber.component.html',
   styleUrls: ['./subscriber.component.scss'],
-  standalone: true,
   imports: [
     ReactiveFormsModule,
     MatFormFieldModule,
