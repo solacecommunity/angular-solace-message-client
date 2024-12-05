@@ -1,6 +1,6 @@
 import {SessionProperties} from 'solclientjs';
-import {InjectionToken, Type} from '@angular/core';
-import {OAuthAccessTokenFn, OAuthAccessTokenProvider} from './oauth-access-token-provider';
+import {InjectionToken} from '@angular/core';
+import {OAuthAccessTokenFn} from './oauth-access-token-provider';
 import {Observable} from 'rxjs';
 
 /**
@@ -19,7 +19,7 @@ export interface SolaceMessageClientConfig extends Omit<SessionProperties, 'acce
    *
    * @see {@link OAuthAccessTokenFn}
    */
-  accessToken?: string | Type<OAuthAccessTokenProvider> | OAuthAccessTokenFn;
+  accessToken?: string | OAuthAccessTokenFn;
 }
 
 /**

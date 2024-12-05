@@ -95,54 +95,6 @@ describe('SolaceMessageClient - Request Reply', () => {
       expect(replyCaptor.hasErrored()).toBeTrue();
     });
 
-    // @deprecated since version 17.1.0; Remove when dropping support to configure whether to emit inside or outside the Angular zone.
-    it('should emit inside Angular', async () => {
-      const sessionFixture = new SessionFixture();
-      const sendRequestFixture = sessionFixture.sendRequestFixture;
-      const zoneCaptor = new ObserveCaptor<MessageEnvelope, boolean>(() => NgZone.isInAngularZone());
-      TestBed.configureTestingModule({
-        providers: [
-          provideSolaceMessageClient({url: 'url', vpnName: 'vpn'}),
-          provideSession(sessionFixture),
-        ],
-      });
-      const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-      await sessionFixture.simulateEvent(SessionEventCode.UP_NOTICE);
-
-      // Send a request
-      solaceMessageClient.request$('topic', undefined, {emitOutsideAngularZone: false}).subscribe(zoneCaptor);
-      await drainMicrotaskQueue();
-
-      // Simulate to receive a reply
-      await sendRequestFixture.simulateReply(createTopicMessage('reply'));
-
-      expect(zoneCaptor.getValues()).toEqual([true]);
-    });
-
-    // @deprecated since version 17.1.0; Remove when dropping support to configure whether to emit inside or outside the Angular zone.
-    it('should emit outside Angular', async () => {
-      const sessionFixture = new SessionFixture();
-      const sendRequestFixture = sessionFixture.sendRequestFixture;
-      const zoneCaptor = new ObserveCaptor<MessageEnvelope, boolean>(() => NgZone.isInAngularZone());
-      TestBed.configureTestingModule({
-        providers: [
-          provideSolaceMessageClient({url: 'url', vpnName: 'vpn'}),
-          provideSession(sessionFixture),
-        ],
-      });
-      const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-      await sessionFixture.simulateEvent(SessionEventCode.UP_NOTICE);
-
-      // Send a request
-      solaceMessageClient.request$('topic', undefined, {emitOutsideAngularZone: true}).subscribe(zoneCaptor);
-      await drainMicrotaskQueue();
-
-      // Simulate to receive a reply
-      await sendRequestFixture.simulateReply(createTopicMessage('reply'));
-
-      expect(zoneCaptor.getValues()).toEqual([false]);
-    });
-
     it('should receive reply in the zone subscribed (inside Angular)', async () => {
       const sessionFixture = new SessionFixture();
       const sendRequestFixture = sessionFixture.sendRequestFixture;

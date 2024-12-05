@@ -109,66 +109,6 @@ describe('SolaceMessageClient - Browse', () => {
     ]);
   });
 
-  // @deprecated since version 17.1.0; Remove when dropping support to configure whether to emit inside or outside the Angular zone.
-  it('should receive messages inside the Angular zone', async () => {
-    const sessionFixture = new SessionFixture();
-    const queueBrowserFixture = sessionFixture.queueBrowserFixture;
-    const observeCaptor = new ObserveCaptor(() => NgZone.isInAngularZone());
-    TestBed.configureTestingModule({
-      providers: [
-        provideSolaceMessageClient({url: 'url', vpnName: 'vpn'}),
-        provideSession(sessionFixture),
-      ],
-    });
-    const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-    await sessionFixture.simulateEvent(SessionEventCode.UP_NOTICE);
-
-    // Connect to the queue browser
-    solaceMessageClient.browse$({
-      queueDescriptor: new QueueDescriptor({type: QueueType.QUEUE, name: 'queue'}),
-      emitOutsideAngularZone: false,
-    }).subscribe(observeCaptor);
-
-    // Simulate the queue browser to be connected to the broker
-    await queueBrowserFixture.simulateEvent(QueueBrowserEventName.UP);
-
-    // Simulate to receive a message
-    await queueBrowserFixture.simulateMessage(createQueueMessage('queue'));
-
-    // Expect message to be received inside the Angular zone
-    expect(observeCaptor.getValues()).toEqual([true]);
-  });
-
-  // @deprecated since version 17.1.0; Remove when dropping support to configure whether to emit inside or outside the Angular zone.
-  it('should receive messages outside the Angular zone', async () => {
-    const sessionFixture = new SessionFixture();
-    const queueBrowserFixture = sessionFixture.queueBrowserFixture;
-    const observeCaptor = new ObserveCaptor(() => NgZone.isInAngularZone());
-    TestBed.configureTestingModule({
-      providers: [
-        provideSolaceMessageClient({url: 'url', vpnName: 'vpn'}),
-        provideSession(sessionFixture),
-      ],
-    });
-    const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-    await sessionFixture.simulateEvent(SessionEventCode.UP_NOTICE);
-
-    // Connect to the queue browser
-    solaceMessageClient.browse$({
-      queueDescriptor: new QueueDescriptor({type: QueueType.QUEUE, name: 'queue'}),
-      emitOutsideAngularZone: true,
-    }).subscribe(observeCaptor);
-
-    // Simulate the queue browser to be connected to the broker
-    await queueBrowserFixture.simulateEvent(QueueBrowserEventName.UP);
-
-    // Simulate to receive a message
-    await queueBrowserFixture.simulateMessage(createQueueMessage('queue'));
-
-    // Expect message to be received outside the Angular zone
-    expect(observeCaptor.getValues()).toEqual([false]);
-  });
-
   it('should receive messages in the zone subscribed (inside Angular)', async () => {
     const sessionFixture = new SessionFixture();
     const queueBrowserFixture = sessionFixture.queueBrowserFixture;
