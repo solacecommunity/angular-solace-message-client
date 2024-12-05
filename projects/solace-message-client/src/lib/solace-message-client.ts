@@ -163,7 +163,7 @@ export abstract class SolaceMessageClient {
    * @param queueOrDescriptor - Specifies the queue to browse, or a descriptor object describing how to connect to the queue browser.
    * @return Observable that emits spooled messages in the specified queue. The Observable never completes. If not connected to the broker yet, or if the connect attempt failed, the Observable errors.
    */
-  public abstract browse$(queueOrDescriptor: string | (QueueBrowserProperties & BrowseOptions)): Observable<MessageEnvelope>;
+  public abstract browse$(queueOrDescriptor: string | QueueBrowserProperties): Observable<MessageEnvelope>;
 
   /**
    * Publishes a message to the given topic or queue destination.
@@ -282,7 +282,7 @@ export class NullSolaceMessageClient implements SolaceMessageClient {
     return NEVER;
   }
 
-  public browse$(queueOrDescriptor: string | (QueueBrowserProperties & BrowseOptions)): Observable<MessageEnvelope> {
+  public browse$(queueOrDescriptor: string | QueueBrowserProperties): Observable<MessageEnvelope> {
     return NEVER;
   }
 
@@ -322,15 +322,6 @@ export interface ObserveOptions {
   subscribeTimeout?: number;
 
   /**
-   * Controls if to emit received messages inside or outside the Angular zone.
-   *
-   * By default, if not specified, emits in the zone in which subscribed to the Observable.
-   *
-   * @deprecated since version 17.1.0; Messages are received in the zone in which subscribed to the Observable. To receive messages outside the Angular zone, subscribe to the Observable outside the Angular zone, otherwise inside the Angular zone; API will be removed in a future release.
-   */
-  emitOutsideAngularZone?: boolean;
-
-  /**
    * A lifecycle hook that is called when subscribed to a destination.
    *
    * Use if you need to wait until the destination is actually subscribed, e.g, if implementing the request/response message exchange pattern,
@@ -345,15 +336,6 @@ export interface ObserveOptions {
 export interface ConsumeOptions {
 
   /**
-   * Controls if to emit received messages inside or outside the Angular zone.
-   *
-   * By default, if not specified, emits in the zone in which subscribed to the Observable.
-   *
-   * @deprecated since version 17.1.0; Messages are received in the zone in which subscribed to the Observable. To receive messages outside the Angular zone, subscribe to the Observable outside the Angular zone, otherwise inside the Angular zone; API will be removed in a future release.
-   */
-  emitOutsideAngularZone?: boolean;
-
-  /**
    * A lifecycle hook that is called when subscribed to a destination.
    *
    * Use if you need to wait until the destination is actually subscribed, e.g, if implementing the request/response message exchange pattern,
@@ -365,21 +347,6 @@ export interface ConsumeOptions {
    *        * For durable endpoints, endpoint properties can be retrieved as configured on the broker by calling {@link MessageConsumer#getProperties#queueProperties};
    */
   onSubscribed?(messageConsumer: MessageConsumer): void;
-}
-
-/**
- * Control how to browse a queue.
- */
-export interface BrowseOptions {
-
-  /**
-   * Controls if to emit received messages inside or outside the Angular zone.
-   *
-   * By default, if not specified, emits in the zone in which subscribed to the Observable.
-   *
-   * @deprecated since version 17.1.0; Messages are received in the zone in which subscribed to the Observable. To receive messages outside the Angular zone, subscribe to the Observable outside the Angular zone, otherwise inside the Angular zone; API will be removed in a future release.
-   */
-  emitOutsideAngularZone?: boolean;
 }
 
 /**
@@ -520,14 +487,6 @@ export interface RequestOptions extends PublishOptions {
    * If specified, overrides the global timeout as set via {@link SessionProperties#readTimeoutInMsecs}.
    */
   requestTimeout?: number;
-  /**
-   * Controls if to emit received replies inside or outside the Angular zone.
-   *
-   * By default, if not specified, emits in the zone in which subscribed to the Observable.
-   *
-   * @deprecated since version 17.1.0; Replies are received in the zone in which subscribed to the Observable. To receive replies outside the Angular zone, subscribe to the Observable outside the Angular zone, otherwise inside the Angular zone; API will be removed in a future release.
-   */
-  emitOutsideAngularZone?: boolean;
 }
 
 /**

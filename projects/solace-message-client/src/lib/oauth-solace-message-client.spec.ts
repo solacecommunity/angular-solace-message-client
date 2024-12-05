@@ -4,9 +4,8 @@ import {AuthenticationScheme, SessionEventCode} from 'solclientjs';
 import {SessionFixture} from './testing/session.fixture';
 import {provideSession} from './testing/session-provider';
 import {TestBed} from '@angular/core/testing';
-import {BehaviorSubject, EMPTY, NEVER, Observable, of, Subject} from 'rxjs';
-import {inject, Injectable, InjectionToken, NgZone} from '@angular/core';
-import {OAuthAccessTokenProvider} from './oauth-access-token-provider';
+import {BehaviorSubject, EMPTY, Observable, of, Subject} from 'rxjs';
+import {inject, InjectionToken, NgZone} from '@angular/core';
 import {drainMicrotaskQueue, initSolclientFactory} from './testing/testing.utils';
 import {SolaceSessionProvider} from './solace-session-provider';
 
@@ -17,49 +16,6 @@ describe('OAuth 2.0', () => {
   beforeEach(() => {
     spyOn(console, 'warn');
     spyOn(console, 'error');
-  });
-
-  it('should invoke `OAuthAccessTokenProvider$provide$` in Angular zone', async () => {
-    const sessionFixture = new SessionFixture();
-
-    @Injectable({providedIn: 'root'})
-    class TestAccessTokenProvider implements OAuthAccessTokenProvider {
-
-      public constructedInAngularZone: boolean | undefined;
-      public invokedInAngularZone: boolean | undefined;
-      public subscribedInAngularZone: boolean | undefined;
-
-      constructor() {
-        this.constructedInAngularZone = NgZone.isInAngularZone();
-      }
-
-      public provide$(): Observable<string> {
-        this.invokedInAngularZone = NgZone.isInAngularZone();
-        return new Observable(observer => {
-          this.subscribedInAngularZone = NgZone.isInAngularZone();
-          observer.next('access-token');
-        });
-      }
-    }
-
-    TestBed.configureTestingModule({
-      providers: [
-        provideSolaceMessageClient({
-          url: 'url',
-          vpnName: 'vpn',
-          authenticationScheme: AuthenticationScheme.OAUTH2,
-          accessToken: TestAccessTokenProvider,
-        }),
-        provideSession(sessionFixture),
-      ],
-    });
-
-    TestBed.inject(SolaceMessageClient);
-    await drainMicrotaskQueue();
-
-    expect(TestBed.inject(TestAccessTokenProvider).constructedInAngularZone).toBeTrue();
-    expect(TestBed.inject(TestAccessTokenProvider).invokedInAngularZone).toBeTrue();
-    expect(TestBed.inject(TestAccessTokenProvider).subscribedInAngularZone).toBeTrue();
   });
 
   it('should invoke access token function in Angular zone', async () => {
@@ -275,36 +231,6 @@ describe('OAuth 2.0', () => {
 
     expect(console.error).toHaveBeenCalledWith(jasmine.stringMatching(/\[SolaceMessageClient]/), jasmine.stringMatching(/\[NullAccessTokenConfigError]/));
     expect(TestBed.inject(SolaceSessionProvider).provide).toHaveBeenCalledTimes(0);
-    expect(sessionFixture.session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
-  });
-
-  it('should error if forgotten to register `OAuthAccessTokenProvider` as Angular provider [NullAccessTokenProviderError]', async () => {
-    // Create a provider, but forget to register it as Angular provider
-    @Injectable()
-    class TestAccessTokenProvider implements OAuthAccessTokenProvider {
-      public provide$(): Observable<string> {
-        return NEVER;
-      }
-    }
-
-    const sessionFixture = new SessionFixture();
-    TestBed.configureTestingModule({
-      providers: [
-        provideSolaceMessageClient({
-          url: 'url',
-          vpnName: 'vpn',
-          authenticationScheme: AuthenticationScheme.OAUTH2,
-          accessToken: TestAccessTokenProvider,
-        }),
-        provideSession(sessionFixture),
-      ],
-    });
-
-    TestBed.inject(SolaceMessageClient);
-    await drainMicrotaskQueue();
-
-    expect(console.error).toHaveBeenCalledWith(jasmine.stringMatching(/\[SolaceMessageClient]/), jasmine.stringMatching(/\[NullAccessTokenProviderError]/));
-    expect(sessionFixture.sessionProvider.provide).toHaveBeenCalledTimes(0);
     expect(sessionFixture.session.updateAuthenticationOnReconnect).toHaveBeenCalledTimes(0);
   });
 

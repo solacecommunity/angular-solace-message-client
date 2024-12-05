@@ -1,12 +1,12 @@
-import {DestroyRef, inject, Injectable, Injector, NgZone, OnDestroy, runInInjectionContext, ɵisInjectable} from '@angular/core';
-import {EMPTY, EmptyError, firstValueFrom, identity, merge, MonoTypeOperatorFunction, noop, Observable, Observer, of, OperatorFunction, ReplaySubject, share, shareReplay, skip, Subject, TeardownLogic, throwError} from 'rxjs';
+import {DestroyRef, inject, Injectable, Injector, NgZone, OnDestroy, runInInjectionContext} from '@angular/core';
+import {EMPTY, EmptyError, firstValueFrom, merge, MonoTypeOperatorFunction, noop, Observable, Observer, of, OperatorFunction, ReplaySubject, share, shareReplay, skip, Subject, TeardownLogic, throwError} from 'rxjs';
 import {distinctUntilChanged, filter, finalize, map, mergeMap, take, takeUntil, tap} from 'rxjs/operators';
 import {UUID} from '@scion/toolkit/uuid';
-import {BrowseOptions, ConsumeOptions, Data, MessageEnvelope, ObserveOptions, PublishOptions, RequestOptions, SolaceMessageClient} from './solace-message-client';
+import {ConsumeOptions, Data, MessageEnvelope, ObserveOptions, PublishOptions, RequestOptions, SolaceMessageClient} from './solace-message-client';
 import {TopicMatcher} from './topic-matcher';
 import {observeIn, subscribeIn} from '@scion/toolkit/operators';
 import {SolaceSessionProvider} from './solace-session-provider';
-import {OAuthAccessTokenFn, OAuthAccessTokenProvider} from './oauth-access-token-provider';
+import {OAuthAccessTokenFn} from './oauth-access-token-provider';
 import {SOLACE_MESSAGE_CLIENT_CONFIG, SolaceMessageClientConfig, SolaceMessageClientConfigFn} from './solace-message-client.config';
 import {AuthenticationScheme, Destination, Message, MessageConsumer, MessageConsumerEventName, MessageConsumerProperties, MessageDeliveryModeType, OperationError, QueueBrowser, QueueBrowserEventName, QueueBrowserProperties, QueueDescriptor, QueueType, RequestError, SDTField, SDTFieldType, SDTMapContainer, Session, SessionEvent, SessionEventCode, SessionProperties as SolaceSessionProperties, SolclientFactory} from 'solclientjs';
 import {TopicSubscriptionCounter} from './topic-subscription-counter';
@@ -160,17 +160,10 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
           return of(configuredAccessToken);
         }
         case 'function': {
-          const provider = this._injector.get<OAuthAccessTokenProvider | null>(configuredAccessToken, null);
-          if (provider) {
-            return provider.provide$(); // class provider
-          }
-          if (!ɵisInjectable(configuredAccessToken)) {
-            return Observables.coerce((configuredAccessToken as OAuthAccessTokenFn)()); // function provider
-          }
-          return throwError(() => Error(`[NullAccessTokenProviderError] No provider for ${configuredAccessToken.name} found. Did you forget to register it? You can register it as follows: "@Injectable({providedIn: 'root'})"`));
+          return Observables.coerce((configuredAccessToken as OAuthAccessTokenFn)());
         }
         default: {
-          return throwError(() => Error('[NullAccessTokenConfigError] No access token or provider configured in \'SolaceMessageClientConfig.accessToken\'. An access token is required for OAUTH2 authentication. It is recommended to provide the token via `OAuthAccessTokenProvider`.'));
+          return throwError(() => Error('[NullAccessTokenConfigError] No access token or provider function configured in \'SolaceMessageClientConfig.accessToken\'. An access token is required for OAUTH2 authentication. It is recommended to provide the token via `OAuthAccessTokenFn`.'));
         }
       }
     }));
@@ -224,7 +217,6 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
               filter(message => topicMatcher.matches(message.getDestination()?.getName())),
               mapToMessageEnvelope(topic),
               synchronizeNgZone(this._zone),
-              synchronizeNgZoneLegacy(this._zone, options?.emitOutsideAngularZone),
               takeUntil(merge(this._sessionDisposed$, unsubscribe$)),
               finalize(() => {
                 // Unsubscribe from the topic on the Solace session, but only if being the last subscription on that topic and if successfully subscribed to the Solace broker.
@@ -405,11 +397,10 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
       .pipe(
         mapToMessageEnvelope(topicEndpointSubscription),
         synchronizeNgZone(this._zone),
-        synchronizeNgZoneLegacy(this._zone, consumerProperties?.emitOutsideAngularZone),
       );
   }
 
-  public browse$(queueOrDescriptor: string | (QueueBrowserProperties & BrowseOptions)): Observable<MessageEnvelope> {
+  public browse$(queueOrDescriptor: string | QueueBrowserProperties): Observable<MessageEnvelope> {
     if (queueOrDescriptor === undefined) {
       throw Error('Missing required queue or descriptor.');
     }
@@ -424,7 +415,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
     return this.createQueueBrowser$(queueOrDescriptor);
   }
 
-  private createQueueBrowser$(queueBrowserProperties: (QueueBrowserProperties & BrowseOptions)): Observable<MessageEnvelope> {
+  private createQueueBrowser$(queueBrowserProperties: QueueBrowserProperties): Observable<MessageEnvelope> {
     return new Observable((observer: Observer<Message>): TeardownLogic => {
       let queueBrowser: QueueBrowser | undefined;
       let disposed = false;
@@ -480,7 +471,6 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
       .pipe(
         mapToMessageEnvelope(),
         synchronizeNgZone(this._zone),
-        synchronizeNgZoneLegacy(this._zone, queueBrowserProperties?.emitOutsideAngularZone),
       );
   }
 
@@ -501,7 +491,6 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
           assertNotInAngularZone(),
           mapToMessageEnvelope(),
           synchronizeNgZone(this._zone),
-          synchronizeNgZoneLegacy(this._zone, options?.emitOutsideAngularZone),
           takeUntil(unsubscribe$),
         )
         .subscribe(observer);
@@ -830,26 +819,6 @@ function synchronizeNgZone<T>(zone: NgZone): MonoTypeOperatorFunction<T> {
       return () => subscription.unsubscribe();
     });
   };
-
-  function runInsideAngular(fn: () => void): void {
-    NgZone.isInAngularZone() ? fn() : zone.run(fn);
-  }
-
-  function runOutsideAngular(fn: () => void): void {
-    !NgZone.isInAngularZone() ? fn() : zone.runOutsideAngular(fn);
-  }
-}
-
-/**
- * Emits in the zone as specified. Does nothing if `emitOutsideAngular` is `undefined`.
- *
- * @deprecated since version 17.1.0; Remove when dropping support to configure whether to emit inside or outside the Angular zone.
- */
-function synchronizeNgZoneLegacy<T>(zone: NgZone, emitOutsideAngular: boolean | undefined): MonoTypeOperatorFunction<T> {
-  if (emitOutsideAngular === undefined) {
-    return identity;
-  }
-  return observeIn(fn => emitOutsideAngular ? runOutsideAngular(fn) : runInsideAngular(fn));
 
   function runInsideAngular(fn: () => void): void {
     NgZone.isInAngularZone() ? fn() : zone.run(fn);
