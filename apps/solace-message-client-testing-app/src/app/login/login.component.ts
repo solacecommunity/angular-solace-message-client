@@ -1,18 +1,18 @@
-import {Component, OnDestroy} from '@angular/core';
+import {Component, inject} from '@angular/core';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {LocationService} from '../location.service';
 import {SolaceMessageClientConfig} from '@solace-community/angular-solace-message-client';
 import {SessionConfigStore} from '../session-config-store';
 import {AuthenticationScheme} from 'solclientjs';
 import {promptForAccessToken} from '../prompt-access-token.provider';
-import {startWith, Subject} from 'rxjs';
-import {takeUntil} from 'rxjs/operators';
+import {startWith} from 'rxjs';
 import {MatCardModule} from '@angular/material/card';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInputModule} from '@angular/material/input';
 import {MatSelectModule} from '@angular/material/select';
 import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MatButtonModule} from '@angular/material/button';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 
 export const URL = 'url';
 export const VPN_NAME = 'vpnName';
@@ -36,46 +36,45 @@ export const RECONNECT_RETRIES = 'reconnectRetries';
     MatButtonModule,
   ],
 })
-export class LoginComponent implements OnDestroy {
+export class LoginComponent {
 
-  public readonly URL = URL;
-  public readonly VPN_NAME = VPN_NAME;
-  public readonly AUTHENTICATION_SCHEME = AUTHENTICATION_SCHEME;
-  public readonly USER_NAME = USER_NAME;
-  public readonly PASSWORD = PASSWORD;
-  public readonly REAPPLY_SUBSCRIPTIONS = REAPPLY_SUBSCRIPTIONS;
-  public readonly RECONNECT_RETRIES = RECONNECT_RETRIES;
+  private readonly _locationService = inject(LocationService);
+  private readonly _formBuilder = inject(FormBuilder);
 
-  public form: FormGroup;
-  public AuthenticationScheme = AuthenticationScheme;
+  protected readonly URL = URL;
+  protected readonly VPN_NAME = VPN_NAME;
+  protected readonly AUTHENTICATION_SCHEME = AUTHENTICATION_SCHEME;
+  protected readonly USER_NAME = USER_NAME;
+  protected readonly PASSWORD = PASSWORD;
+  protected readonly REAPPLY_SUBSCRIPTIONS = REAPPLY_SUBSCRIPTIONS;
+  protected readonly RECONNECT_RETRIES = RECONNECT_RETRIES;
+  protected readonly AuthenticationScheme = AuthenticationScheme;
 
-  private _destroy$ = new Subject<void>();
+  protected readonly form = new FormGroup({
+    [URL]: this._formBuilder.control('wss://public.messaging.solace.cloud:443', {validators: Validators.required, nonNullable: true}),
+    [VPN_NAME]: this._formBuilder.control('public', {validators: Validators.required, nonNullable: true}),
+    [AUTHENTICATION_SCHEME]: this._formBuilder.control(AuthenticationScheme.BASIC),
+    [USER_NAME]: this._formBuilder.control('angular'),
+    [PASSWORD]: this._formBuilder.control('public'),
+    [REAPPLY_SUBSCRIPTIONS]: this._formBuilder.control(true),
+    [RECONNECT_RETRIES]: this._formBuilder.control(-1),
+  });
 
-  constructor(formBuilder: FormBuilder,
-              private _locationService: LocationService) {
-    this.form = new FormGroup({
-      [URL]: formBuilder.control('wss://public.messaging.solace.cloud:443', {validators: Validators.required, nonNullable: true}),
-      [VPN_NAME]: formBuilder.control('public', {validators: Validators.required, nonNullable: true}),
-      [AUTHENTICATION_SCHEME]: formBuilder.control(AuthenticationScheme.BASIC),
-      [USER_NAME]: formBuilder.control('angular'),
-      [PASSWORD]: formBuilder.control('public'),
-      [REAPPLY_SUBSCRIPTIONS]: formBuilder.control(true),
-      [RECONNECT_RETRIES]: formBuilder.control(-1),
-    });
+  constructor() {
     this.installAuthenticationSchemeChangeListener();
   }
 
-  public onLogin(): void {
+  protected onLogin(): void {
     const oAuthEnabled = this.form.get(AUTHENTICATION_SCHEME)!.value === AuthenticationScheme.OAUTH2;
     const sessionConfig: SolaceMessageClientConfig = {
-      url: this.form.get(URL)!.value as string | string[],
-      vpnName: this.form.get(VPN_NAME)!.value as string,
-      userName: this.form.get(USER_NAME)!.value as string,
-      password: this.form.get(PASSWORD)!.value as string,
-      reapplySubscriptions: this.form.get(REAPPLY_SUBSCRIPTIONS)!.value as boolean,
-      reconnectRetries: this.form.get(RECONNECT_RETRIES)!.value as number,
-      connectRetries: this.form.get(RECONNECT_RETRIES)!.value as number,
-      authenticationScheme: this.form.get(AUTHENTICATION_SCHEME)!.value as AuthenticationScheme,
+      url: this.form.get(URL)!.value,
+      vpnName: this.form.get(VPN_NAME)!.value as string | undefined,
+      userName: this.form.get(USER_NAME)!.value as string | undefined,
+      password: this.form.get(PASSWORD)!.value as string | undefined,
+      reapplySubscriptions: this.form.get(REAPPLY_SUBSCRIPTIONS)!.value as boolean | undefined,
+      reconnectRetries: this.form.get(RECONNECT_RETRIES)!.value as number | undefined,
+      connectRetries: this.form.get(RECONNECT_RETRIES)!.value as number | undefined,
+      authenticationScheme: this.form.get(AUTHENTICATION_SCHEME)!.value as AuthenticationScheme | undefined,
       accessToken: oAuthEnabled ? promptForAccessToken : undefined,
     };
 
@@ -83,7 +82,7 @@ export class LoginComponent implements OnDestroy {
     this._locationService.navigateToAppRoot({clearConnectProperties: false});
   }
 
-  public onReset(): void {
+  protected onReset(): void {
     this.form.reset();
   }
 
@@ -91,7 +90,7 @@ export class LoginComponent implements OnDestroy {
     this.form.get(AUTHENTICATION_SCHEME)!.valueChanges
       .pipe(
         startWith(undefined),
-        takeUntil(this._destroy$),
+        takeUntilDestroyed(),
       )
       .subscribe(() => {
         const basicAuthFormControls = [this.form.get(USER_NAME)!, this.form.get(PASSWORD)!];
@@ -102,9 +101,5 @@ export class LoginComponent implements OnDestroy {
           formControl.updateValueAndValidity();
         });
       });
-  }
-
-  public ngOnDestroy(): void {
-    this._destroy$.next();
   }
 }

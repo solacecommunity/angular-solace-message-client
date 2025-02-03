@@ -1,12 +1,11 @@
-import {Injectable} from '@angular/core';
+import {inject, Injectable} from '@angular/core';
 import {Router} from '@angular/router';
 import {SessionConfigStore} from './session-config-store';
 
 @Injectable({providedIn: 'root'})
 export class LocationService {
 
-  constructor(private _router: Router) {
-  }
+  private readonly _router = inject(Router);
 
   public navigateToAppRoot(options: {clearConnectProperties: boolean}): void {
     if (options.clearConnectProperties) {

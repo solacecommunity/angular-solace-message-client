@@ -14,9 +14,7 @@ import {LogLevel} from 'solclientjs';
 @Injectable()
 export class Logger {
 
-  constructor(public readonly logLevel: LogLevel) {
-    this.logLevel = this.readLogLevelFromSessionStorage(logLevel);
-  }
+  public readonly logLevel = this.readLogLevelFromSessionStorage(inject(LogLevel as unknown as Type<LogLevel>));
 
   public debug(...data: any[]): void {
     if (this.logLevel >= LogLevel.DEBUG) {

@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import {Component, inject} from '@angular/core';
 import {MatDialogActions, MatDialogContent, MatDialogRef, MatDialogTitle} from '@angular/material/dialog';
 import {FormControl, ReactiveFormsModule, Validators} from '@angular/forms';
 import {PromptAccessTokenProvider} from '../prompt-access-token.provider';
@@ -22,17 +22,16 @@ import {MatButtonModule} from '@angular/material/button';
 })
 export class EnterAccessTokenComponent {
 
-  public accessTokenFormControl = new FormControl('', {validators: Validators.required, nonNullable: true});
+  private readonly _dialogRef = inject(MatDialogRef);
+  private readonly _accessTokenProvider = inject(PromptAccessTokenProvider);
 
-  constructor(private _dialogRef: MatDialogRef<void>,
-              private _accessTokenProvider: PromptAccessTokenProvider) {
-  }
+  protected readonly accessTokenFormControl = new FormControl('', {validators: Validators.required, nonNullable: true});
 
-  public onCancel(): void {
+  protected onCancel(): void {
     this._dialogRef.close();
   }
 
-  public onOk(): void {
+  protected onOk(): void {
     this._accessTokenProvider.updateAccessToken(this.accessTokenFormControl.value);
     this._dialogRef.close();
   }

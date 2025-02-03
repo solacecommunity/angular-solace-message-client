@@ -10,11 +10,10 @@ import {EnterAccessTokenComponent} from './enter-access-token/enter-access-token
 @Injectable({providedIn: 'root'})
 export class PromptAccessTokenProvider {
 
-  private _empty = true;
-  private _accessToken$ = new ReplaySubject<string>(1);
+  private readonly _matDialog = inject(MatDialog);
+  private readonly _accessToken$ = new ReplaySubject<string>(1);
 
-  constructor(private _matDialog: MatDialog) {
-  }
+  private _empty = true;
 
   public provide$(): Observable<string> {
     // If not provided an access token yet, prompt for input.

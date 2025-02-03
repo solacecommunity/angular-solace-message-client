@@ -18,17 +18,16 @@ import {MatButtonModule} from '@angular/material/button';
 })
 export class SessionPropertiesComponent {
 
-  public sessionProperties = obfuscateSecrets(inject<SessionProperties>(MAT_SNACK_BAR_DATA));
+  private readonly _snackbar = inject(MatSnackBar);
+  private readonly _clipboard = inject(Clipboard);
 
-  constructor(private _snackbar: MatSnackBar,
-              private _clipboard: Clipboard) {
-  }
+  protected readonly sessionProperties = obfuscateSecrets(inject<SessionProperties>(MAT_SNACK_BAR_DATA));
 
-  public onClose(): void {
+  protected onClose(): void {
     this._snackbar.dismiss();
   }
 
-  public onCopyToClipboard(): void {
+  protected onCopyToClipboard(): void {
     this._clipboard.copy(JSON.stringify(this.sessionProperties));
   }
 }

@@ -1,5 +1,5 @@
-import {Component} from '@angular/core';
-import {SolaceMessageClient, SolaceMessageClientConfig} from '@solace-community/angular-solace-message-client';
+import {Component, inject} from '@angular/core';
+import {SolaceMessageClient} from '@solace-community/angular-solace-message-client';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {SessionPropertiesComponent} from '../session-properties/session-properties.component';
 import {LocationService} from '../location.service';
@@ -32,17 +32,15 @@ import {MatTooltipModule} from '@angular/material/tooltip';
 })
 export class TryMeComponent {
 
-  public sessionConfig: SolaceMessageClientConfig;
-  public AuthenticationScheme = AuthenticationScheme;
+  private readonly _snackBar = inject(MatSnackBar);
+  private readonly _locationService = inject(LocationService);
+  private readonly _matDialog = inject(MatDialog);
 
-  constructor(public solaceMessageClient: SolaceMessageClient,
-              private _snackBar: MatSnackBar,
-              private _locationService: LocationService,
-              private _matDialog: MatDialog) {
-    this.sessionConfig = SessionConfigStore.load()!;
-  }
+  protected readonly solaceMessageClient = inject(SolaceMessageClient);
+  protected readonly sessionConfig = SessionConfigStore.load()!;
+  protected readonly AuthenticationScheme = AuthenticationScheme;
 
-  public onLoginPage(): void {
+  protected onLoginPage(): void {
     this._locationService.navigateToAppRoot({clearConnectProperties: true});
   }
 
@@ -57,7 +55,7 @@ export class TryMeComponent {
     );
   }
 
-  public onSessionPropertiesOpen(): void {
+  protected onSessionPropertiesOpen(): void {
     this._snackBar.openFromComponent(SessionPropertiesComponent, {
       data: this.sessionConfig,
       verticalPosition: 'top',
@@ -65,7 +63,7 @@ export class TryMeComponent {
     });
   }
 
-  public onUpdateAccessToken(): void {
+  protected onUpdateAccessToken(): void {
     this._matDialog.open(EnterAccessTokenComponent);
   }
 }
