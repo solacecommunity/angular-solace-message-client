@@ -17,22 +17,21 @@ import {Observables} from '@scion/toolkit/util';
 @Injectable()
 export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
 
-  private _message$ = new Subject<Message>();
-  private _event$ = new Subject<SessionEvent>();
+  public readonly connected$: Observable<boolean>;
+
+  private readonly _sessionProvider = inject(SolaceSessionProvider);
+  private readonly _injector = inject(Injector);
+  private readonly _logger = inject(Logger);
+  private readonly _zone = inject(NgZone);
+  private readonly _destroyRef = inject(DestroyRef);
+
+  private readonly _message$ = new Subject<Message>();
+  private readonly _event$ = new Subject<SessionEvent>();
+  private readonly _sessionDisposed$ = new Subject<void>();
 
   private _session: Promise<Session> | null = null;
-  private _sessionDisposed$ = new Subject<void>();
-
   private _subscriptionExecutor: SerialExecutor | null = null;
   private _subscriptionCounter: TopicSubscriptionCounter | null = null;
-
-  public connected$: Observable<boolean>;
-
-  private _sessionProvider = inject(SolaceSessionProvider);
-  private _injector = inject(Injector);
-  private _logger = inject(Logger);
-  private _zone = inject(NgZone);
-  private _destroyRef = inject(DestroyRef);
 
   constructor() {
     this.disposeWhenSolaceSessionDied();

@@ -1,11 +1,10 @@
 import {SerialExecutor} from './serial-executor.service';
 import {noop} from 'rxjs';
 import {Logger} from './logger';
-import {LogLevel} from 'solclientjs';
 
 describe('SerialExecutor', () => {
 
-  const logger = new Logger(LogLevel.WARN);
+  const logger = jasmine.createSpyObj<Logger>('Logger', ['error']);
 
   it('should execute tasks sequentially', async () => {
     const serialExecutor = new SerialExecutor(logger);

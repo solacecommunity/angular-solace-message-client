@@ -1,4 +1,4 @@
-import {Directive, ElementRef} from '@angular/core';
+import {Directive, ElementRef, inject} from '@angular/core';
 import {asyncScheduler} from 'rxjs';
 
 /**
@@ -7,7 +7,8 @@ import {asyncScheduler} from 'rxjs';
 @Directive({selector: '[appAutoFocus]'})
 export class AutofocusDirective {
 
-  constructor(private _host: ElementRef<HTMLElement>) {
-    asyncScheduler.schedule(() => this._host.nativeElement.focus());
+  constructor() {
+    const host = inject(ElementRef).nativeElement as HTMLElement;
+    asyncScheduler.schedule(() => host.focus());
   }
 }

@@ -1,8 +1,8 @@
-import {ChangeDetectorRef, Component, EventEmitter, OnDestroy, Output, ViewChild} from '@angular/core';
+import {ChangeDetectorRef, Component, DestroyRef, EventEmitter, inject, Output, ViewChild} from '@angular/core';
 import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {MessageEnvelope, SolaceMessageClient} from '@solace-community/angular-solace-message-client';
-import {Observable, Subject, Subscription} from 'rxjs';
-import {filter, finalize, takeUntil} from 'rxjs/operators';
+import {Observable, Subscription} from 'rxjs';
+import {filter, finalize} from 'rxjs/operators';
 import {SciViewportComponent} from '@scion/components/viewport';
 import {Message, QueueDescriptor, QueueType} from 'solclientjs';
 import {MatFormFieldModule} from '@angular/material/form-field';
@@ -13,6 +13,7 @@ import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MatButtonModule} from '@angular/material/button';
 import {MatInputModule} from '@angular/material/input';
 import {AutofocusDirective} from '../autofocus.directive';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 
 export const DESTINATION = 'destination';
 export const DESTINATION_TYPE = 'destinationType';
@@ -36,17 +37,26 @@ export const FOLLOW_TAIL = 'followTail';
     AutofocusDirective,
   ],
 })
-export class SubscriberComponent implements OnDestroy {
+export class SubscriberComponent {
 
-  public readonly DESTINATION = DESTINATION;
-  public readonly DESTINATION_TYPE = DESTINATION_TYPE;
-  public readonly SUBSCRIPTION = SUBSCRIPTION;
-  public readonly FOLLOW_TAIL = FOLLOW_TAIL;
+  private readonly _solaceMessageClient = inject(SolaceMessageClient);
+  private readonly _cd = inject(ChangeDetectorRef);
+  private readonly _destroyRef = inject(DestroyRef);
 
-  public form: FormGroup;
-  public subscribeError: string | null = null;
-  public envelopes: MessageEnvelope[] = [];
-  public tooltips = {
+  protected readonly form = new FormGroup({
+    [SUBSCRIPTION]: new FormGroup({
+      [DESTINATION]: new FormControl('', {validators: Validators.required, nonNullable: true}),
+      [DESTINATION_TYPE]: new FormControl(SubscriptionDestinationType.TOPIC, {validators: Validators.required, nonNullable: true}),
+    }),
+    [FOLLOW_TAIL]: new FormControl(true),
+  });
+
+  protected readonly DESTINATION = DESTINATION;
+  protected readonly DESTINATION_TYPE = DESTINATION_TYPE;
+  protected readonly SUBSCRIPTION = SUBSCRIPTION;
+  protected readonly FOLLOW_TAIL = FOLLOW_TAIL;
+  protected readonly SubscriptionDestinationType = SubscriptionDestinationType;
+  protected readonly tooltips = {
     topic: 'Subscribes to messages published to the given topic.',
     queue: 'Subscribes for messages sent to the given durable queue. The queue needs to be administratively configured on the broker.',
     topicEndpoint: `Subscribes to a non-durable topic endpoint (similar to a queue) that subscribes to the given topic destination. The topic endpoint needs NOT to be configured on the broker.
@@ -58,7 +68,9 @@ export class SubscriberComponent implements OnDestroy {
   };
 
   private _subscription: Subscription | null = null;
-  private _destroy$ = new Subject<void>();
+
+  protected subscribeError: string | null = null;
+  protected envelopes: MessageEnvelope[] = [];
 
   @ViewChild(SciViewportComponent, {static: true})
   private _viewport!: SciViewportComponent;
@@ -66,22 +78,12 @@ export class SubscriberComponent implements OnDestroy {
   @Output()
   public destination = new EventEmitter<string>();
 
-  public SubscriptionDestinationType = SubscriptionDestinationType;
-
-  constructor(private _solaceMessageClient: SolaceMessageClient,
-              private _cd: ChangeDetectorRef) {
-    this.form = new FormGroup({
-      [SUBSCRIPTION]: new FormGroup({
-        [DESTINATION]: new FormControl('', {validators: Validators.required, nonNullable: true}),
-        [DESTINATION_TYPE]: new FormControl(SubscriptionDestinationType.TOPIC, {validators: Validators.required, nonNullable: true}),
-      }),
-      [FOLLOW_TAIL]: new FormControl(true),
-    });
+  constructor() {
     this.installDestinationEmitter();
     this.installFollowTailListener();
   }
 
-  public onSubscribe(): void {
+  protected onSubscribe(): void {
     this.form.get(SUBSCRIPTION)!.disable();
     this.subscribeError = null;
 
@@ -111,7 +113,7 @@ export class SubscriberComponent implements OnDestroy {
       this._subscription = message$
         .pipe(
           finalize(() => this.form.get(SUBSCRIPTION)!.enable()),
-          takeUntil(this._destroy$),
+          takeUntilDestroyed(this._destroyRef),
         )
         .subscribe({
           next: (envelope: MessageEnvelope) => {
@@ -131,25 +133,25 @@ export class SubscriberComponent implements OnDestroy {
     }
   }
 
-  public onUnsubscribe(): void {
+  protected onUnsubscribe(): void {
     this._subscription?.unsubscribe();
     this._subscription = null;
   }
 
-  public onClear(): void {
+  protected onClear(): void {
     this.envelopes = [];
   }
 
-  public onDelete(envelope: MessageEnvelope): void {
+  protected onDelete(envelope: MessageEnvelope): void {
     this.envelopes = this.envelopes.filter(it => it !== envelope);
   }
 
-  public onReply(messageToReplyTo: Message): void {
+  protected onReply(messageToReplyTo: Message): void {
     this._solaceMessageClient.reply(messageToReplyTo, 'this is a reply')
       .catch((error: unknown) => this.subscribeError = `${error}`); // eslint-disable-line @typescript-eslint/restrict-template-expressions
   }
 
-  public get isSubscribed(): boolean {
+  protected get isSubscribed(): boolean {
     return (this._subscription && !this._subscription.closed) ?? false;
   }
 
@@ -159,7 +161,7 @@ export class SubscriberComponent implements OnDestroy {
 
   private installDestinationEmitter(): void {
     this.form.get([SUBSCRIPTION, DESTINATION])!.valueChanges
-      .pipe(takeUntil(this._destroy$))
+      .pipe(takeUntilDestroyed())
       .subscribe(this.destination);
   }
 
@@ -167,15 +169,11 @@ export class SubscriberComponent implements OnDestroy {
     this.form.get(FOLLOW_TAIL)!.valueChanges
       .pipe(
         filter(Boolean),
-        takeUntil(this._destroy$),
+        takeUntilDestroyed(),
       )
       .subscribe(() => {
         this.scrollToEnd();
       });
-  }
-
-  public ngOnDestroy(): void {
-    this._destroy$.next();
   }
 }
 

@@ -1,9 +1,9 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, inject} from '@angular/core';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {DestinationType, MessageDeliveryModeType, MessageType, SDTField, SDTFieldType, SolclientFactory} from 'solclientjs';
 import {Data, MessageEnvelope, PublishOptions, SolaceMessageClient} from '@solace-community/angular-solace-message-client';
-import {defer, Observable, Subject, Subscription, tap, throwError} from 'rxjs';
-import {finalize, takeUntil} from 'rxjs/operators';
+import {defer, Observable, Subscription, tap, throwError} from 'rxjs';
+import {finalize} from 'rxjs/operators';
 import {Arrays} from '@scion/toolkit/util';
 import {MatCardModule} from '@angular/material/card';
 import {SciViewportComponent} from '@scion/components/viewport';
@@ -13,6 +13,7 @@ import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MessageListItemComponent} from '../message-list-item/message-list-item.component';
 import {MatInputModule} from '@angular/material/input';
 import {MatButtonModule} from '@angular/material/button';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 
 export const DESTINATION = 'destination';
 export const DESTINATION_TYPE = 'destinationType';
@@ -39,42 +40,41 @@ export const REQUEST_REPLY = 'request/reply';
     MessageListItemComponent,
   ],
 })
-export class PublisherComponent implements OnDestroy {
+export class PublisherComponent {
 
-  private _destroy$ = new Subject<void>();
+  private readonly _solaceMessageClient = inject(SolaceMessageClient);
+  private readonly _cd = inject(ChangeDetectorRef);
+  private readonly _formBuilder = inject(FormBuilder);
+  private readonly _destroyRef = inject(DestroyRef);
+
+  protected readonly DESTINATION = DESTINATION;
+  protected readonly DESTINATION_TYPE = DESTINATION_TYPE;
+  protected readonly DELIVERY_MODE = DELIVERY_MODE;
+  protected readonly MESSAGE = MESSAGE;
+  protected readonly MESSAGE_TYPE = MESSAGE_TYPE;
+  protected readonly HEADERS = HEADERS;
+  protected readonly REQUEST_REPLY = REQUEST_REPLY;
+
+  protected readonly MessageType = MessageType;
+  protected readonly DestinationType = DestinationType;
+  protected readonly MessageDeliveryModeType = MessageDeliveryModeType;
+
+  protected readonly form = new FormGroup({
+    [DESTINATION]: this._formBuilder.control('', Validators.required),
+    [DESTINATION_TYPE]: this._formBuilder.control(DestinationType.TOPIC, Validators.required),
+    [DELIVERY_MODE]: this._formBuilder.control(undefined),
+    [MESSAGE]: this._formBuilder.control(''),
+    [MESSAGE_TYPE]: this._formBuilder.control(MessageType.BINARY, Validators.required),
+    [HEADERS]: this._formBuilder.control(''),
+    [REQUEST_REPLY]: this._formBuilder.control(false),
+  });
+
   private _publishSubscription: Subscription | null = null;
 
-  public readonly DESTINATION = DESTINATION;
-  public readonly DESTINATION_TYPE = DESTINATION_TYPE;
-  public readonly DELIVERY_MODE = DELIVERY_MODE;
-  public readonly MESSAGE = MESSAGE;
-  public readonly MESSAGE_TYPE = MESSAGE_TYPE;
-  public readonly HEADERS = HEADERS;
-  public readonly REQUEST_REPLY = REQUEST_REPLY;
+  protected publishError: string | null = null;
+  protected replies: MessageEnvelope[] = [];
 
-  public form: FormGroup;
-  public publishError: string | null = null;
-  public MessageType = MessageType;
-  public DestinationType = DestinationType;
-  public MessageDeliveryModeType = MessageDeliveryModeType;
-
-  public replies: MessageEnvelope[] = [];
-
-  constructor(formBuilder: FormBuilder,
-              private _solaceMessageClient: SolaceMessageClient,
-              private _cd: ChangeDetectorRef) {
-    this.form = new FormGroup({
-      [DESTINATION]: formBuilder.control('', Validators.required),
-      [DESTINATION_TYPE]: formBuilder.control(DestinationType.TOPIC, Validators.required),
-      [DELIVERY_MODE]: formBuilder.control(undefined),
-      [MESSAGE]: formBuilder.control(''),
-      [MESSAGE_TYPE]: formBuilder.control(MessageType.BINARY, Validators.required),
-      [HEADERS]: formBuilder.control(''),
-      [REQUEST_REPLY]: formBuilder.control(false),
-    });
-  }
-
-  public async onPublish(): Promise<void> {
+  protected async onPublish(): Promise<void> {
     this.form.disable();
     this.publishError = null;
     this._publishSubscription = this.publish$()
@@ -88,27 +88,27 @@ export class PublisherComponent implements OnDestroy {
           this.form.enable();
           this._publishSubscription = null;
         }),
-        takeUntil(this._destroy$),
+        takeUntilDestroyed(this._destroyRef),
       )
       .subscribe({
         error: (error: unknown) => this.publishError = `${error}`, // eslint-disable-line @typescript-eslint/restrict-template-expressions
       });
   }
 
-  public onCancelPublish(): void {
+  protected onCancelPublish(): void {
     this._publishSubscription?.unsubscribe();
     this._publishSubscription = null;
     this.replies.length = 0;
   }
 
-  public onClearReplies(): void {
+  protected onClearReplies(): void {
     this.replies.length = 0;
   }
 
   private publish$(): Observable<any> {
     try {
-      const destination = this.form.get(DESTINATION)!.value as string;
-      const destinationType = this.form.get(DESTINATION_TYPE)!.value as DestinationType;
+      const destination = this.form.get(DESTINATION)!.value!;
+      const destinationType = this.form.get(DESTINATION_TYPE)!.value;
       const message: Data | undefined = this.readMessageFromUI();
       const publishOptions: PublishOptions = this.readPublishOptionsFromUI();
 
@@ -143,22 +143,22 @@ export class PublisherComponent implements OnDestroy {
     }
   }
 
-  public onDeleteReply(reply: MessageEnvelope): void {
+  protected onDeleteReply(reply: MessageEnvelope): void {
     Arrays.remove(this.replies, reply);
   }
 
-  public get requestReply(): boolean {
-    return this.form.get(REQUEST_REPLY)!.value as boolean;
+  protected get requestReply(): boolean {
+    return this.form.get(REQUEST_REPLY)!.value!;
   }
 
-  public get publishing(): boolean {
+  protected get publishing(): boolean {
     return this._publishSubscription !== null;
   }
 
   private readPublishOptionsFromUI(): PublishOptions {
     return {
       headers: this.readHeadersFromUI(),
-      deliveryMode: this.form.get(DELIVERY_MODE)!.value as MessageDeliveryModeType,
+      deliveryMode: this.form.get(DELIVERY_MODE)!.value! as MessageDeliveryModeType,
     };
   }
 
@@ -177,7 +177,7 @@ export class PublisherComponent implements OnDestroy {
   }
 
   private readHeadersFromUI(): Map<string, string | boolean | number> | undefined {
-    const headers = this.form.get(HEADERS)!.value as string;
+    const headers = this.form.get(HEADERS)!.value!;
     if (!headers.length) {
       return undefined;
     }
@@ -196,9 +196,5 @@ export class PublisherComponent implements OnDestroy {
       }
     });
     return headerMap;
-  }
-
-  public ngOnDestroy(): void {
-    this._destroy$.next();
   }
 }
