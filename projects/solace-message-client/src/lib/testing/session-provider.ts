@@ -7,7 +7,7 @@ import {SessionProperties} from 'solclientjs';
  * Creates {@link EnvironmentProviders} with a {@link SolaceSessionProvider} that provides the {@link Session} of the passed {@link SessionFixture}.
  */
 export function provideSession(sessionFixture: SessionFixture): EnvironmentProviders {
-  const sessionProvider: jasmine.SpyObj<SolaceSessionProvider> = jasmine.createSpyObj('SolaceSessionProvider', ['provide']);
+  const sessionProvider = jasmine.createSpyObj<SolaceSessionProvider>('SolaceSessionProvider', ['provide']);
   sessionProvider.provide.and.callFake((properties: SessionProperties) => {
     sessionFixture.sessionProvider.provide(properties);
     return sessionFixture.session;

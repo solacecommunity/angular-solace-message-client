@@ -12,7 +12,7 @@ export class QueueBrowserFixture {
   public queueBrowserProperties: QueueBrowserProperties | undefined;
 
   constructor(session: jasmine.SpyObj<Session>) {
-    this.queueBrowser = jasmine.createSpyObj('queueBrowser', ['on', 'connect', 'disconnect', 'start', 'stop']);
+    this.queueBrowser = jasmine.createSpyObj<QueueBrowser>('queueBrowser', ['on', 'connect', 'disconnect', 'start', 'stop']);
 
     // Configure session to return the queue browser stub and capture the passed config.
     session.createQueueBrowser.and.callFake((queueBrowserProperties: QueueBrowserProperties): QueueBrowser => {
@@ -28,8 +28,8 @@ export class QueueBrowserFixture {
 
     // Fire 'DOWN' event when invoking 'disconnect'
     this.queueBrowser.disconnect.and.callFake(() => {
-      this.simulateEvent(QueueBrowserEventName.DOWN);
-      this.simulateEvent(QueueBrowserEventName.DISPOSED);
+      void this.simulateEvent(QueueBrowserEventName.DOWN);
+      void this.simulateEvent(QueueBrowserEventName.DISPOSED);
     });
   }
 
@@ -56,7 +56,7 @@ export class QueueBrowserFixture {
    * Simulates the Solace message broker to publish a message to the Solace queue browser.
    */
   public async simulateMessage(message: Message): Promise<void> {
-    const callback = this._callbacks.get(QueueBrowserEventName.MESSAGE) as (message: Message) => void;
+    const callback = this._callbacks.get(QueueBrowserEventName.MESSAGE) as ((message: Message) => void) | undefined;
     if (!callback) {
       throw Error(`[SpecError] No callback registered for event '${QueueBrowserEventName.MESSAGE}'`);
     }

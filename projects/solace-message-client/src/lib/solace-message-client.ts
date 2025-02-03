@@ -503,7 +503,7 @@ export function mapToText(): OperatorFunction<MessageEnvelope, [string, Params, 
     if (message.getType() !== MessageType.TEXT) {
       throw Error(`[IllegalMessageTypeError] Expected message type to be ${formatMessageType(MessageType.TEXT)}, but was ${formatMessageType(message.getType())}. Be sure to use a compatible map operator.`);
     }
-    return [message.getSdtContainer()!.getValue(), envelope.params, message];
+    return [message.getSdtContainer()!.getValue() as string, envelope.params, message];
   });
 }
 
@@ -543,8 +543,6 @@ function formatMessageType(messageType: MessageType): string {
       return `MAP (${messageType})`;
     case MessageType.STREAM:
       return `STREAM (${messageType})`;
-    default:
-      return `UNKNOWN (${messageType})`;
   }
 }
 

@@ -1,4 +1,4 @@
-import {Component, Inject} from '@angular/core';
+import {Component, inject} from '@angular/core';
 import {MAT_SNACK_BAR_DATA, MatSnackBar} from '@angular/material/snack-bar';
 import {Clipboard} from '@angular/cdk/clipboard';
 import {SessionProperties} from 'solclientjs';
@@ -18,12 +18,10 @@ import {MatButtonModule} from '@angular/material/button';
 })
 export class SessionPropertiesComponent {
 
-  public sessionProperties: SessionProperties;
+  public sessionProperties = obfuscateSecrets(inject<SessionProperties>(MAT_SNACK_BAR_DATA));
 
-  constructor(@Inject(MAT_SNACK_BAR_DATA) sessionProperties: SessionProperties,
-              private _snackbar: MatSnackBar,
+  constructor(private _snackbar: MatSnackBar,
               private _clipboard: Clipboard) {
-    this.sessionProperties = obfuscateSecrets(sessionProperties);
   }
 
   public onClose(): void {
@@ -36,7 +34,7 @@ export class SessionPropertiesComponent {
 }
 
 function obfuscateSecrets(sessionProperties: SessionProperties): SessionProperties {
-  const obfuscated = {...sessionProperties};
+  const obfuscated = {...sessionProperties}; // eslint-disable-line @typescript-eslint/no-misused-spread
   if (obfuscated.password) {
     obfuscated.password = '***';
   }
@@ -45,4 +43,3 @@ function obfuscateSecrets(sessionProperties: SessionProperties): SessionProperti
   }
   return obfuscated;
 }
-

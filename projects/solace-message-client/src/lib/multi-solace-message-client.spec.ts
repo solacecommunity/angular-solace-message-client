@@ -1,5 +1,5 @@
 import {SolaceMessageClient} from './solace-message-client';
-import {createEnvironmentInjector, EnvironmentInjector, inject, ProviderToken, runInInjectionContext} from '@angular/core';
+import {createEnvironmentInjector, EnvironmentInjector, inject, runInInjectionContext, Type} from '@angular/core';
 import {provideSolaceMessageClient} from './solace-message-client.provider';
 import {LogLevel, SessionEventCode} from 'solclientjs';
 import {SessionFixture} from './testing/session.fixture';
@@ -109,7 +109,7 @@ describe('Multi Environment Configuration', () => {
       TestBed.inject(EnvironmentInjector),
     );
 
-    expect(environment.get(LogLevel as unknown as ProviderToken<LogLevel>)).toBe(LogLevel.WARN);
+    expect(environment.get(LogLevel as unknown as Type<LogLevel>)).toBe(LogLevel.WARN);
   });
 
   it('should inherit `LogLevel` from parent environment', async () => {
@@ -127,7 +127,7 @@ describe('Multi Environment Configuration', () => {
     );
 
     // Expect LogLevel to be inherited.
-    expect(childEnvironment.get(LogLevel as unknown as ProviderToken<LogLevel>)).toBe(LogLevel.TRACE);
+    expect(childEnvironment.get(LogLevel as unknown as Type<LogLevel>)).toBe(LogLevel.TRACE);
   });
 
   it('should provide LogLevel per environment', async () => {
@@ -148,6 +148,6 @@ describe('Multi Environment Configuration', () => {
     );
 
     // Expect LogLevel to be overwritten.
-    expect(childEnvironment.get(LogLevel as unknown as ProviderToken<LogLevel>)).toBe(LogLevel.INFO);
+    expect(childEnvironment.get(LogLevel as unknown as Type<LogLevel>)).toBe(LogLevel.INFO);
   });
 });

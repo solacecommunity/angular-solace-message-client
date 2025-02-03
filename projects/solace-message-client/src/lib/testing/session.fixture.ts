@@ -27,9 +27,9 @@ export class SessionFixture {
   public sessionProperties: SessionProperties | undefined;
 
   constructor() {
-    this.session = jasmine.createSpyObj('Session', ['on', 'connect', 'subscribe', 'unsubscribe', 'send', 'dispose', 'disconnect', 'createMessageConsumer', 'createQueueBrowser', 'sendRequest', 'sendReply', 'updateAuthenticationOnReconnect']);
+    this.session = jasmine.createSpyObj<Session>('Session', ['on', 'connect', 'subscribe', 'unsubscribe', 'send', 'dispose', 'disconnect', 'createMessageConsumer', 'createQueueBrowser', 'sendRequest', 'sendReply', 'updateAuthenticationOnReconnect']);
 
-    this.sessionProvider = jasmine.createSpyObj('SolaceSessionProvider', ['provide']);
+    this.sessionProvider = jasmine.createSpyObj<SolaceSessionProvider>('SolaceSessionProvider', ['provide']);
     this.sessionProvider.provide.and.callFake((properties: SessionProperties) => {
       this.sessionProperties = properties;
       return this.session;
@@ -47,7 +47,7 @@ export class SessionFixture {
 
     // Fire 'DISCONNECTED' event when invoking 'disconnect'
     this.session.disconnect.and.callFake(() => {
-      return this.simulateEvent(SessionEventCode.DISCONNECTED);
+      return void this.simulateEvent(SessionEventCode.DISCONNECTED);
     });
   }
 
@@ -75,7 +75,7 @@ export class SessionFixture {
    * Simulates the Solace message broker to publish a message to the Solace session.
    */
   public async simulateMessage(message: Message): Promise<void> {
-    const callback = this._callbacks.get(SessionEventCode.MESSAGE) as ((message: Message) => void);
+    const callback = this._callbacks.get(SessionEventCode.MESSAGE) as ((message: Message) => void) | undefined;
     if (!callback) {
       throw Error(`[SpecError] No callback registered for event '${SessionEventCode.MESSAGE}'`);
     }
@@ -123,7 +123,7 @@ export class SessionFixture {
 
 function createSessionEvent(sessionEventCode: SessionEventCode, correlationKey?: object | string): SessionEvent {
   // @ts-expect-error: constructor of {@link SessionEvent} is protected.
-  return new SessionEvent(
+  return new SessionEvent( // eslint-disable-line @typescript-eslint/no-unsafe-return
     [] /* superclassArgs */,
     sessionEventCode,
     null /* infoStr */,

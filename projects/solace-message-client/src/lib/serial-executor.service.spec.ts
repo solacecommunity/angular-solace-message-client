@@ -54,7 +54,7 @@ describe('SerialExecutor', () => {
     });
     const task2 = serialExecutor.scheduleSerial(() => {
       capture.push('task-2');
-      return Promise.reject('task-2 (failed)');
+      return Promise.reject(Error('task-2 (failed)'));
     });
     const task3 = serialExecutor.scheduleSerial(() => {
       capture.push('task-3');
@@ -71,7 +71,7 @@ describe('SerialExecutor', () => {
     ]);
 
     await expectAsync(task1).toBeResolvedTo('task-1 (success)');
-    await expectAsync(task2).toBeRejectedWith('task-2 (failed)');
+    await expectAsync(task2).toBeRejectedWith(Error('task-2 (failed)'));
     await expectAsync(task3).toBeResolvedTo('task-3 (success)');
   });
 
@@ -79,11 +79,11 @@ describe('SerialExecutor', () => {
     const serialExecutor = new SerialExecutor(logger);
 
     const task1 = serialExecutor.scheduleSerial(() => Promise.resolve('task-1 (success)'));
-    const task2 = serialExecutor.scheduleSerial(() => Promise.reject('task-2 (failed)'));
+    const task2 = serialExecutor.scheduleSerial(() => Promise.reject(Error('task-2 (failed)')));
     const task3 = serialExecutor.scheduleSerial(() => Promise.resolve('task-3 (success)'));
 
     await expectAsync(task1).toBeResolvedTo('task-1 (success)');
-    await expectAsync(task2).toBeRejectedWith('task-2 (failed)');
+    await expectAsync(task2).toBeRejectedWith(Error('task-2 (failed)'));
     await expectAsync(task3).toBeResolvedTo('task-3 (success)');
   });
 });

@@ -1,4 +1,4 @@
-import {EnvironmentProviders, inject, Injectable, makeEnvironmentProviders} from '@angular/core';
+import {EnvironmentProviders, inject, Injectable, makeEnvironmentProviders, Type} from '@angular/core';
 import {LogLevel} from 'solclientjs';
 
 /**
@@ -20,30 +20,30 @@ export class Logger {
 
   public debug(...data: any[]): void {
     if (this.logLevel >= LogLevel.DEBUG) {
-      console?.debug?.(...this.addLogPrefix(data));
+      console.debug(...this.addLogPrefix(data));
     }
   }
 
   public info(...data: any[]): void {
     if (this.logLevel >= LogLevel.INFO) {
-      console?.info?.(...this.addLogPrefix(data));
+      console.info(...this.addLogPrefix(data));
     }
   }
 
   public warn(...data: any[]): void {
     if (this.logLevel >= LogLevel.WARN) {
-      console?.warn?.(...this.addLogPrefix(data));
+      console.warn(...this.addLogPrefix(data));
     }
   }
 
   public error(...data: any[]): void {
     if (this.logLevel >= LogLevel.ERROR) {
-      console?.error?.(...this.addLogPrefix(data));
+      console.error(...this.addLogPrefix(data));
     }
   }
 
-  private addLogPrefix(args: any[]): any[] {
-    return [`[SolaceMessageClient] ${args[0]}`, ...args.slice(1)];
+  private addLogPrefix(args: unknown[]): unknown[] {
+    return [`[SolaceMessageClient] ${args[0]}`, ...args.slice(1)]; // eslint-disable-line @typescript-eslint/restrict-template-expressions
   }
 
   private readLogLevelFromSessionStorage(defaultLogLevel: LogLevel): LogLevel {
@@ -74,6 +74,6 @@ export function provideLogger(logLevel: LogLevel): EnvironmentProviders {
   return makeEnvironmentProviders([
     Logger,
     // Provide inherited 'LogLevel' or provide default LogLevel otherwise.
-    {provide: LogLevel, useFactory: () => inject(LogLevel as any, {skipSelf: true, optional: true}) ?? logLevel},
+    {provide: LogLevel, useFactory: () => inject(LogLevel as unknown as Type<LogLevel>, {skipSelf: true, optional: true}) ?? logLevel},
   ]);
 }
