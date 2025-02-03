@@ -13,7 +13,7 @@ export class MessageConsumerFixture {
   public messageConsumerProperties: MessageConsumerProperties | undefined;
 
   constructor(session: jasmine.SpyObj<Session>) {
-    this.messageConsumer = jasmine.createSpyObj('messageConsumer', ['on', 'connect', 'disconnect', 'dispose']);
+    this.messageConsumer = jasmine.createSpyObj<Omit<MessageConsumer, 'disposed'> & {disposed: boolean}>('messageConsumer', ['on', 'connect', 'disconnect', 'dispose']);
     this.messageConsumer.disposed = false;
 
     // Configure session to return the message consumer stub and capture the passed config.
@@ -29,7 +29,7 @@ export class MessageConsumerFixture {
     });
 
     // Fire 'DOWN' event when invoking 'disconnect'
-    this.messageConsumer.disconnect.and.callFake(() => this.simulateEvent(MessageConsumerEventName.DOWN));
+    this.messageConsumer.disconnect.and.callFake(() => void this.simulateEvent(MessageConsumerEventName.DOWN));
 
     // Mark message consumer disposed when calling 'dispose'
     this.messageConsumer.dispose.and.callFake(() => {
@@ -50,11 +50,11 @@ export class MessageConsumerFixture {
   public async simulateEvent(eventName: MessageConsumerEventName, event?: OperationError | MessageConsumerEvent): Promise<void> {
     await drainMicrotaskQueue();
 
-    const callback = this._callbacks.get(eventName);
+    const callback = this._callbacks.get(eventName) as ((event?: OperationError | MessageConsumerEvent) => void) | undefined;
     if (!callback) {
       throw Error(`[SpecError] No callback registered for event '${eventName}'`);
     }
-    callback(event as any);
+    callback(event);
     await drainMicrotaskQueue();
   }
 
@@ -62,7 +62,7 @@ export class MessageConsumerFixture {
    * Simulates the Solace message broker to publish a message to the Solace message consumer.
    */
   public async simulateMessage(message: Message): Promise<void> {
-    const callback = this._callbacks.get(MessageConsumerEventName.MESSAGE) as (message: Message) => void;
+    const callback = this._callbacks.get(MessageConsumerEventName.MESSAGE) as ((message: Message) => void) | undefined;
     if (!callback) {
       throw Error(`[SpecError] No callback registered for event '${MessageConsumerEventName.MESSAGE}'`);
     }

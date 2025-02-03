@@ -21,7 +21,7 @@ export class TopicMatcher {
 
     for (let i = 0; i < subscriptionSegments.length; i++) {
       const subscriptionTopicSegment = subscriptionSegments[i];
-      const testee = testeeSegments[i];
+      const testee = testeeSegments[i] as string | undefined;
       const isLastSubscriptionTopicSegment = (i === subscriptionSegments.length - 1);
 
       if (testee === undefined) {

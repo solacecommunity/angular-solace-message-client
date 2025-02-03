@@ -1546,32 +1546,32 @@ describe('SolaceMessageClient', () => {
       const userPropertyMap = sessionSendCaptor.message!.getUserPropertyMap()!;
       expect(userPropertyMap.getKeys()).toEqual(['key1', 'key2', 'key3', 'key4', 'key5', 'key6', 'key7', 'key8', 'key9']);
 
-      expect(userPropertyMap.getField('key1')!.getType()).toEqual(SDTFieldType.STRING);
-      expect(userPropertyMap.getField('key1')!.getValue()).toEqual('value');
+      expect(userPropertyMap.getField('key1').getType()).toEqual(SDTFieldType.STRING);
+      expect(userPropertyMap.getField('key1').getValue()).toEqual('value');
 
-      expect(userPropertyMap.getField('key2')!.getType()).toEqual(SDTFieldType.BOOL);
-      expect(userPropertyMap.getField('key2')!.getValue()).toEqual(true);
+      expect(userPropertyMap.getField('key2').getType()).toEqual(SDTFieldType.BOOL);
+      expect(userPropertyMap.getField('key2').getValue()).toEqual(true);
 
-      expect(userPropertyMap.getField('key3')!.getType()).toEqual(SDTFieldType.BOOL);
-      expect(userPropertyMap.getField('key3')!.getValue()).toEqual(false);
+      expect(userPropertyMap.getField('key3').getType()).toEqual(SDTFieldType.BOOL);
+      expect(userPropertyMap.getField('key3').getValue()).toEqual(false);
 
-      expect(userPropertyMap.getField('key4')!.getType()).toEqual(SDTFieldType.INT32);
-      expect(userPropertyMap.getField('key4')!.getValue()).toEqual(123);
+      expect(userPropertyMap.getField('key4').getType()).toEqual(SDTFieldType.INT32);
+      expect(userPropertyMap.getField('key4').getValue()).toEqual(123);
 
-      expect(userPropertyMap.getField('key5')!.getType()).toEqual(SDTFieldType.INT32);
-      expect(userPropertyMap.getField('key5')!.getValue()).toEqual(0);
+      expect(userPropertyMap.getField('key5').getType()).toEqual(SDTFieldType.INT32);
+      expect(userPropertyMap.getField('key5').getValue()).toEqual(0);
 
-      expect(userPropertyMap.getField('key6')!.getType()).toEqual(SDTFieldType.INT16);
-      expect(userPropertyMap.getField('key6')!.getValue()).toEqual(16);
+      expect(userPropertyMap.getField('key6').getType()).toEqual(SDTFieldType.INT16);
+      expect(userPropertyMap.getField('key6').getValue()).toEqual(16);
 
-      expect(userPropertyMap.getField('key7')!.getType()).toEqual(SDTFieldType.INT32);
-      expect(userPropertyMap.getField('key7')!.getValue()).toEqual(32);
+      expect(userPropertyMap.getField('key7').getType()).toEqual(SDTFieldType.INT32);
+      expect(userPropertyMap.getField('key7').getValue()).toEqual(32);
 
-      expect(userPropertyMap.getField('key8')!.getType()).toEqual(SDTFieldType.INT64);
-      expect(userPropertyMap.getField('key8')!.getValue()).toEqual(64);
+      expect(userPropertyMap.getField('key8').getType()).toEqual(SDTFieldType.INT64);
+      expect(userPropertyMap.getField('key8').getValue()).toEqual(64);
 
-      expect(userPropertyMap.getField('key9')!.getType()).toEqual(SDTFieldType.UNKNOWN);
-      expect(userPropertyMap.getField('key9')!.getValue()).toEqual('!UNKNOWN!');
+      expect(userPropertyMap.getField('key9').getType()).toEqual(SDTFieldType.UNKNOWN);
+      expect(userPropertyMap.getField('key9').getValue()).toEqual('!UNKNOWN!');
     });
 
     it('should receive message headers (user properties)', async () => {

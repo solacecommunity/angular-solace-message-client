@@ -12,6 +12,6 @@ export class LocationService {
     if (options.clearConnectProperties) {
       SessionConfigStore.clear();
     }
-    this._router.navigate(['/']).then(() => location.reload());
+    void this._router.navigate(['/']).then(() => location.reload());
   }
 }

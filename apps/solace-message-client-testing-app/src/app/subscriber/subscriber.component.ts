@@ -85,8 +85,8 @@ export class SubscriberComponent implements OnDestroy {
     this.form.get(SUBSCRIPTION)!.disable();
     this.subscribeError = null;
 
-    const destination: string = this.form.get([SUBSCRIPTION, DESTINATION])!.value;
-    const destinationType: SubscriptionDestinationType = this.form.get([SUBSCRIPTION, DESTINATION_TYPE])!.value;
+    const destination = this.form.get([SUBSCRIPTION, DESTINATION])!.value as string;
+    const destinationType = this.form.get([SUBSCRIPTION, DESTINATION_TYPE])!.value as SubscriptionDestinationType;
 
     try {
       const message$: Observable<MessageEnvelope> = (() => {
@@ -104,9 +104,6 @@ export class SubscriberComponent implements OnDestroy {
           }
           case SubscriptionDestinationType.QUEUE_BROWSER: {
             return this._solaceMessageClient.browse$(destination);
-          }
-          default: {
-            throw Error(`[UnsupportedDestinationError] Expected '${SubscriptionDestinationType.TOPIC}', '${SubscriptionDestinationType.QUEUE}', '${SubscriptionDestinationType.TOPIC_ENDPOINT}', or '${SubscriptionDestinationType.QUEUE_BROWSER}', but was ${destinationType}`);
           }
         }
       })();
@@ -128,9 +125,9 @@ export class SubscriberComponent implements OnDestroy {
           error: error => this.subscribeError = `${error}`,
         });
     }
-    catch (error) {
+    catch (error: unknown) {
       this.form.get(SUBSCRIPTION)!.enable();
-      this.subscribeError = `${error}`;
+      this.subscribeError = `${error}`; // eslint-disable-line @typescript-eslint/restrict-template-expressions
     }
   }
 
@@ -149,7 +146,7 @@ export class SubscriberComponent implements OnDestroy {
 
   public onReply(messageToReplyTo: Message): void {
     this._solaceMessageClient.reply(messageToReplyTo, 'this is a reply')
-      .catch(error => this.subscribeError = `${error}`);
+      .catch((error: unknown) => this.subscribeError = `${error}`); // eslint-disable-line @typescript-eslint/restrict-template-expressions
   }
 
   public get isSubscribed(): boolean {

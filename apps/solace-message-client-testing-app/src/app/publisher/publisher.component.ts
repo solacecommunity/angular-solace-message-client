@@ -91,7 +91,7 @@ export class PublisherComponent implements OnDestroy {
         takeUntil(this._destroy$),
       )
       .subscribe({
-        error: error => this.publishError = error,
+        error: (error: unknown) => this.publishError = `${error}`, // eslint-disable-line @typescript-eslint/restrict-template-expressions
       });
   }
 
@@ -107,8 +107,8 @@ export class PublisherComponent implements OnDestroy {
 
   private publish$(): Observable<any> {
     try {
-      const destination = this.form.get(DESTINATION)!.value;
-      const destinationType: DestinationType = this.form.get(DESTINATION_TYPE)!.value;
+      const destination = this.form.get(DESTINATION)!.value as string;
+      const destinationType = this.form.get(DESTINATION_TYPE)!.value as DestinationType;
       const message: Data | undefined = this.readMessageFromUI();
       const publishOptions: PublishOptions = this.readPublishOptionsFromUI();
 
@@ -148,7 +148,7 @@ export class PublisherComponent implements OnDestroy {
   }
 
   public get requestReply(): boolean {
-    return this.form.get(REQUEST_REPLY)!.value;
+    return this.form.get(REQUEST_REPLY)!.value as boolean;
   }
 
   public get publishing(): boolean {
@@ -158,12 +158,12 @@ export class PublisherComponent implements OnDestroy {
   private readPublishOptionsFromUI(): PublishOptions {
     return {
       headers: this.readHeadersFromUI(),
-      deliveryMode: this.form.get(DELIVERY_MODE)!.value,
+      deliveryMode: this.form.get(DELIVERY_MODE)!.value as MessageDeliveryModeType,
     };
   }
 
   private readMessageFromUI(): Data | undefined {
-    const message = this.form.get(MESSAGE)!.value;
+    const message = this.form.get(MESSAGE)!.value as string | undefined;
     if (!message) {
       return undefined;
     }
@@ -176,13 +176,13 @@ export class PublisherComponent implements OnDestroy {
     }
   }
 
-  private readHeadersFromUI(): Map<string, any> | undefined {
-    const headers: string = this.form.get(HEADERS)!.value;
+  private readHeadersFromUI(): Map<string, string | boolean | number> | undefined {
+    const headers = this.form.get(HEADERS)!.value as string;
     if (!headers.length) {
       return undefined;
     }
 
-    const headerMap = new Map();
+    const headerMap = new Map<string, string | boolean | number>();
     headers.split(';').forEach(keyValue => {
       const [key, value] = keyValue.split('->');
       if (value === 'true' || value === 'false') {

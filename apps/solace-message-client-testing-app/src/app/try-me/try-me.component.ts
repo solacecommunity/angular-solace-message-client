@@ -47,13 +47,13 @@ export class TryMeComponent {
   }
 
   public onDisconnect(): void {
-    this.solaceMessageClient.disconnect().then();
+    void this.solaceMessageClient.disconnect();
   }
 
   public onConnect(): void {
     this.solaceMessageClient.connect(this.sessionConfig).then(
       () => console.log('Connected to Solace message broker'),
-      error => console.error('Failed to connect to Solace message broker', error),
+      (error: unknown) => console.error('Failed to connect to Solace message broker', error),
     );
   }
 

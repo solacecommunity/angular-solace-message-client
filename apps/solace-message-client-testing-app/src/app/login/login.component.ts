@@ -68,14 +68,14 @@ export class LoginComponent implements OnDestroy {
   public onLogin(): void {
     const oAuthEnabled = this.form.get(AUTHENTICATION_SCHEME)!.value === AuthenticationScheme.OAUTH2;
     const sessionConfig: SolaceMessageClientConfig = {
-      url: this.form.get(URL)!.value ?? undefined,
-      vpnName: this.form.get(VPN_NAME)!.value ?? undefined,
-      userName: this.form.get(USER_NAME)!.value ?? undefined,
-      password: this.form.get(PASSWORD)!.value ?? undefined,
-      reapplySubscriptions: this.form.get(REAPPLY_SUBSCRIPTIONS)!.value ?? undefined,
-      reconnectRetries: this.form.get(RECONNECT_RETRIES)!.value ?? undefined,
-      connectRetries: this.form.get(RECONNECT_RETRIES)!.value ?? undefined,
-      authenticationScheme: this.form.get(AUTHENTICATION_SCHEME)!.value ?? undefined,
+      url: this.form.get(URL)!.value as string | string[],
+      vpnName: this.form.get(VPN_NAME)!.value as string,
+      userName: this.form.get(USER_NAME)!.value as string,
+      password: this.form.get(PASSWORD)!.value as string,
+      reapplySubscriptions: this.form.get(REAPPLY_SUBSCRIPTIONS)!.value as boolean,
+      reconnectRetries: this.form.get(RECONNECT_RETRIES)!.value as number,
+      connectRetries: this.form.get(RECONNECT_RETRIES)!.value as number,
+      authenticationScheme: this.form.get(AUTHENTICATION_SCHEME)!.value as AuthenticationScheme,
       accessToken: oAuthEnabled ? promptForAccessToken : undefined,
     };
 
@@ -108,4 +108,3 @@ export class LoginComponent implements OnDestroy {
     this._destroy$.next();
   }
 }
-

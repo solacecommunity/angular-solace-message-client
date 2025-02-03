@@ -63,19 +63,17 @@ function formatMessageType(messageType: MessageType): string {
       return `MAP (${messageType})`;
     case MessageType.STREAM:
       return `STREAM (${messageType})`;
-    default:
-      return `UNKNOWN (${messageType})`;
   }
 }
 
 function getContent(envelope: MessageEnvelope): string | undefined {
-  const encoding = envelope.headers.get('Content-Encoding');
+  const encoding = envelope.headers.get('Content-Encoding') as string;
 
   switch (envelope.message.getType()) {
     case MessageType.BINARY:
       return decode(envelope.message.getBinaryAttachment(), encoding);
     case MessageType.TEXT:
-      return decode(envelope.message.getSdtContainer()!.getValue(), encoding);
+      return decode(envelope.message.getSdtContainer()!.getValue() as string, encoding);
     default:
       return undefined;
   }

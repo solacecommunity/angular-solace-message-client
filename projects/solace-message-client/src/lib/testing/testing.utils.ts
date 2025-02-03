@@ -41,7 +41,7 @@ export function createQueueMessage(queue: string): Message {
  */
 export function createOperationError(): OperationError {
   // @ts-expect-error: constructor of {@link OperationError} is protected.
-  return new OperationError();
+  return new OperationError(); // eslint-disable-line @typescript-eslint/no-unsafe-return
 }
 
 /**
@@ -49,5 +49,5 @@ export function createOperationError(): OperationError {
  */
 export function createRequestError(): RequestError {
   // @ts-expect-error: constructor of {@link RequestError} is protected.
-  return new RequestError();
+  return new RequestError(); // eslint-disable-line @typescript-eslint/no-unsafe-return
 }

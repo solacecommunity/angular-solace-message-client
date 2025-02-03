@@ -14,9 +14,9 @@ export class SessionConfigStore {
   public static store(config: SolaceMessageClientConfig): void {
     const json = JSON.stringify(config, (key, value) => {
       if (key === 'accessToken' && value === promptForAccessToken) {
-        return value.name;
+        return value.name as string; // eslint-disable-line @typescript-eslint/no-unsafe-member-access
       }
-      return value;
+      return value as unknown;
     });
     localStorage.setItem(SESSION_CONFIG_STORAGE_KEY, json);
   }
@@ -31,8 +31,8 @@ export class SessionConfigStore {
       if (key === 'accessToken' && value === promptForAccessToken.name) {
         return promptForAccessToken;
       }
-      return value;
-    });
+      return value as unknown;
+    }) as SolaceMessageClientConfig;
   }
 
   public static empty(): boolean {

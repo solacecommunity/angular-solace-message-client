@@ -6,7 +6,6 @@ import {ConsumeOptions, Data, MessageEnvelope, ObserveOptions, PublishOptions, R
 import {TopicMatcher} from './topic-matcher';
 import {observeIn, subscribeIn} from '@scion/toolkit/operators';
 import {SolaceSessionProvider} from './solace-session-provider';
-import {OAuthAccessTokenFn} from './oauth-access-token-provider';
 import {SOLACE_MESSAGE_CLIENT_CONFIG, SolaceMessageClientConfig, SolaceMessageClientConfigFn} from './solace-message-client.config';
 import {AuthenticationScheme, Destination, Message, MessageConsumer, MessageConsumerEventName, MessageConsumerProperties, MessageDeliveryModeType, OperationError, QueueBrowser, QueueBrowserEventName, QueueBrowserProperties, QueueDescriptor, QueueType, RequestError, SDTField, SDTFieldType, SDTMapContainer, Session, SessionEvent, SessionEventCode, SessionProperties as SolaceSessionProperties, SolclientFactory} from 'solclientjs';
 import {TopicSubscriptionCounter} from './topic-subscription-counter';
@@ -43,15 +42,15 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
     // Connect to the Solace Message Broker, but only if passed a config to {@link provideSolaceMessageClient}.
     const config = inject(SOLACE_MESSAGE_CLIENT_CONFIG, {optional: true});
     if (config) {
-      this._session = this.connect(config).catch(error => {
+      this._session = this.connect(config).catch((error: unknown) => {
         this._logger.error('Failed to connect to the Solace message broker.', error);
-        return Promise.reject(error);
+        return Promise.reject(error as Error);
       });
     }
   }
 
   public async connect(configOrFn: SolaceMessageClientConfig | SolaceMessageClientConfigFn): Promise<Session> {
-    return (this._session || (this._session = this.loadConfig(configOrFn).then(config => new Promise((resolve, reject) => {
+    return (this._session ?? (this._session = this.loadConfig(configOrFn).then(config => new Promise((resolve, reject) => {
       // Apply session defaults.
       const sessionProperties: SolaceMessageClientConfig = {
         reapplySubscriptions: true, // remember subscriptions after a network interruption (default value if not set)
@@ -79,25 +78,23 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
 
         // Provide the session with a valid "OAuth 2.0 Access Token".
         // The Observable is expected to never complete and continuously emit a renewed token short before expiration of the previously emitted token.
-        accessToken$ && accessToken$
-          .pipe(
-            skip(1), // initial access token is set via session properties
-            takeUntil(this._sessionDisposed$),
-          )
-          .subscribe({
-            next: accessToken => {
-              this._logger.debug('Injecting "OAuth 2.0 Access Token" into Solace session.', accessToken);
-              session.updateAuthenticationOnReconnect({accessToken});
-            },
-            complete: () => {
-              if (this._session) {
-                this._logger.warn('[AccessTokenProviderCompletedWarning] Observable providing access token(s) to the Solace session has completed. The Observable should NEVER complete and continuously emit the renewed token short before expiration of the previously emitted token. Otherwise, the connection to the broker would not be re-established in the event of a network interruption.');
-              }
-            },
-            error: error => {
-              this._logger.error(error);
-            },
-          });
+        accessToken$?.pipe(
+          skip(1), // initial access token is set via session properties
+          takeUntil(this._sessionDisposed$),
+        ).subscribe({
+          next: accessToken => {
+            this._logger.debug('Injecting "OAuth 2.0 Access Token" into Solace session.', accessToken);
+            session.updateAuthenticationOnReconnect({accessToken});
+          },
+          complete: () => {
+            if (this._session) {
+              this._logger.warn('[AccessTokenProviderCompletedWarning] Observable providing access token(s) to the Solace session has completed. The Observable should NEVER complete and continuously emit the renewed token short before expiration of the previously emitted token. Otherwise, the connection to the broker would not be re-established in the event of a network interruption.');
+            }
+          },
+          error: error => {
+            this._logger.error(error);
+          },
+        });
 
         // When the Session is ready to send/receive messages and perform control operations.
         session.on(SessionEventCode.UP_NOTICE, (event: SessionEvent) => {
@@ -115,7 +112,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
         // Emits when the session attempted to connect but was unsuccessful.
         session.on(SessionEventCode.CONNECT_FAILED_ERROR, (event: SessionEvent) => {
           this._event$.next(event);
-          reject(event);
+          reject(event); // eslint-disable-line @typescript-eslint/prefer-promise-reject-errors
         });
 
         // When the session connect operation failed, or the session that was once up, is now disconnected.
@@ -140,7 +137,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
         session.on(SessionEventCode.REJECTED_MESSAGE_ERROR, (event: SessionEvent) => this._event$.next(event));
 
         session.connect();
-      }).catch(error => reject(error));
+      }).catch((error: unknown) => reject(error as Error));
     }))));
   }
 
@@ -160,7 +157,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
           return of(configuredAccessToken);
         }
         case 'function': {
-          return Observables.coerce((configuredAccessToken as OAuthAccessTokenFn)());
+          return Observables.coerce(configuredAccessToken());
         }
         default: {
           return throwError(() => Error('[NullAccessTokenConfigError] No access token or provider function configured in \'SolaceMessageClientConfig.accessToken\'. An access token is required for OAUTH2 authentication. It is recommended to provide the token via `OAuthAccessTokenFn`.'));
@@ -221,7 +218,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
               finalize(() => {
                 // Unsubscribe from the topic on the Solace session, but only if being the last subscription on that topic and if successfully subscribed to the Solace broker.
                 if (this._subscriptionCounter?.decrementAndGet(topicDestination) === 0 && !subscriptionErrored) {
-                  this.unsubscribeFromTopic(topicDestination).then(noop);
+                  void this.unsubscribeFromTopic(topicDestination);
                 }
               }),
             )
@@ -229,13 +226,13 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
 
           // Subscribe to the topic on the Solace session, but only if being the first subscription on that topic.
           if (this._subscriptionCounter!.incrementAndGet(topicDestination) === 1) {
-            this.subscribeToTopic(topicDestination, options).then(success => {
+            void this.subscribeToTopic(topicDestination, options).then(success => {
               if (success) {
                 options?.onSubscribed?.();
               }
               else {
                 subscriptionErrored = true;
-                subscribeError$.error(`Failed to subscribe to topic ${topicDestination}.`);
+                subscribeError$.error(`Failed to subscribe to topic ${topicDestination.getName()}.`);
               }
             });
           }
@@ -243,7 +240,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
             options?.onSubscribed?.();
           }
         })
-        .catch(error => {
+        .catch((error: unknown) => {
           observer.error(error);
         });
 
@@ -269,7 +266,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
         const subscribeCorrelationKey = UUID.randomUUID();
         const whenSubscribed = this.whenEvent(SessionEventCode.SUBSCRIPTION_OK, {rejectOnEvent: SessionEventCode.SUBSCRIPTION_ERROR, correlationKey: subscribeCorrelationKey})
           .then(() => true)
-          .catch(event => {
+          .catch((event: unknown) => {
             this._logger.warn(`Solace event broker rejected subscription on topic ${topic.getName()}.`, event);
             return false;
           });
@@ -280,9 +277,9 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
           subscribeCorrelationKey,
           observeOptions?.subscribeTimeout,
         );
-        return whenSubscribed;
+        return await whenSubscribed;
       }
-      catch (error) {
+      catch {
         return false;
       }
     });
@@ -306,8 +303,8 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
         const unsubscribeCorrelationKey = UUID.randomUUID();
         const whenUnsubscribed = this.whenEvent(SessionEventCode.SUBSCRIPTION_OK, {rejectOnEvent: SessionEventCode.SUBSCRIPTION_ERROR, correlationKey: unsubscribeCorrelationKey})
           .then(() => true)
-          .catch(event => {
-            this._logger.warn(`Solace event broker rejected unsubscription on topic ${topic.getName()}.`, event);
+          .catch((error: unknown) => {
+            this._logger.warn(`Solace event broker rejected unsubscription on topic ${topic.getName()}.`, error);
             return false;
           });
 
@@ -317,19 +314,15 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
           unsubscribeCorrelationKey,
           undefined,
         );
-        return whenUnsubscribed;
+        return await whenUnsubscribed;
       }
-      catch (error) {
+      catch {
         return false;
       }
     });
   }
 
   public consume$(topicOrDescriptor: string | (MessageConsumerProperties & ConsumeOptions)): Observable<MessageEnvelope> {
-    if (topicOrDescriptor === undefined) {
-      throw Error('Missing required topic or endpoint descriptor.');
-    }
-
     // If passed a `string` literal, subscribe to a non-durable topic endpoint.
     if (typeof topicOrDescriptor === 'string') {
       return this.createMessageConsumer$({
@@ -356,7 +349,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
           // Define message consumer event listeners
           messageConsumer.on(MessageConsumerEventName.UP, () => {
             this._logger.debug(`MessageConsumerEvent: UP`);
-            consumerProperties?.onSubscribed?.(messageConsumer!);
+            consumerProperties.onSubscribed?.(messageConsumer!);
           });
           messageConsumer.on(MessageConsumerEventName.CONNECT_FAILED_ERROR, (error: OperationError) => {
             this._logger.debug(`MessageConsumerEvent: CONNECT_FAILED_ERROR`, error);
@@ -382,7 +375,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
           // Connect the message consumer
           messageConsumer.connect();
         })
-        .catch(error => {
+        .catch((error: unknown) => {
           observer.error(error);
           messageConsumer?.dispose();
         });
@@ -401,10 +394,6 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
   }
 
   public browse$(queueOrDescriptor: string | QueueBrowserProperties): Observable<MessageEnvelope> {
-    if (queueOrDescriptor === undefined) {
-      throw Error('Missing required queue or descriptor.');
-    }
-
     // If passed a `string` literal, connect to the given queue using default 'browsing' options.
     if (typeof queueOrDescriptor === 'string') {
       return this.createQueueBrowser$({
@@ -456,7 +445,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
           // Connect the browser
           queueBrowser.connect();
         })
-        .catch(error => {
+        .catch((error: unknown) => {
           observer.error(error);
         });
 
@@ -495,18 +484,18 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
         )
         .subscribe(observer);
 
-      const onResponse = (session: Session, message: Message) => {
+      const onResponse = (session: Session, message: Message): void => {
         response$.next(message);
         response$.complete();
       };
-      const onError = (session: Session, error: RequestError) => {
+      const onError = (session: Session, error: RequestError): void => {
         response$.error(error);
       };
 
       const send: Send = (session: Session, request: Message) => {
         session.sendRequest(request, options?.requestTimeout, onResponse, onError);
       };
-      this.sendMessage(solaceDestination, data, options, send).catch(error => response$.error(error));
+      this.sendMessage(solaceDestination, data, options, send).catch((error: unknown) => response$.error(error));
 
       return () => unsubscribe$.next();
     });
@@ -520,7 +509,6 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
 
   private async sendMessage(destination: Destination | null, data: ArrayBufferLike | DataView | string | SDTField | Message | undefined, options: PublishOptions | undefined, send: Send): Promise<void> {
     const message: Message = data instanceof Message ? data : SolclientFactory.createMessage();
-    message.setDeliveryMode(message.getDeliveryMode() ?? MessageDeliveryModeType.DIRECT);
 
     // Set the destination. May not be set if replying to a request.
     if (destination) {
@@ -528,7 +516,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
     }
 
     // Set data, either as unstructured byte data, or as structured container if passed a structured data type (SDT).
-    if (data !== undefined && data !== null && !(data instanceof Message)) {
+    if (data !== undefined && !(data instanceof Message)) {
       if (data instanceof SDTField) {
         message.setSdtContainer(data);
       }
@@ -551,9 +539,9 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
 
     // Add headers.
     if (options?.headers?.size) {
-      const userPropertyMap = (message.getUserPropertyMap() || new SDTMapContainer());
+      const userPropertyMap = (message.getUserPropertyMap() ?? new SDTMapContainer());
       options.headers.forEach((value, key) => {
-        if (value === undefined || value === null) {
+        if (value === undefined || value === null) { // eslint-disable-line @typescript-eslint/no-unnecessary-condition
           return;
         }
         if (value instanceof SDTField) {
@@ -586,7 +574,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
       send(session, message);
     }
     else {
-      const correlationKey = message.getCorrelationKey() || UUID.randomUUID();
+      const correlationKey = message.getCorrelationKey() ?? UUID.randomUUID();
       const whenAcknowledged = this.whenEvent(SessionEventCode.ACKNOWLEDGED_MESSAGE, {rejectOnEvent: SessionEventCode.REJECTED_MESSAGE_ERROR, correlationKey: correlationKey});
       message.setCorrelationKey(correlationKey);
       send(session, message);
@@ -596,7 +584,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
   }
 
   public get session(): Promise<Session> {
-    return this._session || Promise.reject('Not connected to the Solace message broker. Did you forget to provide the `SolaceMessageClient` via `provideSolaceMessageClient()` function or to invoke \'connect\'`?');
+    return this._session ?? Promise.reject(Error('Not connected to the Solace message broker. Did you forget to provide the `SolaceMessageClient` via `provideSolaceMessageClient()` function or to invoke \'connect\'`?'));
   }
 
   /**
@@ -628,7 +616,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient, OnDestroy {
         )
         .subscribe({
           next: (event: SessionEvent) => resolve(event),
-          error: error => reject(error),
+          error: error => reject(error as Error),
           complete: noop, // do not resolve the Promise when the session is disposed
         });
     });
@@ -705,18 +693,18 @@ function mapToMessageEnvelope(subscriptionTopic?: string): OperatorFunction<Mess
 /**
  * Collects message headers from given message.
  */
-function collectHeaders(message: Message): Map<string, any> {
+function collectHeaders(message: Message): Map<string, unknown> {
   const userPropertyMap = message.getUserPropertyMap();
   return userPropertyMap?.getKeys().reduce((acc, key) => {
-    return acc.set(key, userPropertyMap.getField(key)!.getValue());
-  }, new Map()) || new Map();
+    return acc.set(key, userPropertyMap.getField(key).getValue());
+  }, new Map<string, unknown>()) ?? new Map<string, unknown>();
 }
 
 /**
  * Parses the effective message destination for named path segments, if any.
  */
 function collectNamedTopicSegmentValues(message: Message, subscriptionTopic: string | undefined): Map<string, string> {
-  if (subscriptionTopic === undefined || !subscriptionTopic.length) {
+  if (!subscriptionTopic?.length) {
     return new Map<string, string>();
   }
 
@@ -795,13 +783,13 @@ function obfuscateSecrets(sessionProperties: SolaceMessageClientConfig): SolaceM
 /**
  * Maps RxJS {@link EmptyError} to the given error. Other errors are re-thrown unchanged.
  */
-function mapEmptyError(errorFactory: () => Error): (error: any) => Promise<never> {
-  return (error: any): any => {
+function mapEmptyError(errorFactory: () => Error): (error: unknown) => Promise<never> {
+  return (error: unknown): Promise<never> => {
     if (error instanceof EmptyError) {
       return Promise.reject(errorFactory());
     }
     else {
-      return Promise.reject(error);
+      return Promise.reject(error as Error);
     }
   };
 }

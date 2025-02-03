@@ -42,7 +42,8 @@
             "lintFilePatterns": [
               "projects/solace-message-client/**/*.ts",
               "projects/solace-message-client/**/*.html"
-            ]
+            ],
+            "eslintConfig": "projects/solace-message-client/eslint.config.js"
           }
         }
       }
@@ -133,7 +134,8 @@
             "lintFilePatterns": [
               "apps/solace-message-client-testing-app/**/*.ts",
               "apps/solace-message-client-testing-app/**/*.html"
-            ]
+            ],
+            "eslintConfig": "apps/solace-message-client-testing-app/eslint.config.js"
           }
         }
       }
