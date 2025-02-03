@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, DestroyRef, EventEmitter, inject, Output, ViewChild} from '@angular/core';
+import {ChangeDetectorRef, Component, DestroyRef, inject, output, viewChild} from '@angular/core';
 import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {MessageEnvelope, SolaceMessageClient} from '@solace-community/angular-solace-message-client';
 import {Observable, Subscription} from 'rxjs';
@@ -39,9 +39,12 @@ export const FOLLOW_TAIL = 'followTail';
 })
 export class SubscriberComponent {
 
+  public readonly destination = output<string>();
+
   private readonly _solaceMessageClient = inject(SolaceMessageClient);
   private readonly _cd = inject(ChangeDetectorRef);
   private readonly _destroyRef = inject(DestroyRef);
+  private readonly _viewport = viewChild.required(SciViewportComponent);
 
   protected readonly form = new FormGroup({
     [SUBSCRIPTION]: new FormGroup({
@@ -71,12 +74,6 @@ export class SubscriberComponent {
 
   protected subscribeError: string | null = null;
   protected envelopes: MessageEnvelope[] = [];
-
-  @ViewChild(SciViewportComponent, {static: true})
-  private _viewport!: SciViewportComponent;
-
-  @Output()
-  public destination = new EventEmitter<string>();
 
   constructor() {
     this.installDestinationEmitter();
@@ -156,13 +153,13 @@ export class SubscriberComponent {
   }
 
   private scrollToEnd(): void {
-    this._viewport.scrollTop = this._viewport.scrollHeight;
+    this._viewport().scrollTop = this._viewport().scrollHeight;
   }
 
   private installDestinationEmitter(): void {
     this.form.get([SUBSCRIPTION, DESTINATION])!.valueChanges
       .pipe(takeUntilDestroyed())
-      .subscribe(this.destination);
+      .subscribe((value: string) => this.destination.emit(value));
   }
 
   private installFollowTailListener(): void {

@@ -1,35 +1,35 @@
-<span class="timestamp">{{message.getReceiverTimestamp() | date:'HH:mm:ss'}}</span>
+<span class="timestamp">{{message().getReceiverTimestamp() | date:'HH:mm:ss'}}</span>
 
 <span>Destination:</span>
-<span class="topic">{{envelope.message.getDestination()!.getName()}}</span>
+<span class="topic">{{envelope().message.getDestination()!.getName()}}</span>
 
 <span>Type:</span>
-<span>{{type}}</span>
+<span>{{type()}}</span>
 
-@if (envelope.params.size) {
+@if (envelope().params.size) {
   <span>Params:</span>
-  <span>{{envelope.params | appStringifyMap}}</span>
+  <span>{{envelope().params | appStringifyMap}}</span>
 }
 
-@if (envelope.headers.size) {
+@if (envelope().headers.size) {
   <span>Headers:</span>
-  <span>{{envelope.headers | appStringifyMap}}</span>
+  <span>{{envelope().headers | appStringifyMap}}</span>
 }
 
 <span>Details:</span>
-<sci-viewport class="content">{{details}}</sci-viewport>
+<sci-viewport class="content">{{details()}}</sci-viewport>
 
 <span>Content:</span>
 <sci-viewport class="content">
-  <section [class.zipped]="envelope.headers.get('Content-Encoding') === 'gzip'">
-    {{content}}
+  <section [class.zipped]="envelope().headers.get('Content-Encoding') === 'gzip'">
+    {{content()}}
   </section>
 </sci-viewport>
 
 <section class="actions">
-  @if (envelope.message.getReplyTo()) {
+  @if (envelope().message.getReplyTo()) {
     <button mat-mini-fab class="reply" color="primary" title="Reply"
-            (click)="onReply(envelope.message)">
+            (click)="onReply()">
       <mat-icon>reply</mat-icon>
     </button>
   }

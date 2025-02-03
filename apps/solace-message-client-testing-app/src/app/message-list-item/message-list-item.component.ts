@@ -1,7 +1,7 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, input, output, Signal, untracked} from '@angular/core';
 import {MessageEnvelope} from '@solace-community/angular-solace-message-client';
 import {ungzip} from 'pako';
-import {Message, MessageDumpFlag, MessageType} from 'solclientjs';
+import {MessageDumpFlag, MessageType} from 'solclientjs';
 import {DatePipe} from '@angular/common';
 import {StringifyMapPipe} from '../stringify-map.pipe';
 import {SciViewportComponent} from '@scion/components/viewport';
@@ -21,35 +21,37 @@ import {MatButtonModule} from '@angular/material/button';
     MatButtonModule,
   ],
 })
-export class MessageListItemComponent implements OnChanges {
+export class MessageListItemComponent {
 
-  public message!: Message;
-  public details!: string;
-  public type!: string;
-  public content: string | undefined;
+  public readonly envelope = input.required<MessageEnvelope>();
+  public readonly delete = output<void>();
+  public readonly reply = output<void>();
 
-  @Input()
-  public envelope!: MessageEnvelope;
+  protected readonly message = computed(() => this.envelope().message);
+  protected readonly details = computed(() => this.message().dump(MessageDumpFlag.MSGDUMP_BRIEF));
+  protected readonly content = this.computeContent();
+  protected readonly type = this.computeType();
 
-  @Output()
-  public delete = new EventEmitter<void>();
-
-  @Output()
-  public reply = new EventEmitter<void>();
-
-  public onDelete(): void {
+  protected onDelete(): void {
     this.delete.emit();
   }
 
-  public onReply(messageToReplyTo: Message): void {
+  protected onReply(): void {
     this.reply.emit();
   }
 
-  public ngOnChanges(changes: SimpleChanges): void {
-    this.message = this.envelope.message;
-    this.details = this.message.dump(MessageDumpFlag.MSGDUMP_BRIEF);
-    this.type = formatMessageType(this.message.getType());
-    this.content = getContent(this.envelope);
+  private computeContent(): Signal<string | undefined> {
+    return computed(() => {
+      const envelope = this.envelope();
+      return untracked(() => getContent(envelope));
+    });
+  }
+
+  private computeType(): Signal<string> {
+    return computed(() => {
+      const message = this.message();
+      return untracked(() => formatMessageType(message.getType()));
+    });
   }
 }
 
