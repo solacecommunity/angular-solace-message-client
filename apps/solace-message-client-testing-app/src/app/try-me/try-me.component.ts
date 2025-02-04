@@ -44,17 +44,6 @@ export class TryMeComponent {
     this._locationService.navigateToAppRoot({clearConnectProperties: true});
   }
 
-  public onDisconnect(): void {
-    void this.solaceMessageClient.disconnect();
-  }
-
-  public onConnect(): void {
-    this.solaceMessageClient.connect(this.sessionConfig).then(
-      () => console.log('Connected to Solace message broker'),
-      (error: unknown) => console.error('Failed to connect to Solace message broker', error),
-    );
-  }
-
   protected onSessionPropertiesOpen(): void {
     this._snackBar.openFromComponent(SessionPropertiesComponent, {
       data: this.sessionConfig,
