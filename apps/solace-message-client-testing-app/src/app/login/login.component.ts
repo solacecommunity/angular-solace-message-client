@@ -39,7 +39,7 @@ export class LoginComponent {
     url: this._formBuilder.control('wss://public.messaging.solace.cloud:443', {validators: Validators.required}),
     vpnName: this._formBuilder.control('public', {validators: Validators.required}),
     authenticationScheme: this._formBuilder.control(AuthenticationScheme.BASIC, {validators: Validators.required}),
-    userName: this._formBuilder.control('angular'),
+    userName: this._formBuilder.control('public'),
     password: this._formBuilder.control('public'),
     reapplySubscriptions: this._formBuilder.control(true),
     reconnectRetries: this._formBuilder.control(-1),
