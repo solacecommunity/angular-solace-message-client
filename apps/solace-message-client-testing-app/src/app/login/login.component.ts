@@ -1,5 +1,5 @@
 import {Component, inject} from '@angular/core';
-import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {LocationService} from '../location.service';
 import {SolaceMessageClientConfig} from '@solace-community/angular-solace-message-client';
 import {SessionConfigStore} from '../session-config-store';
@@ -13,14 +13,6 @@ import {MatSelectModule} from '@angular/material/select';
 import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MatButtonModule} from '@angular/material/button';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
-
-export const URL = 'url';
-export const VPN_NAME = 'vpnName';
-export const AUTHENTICATION_SCHEME = 'authenticationScheme';
-export const USER_NAME = 'userName';
-export const PASSWORD = 'password';
-export const REAPPLY_SUBSCRIPTIONS = 'reapplySubscriptions';
-export const RECONNECT_RETRIES = 'reconnectRetries';
 
 @Component({
   selector: 'app-login',
@@ -39,25 +31,18 @@ export const RECONNECT_RETRIES = 'reconnectRetries';
 export class LoginComponent {
 
   private readonly _locationService = inject(LocationService);
-  private readonly _formBuilder = inject(FormBuilder);
+  private readonly _formBuilder = inject(NonNullableFormBuilder);
 
-  protected readonly URL = URL;
-  protected readonly VPN_NAME = VPN_NAME;
-  protected readonly AUTHENTICATION_SCHEME = AUTHENTICATION_SCHEME;
-  protected readonly USER_NAME = USER_NAME;
-  protected readonly PASSWORD = PASSWORD;
-  protected readonly REAPPLY_SUBSCRIPTIONS = REAPPLY_SUBSCRIPTIONS;
-  protected readonly RECONNECT_RETRIES = RECONNECT_RETRIES;
   protected readonly AuthenticationScheme = AuthenticationScheme;
 
-  protected readonly form = new FormGroup({
-    [URL]: this._formBuilder.control('wss://public.messaging.solace.cloud:443', {validators: Validators.required, nonNullable: true}),
-    [VPN_NAME]: this._formBuilder.control('public', {validators: Validators.required, nonNullable: true}),
-    [AUTHENTICATION_SCHEME]: this._formBuilder.control(AuthenticationScheme.BASIC),
-    [USER_NAME]: this._formBuilder.control('angular'),
-    [PASSWORD]: this._formBuilder.control('public'),
-    [REAPPLY_SUBSCRIPTIONS]: this._formBuilder.control(true),
-    [RECONNECT_RETRIES]: this._formBuilder.control(-1),
+  protected readonly form = this._formBuilder.group({
+    url: this._formBuilder.control('wss://public.messaging.solace.cloud:443', {validators: Validators.required}),
+    vpnName: this._formBuilder.control('public', {validators: Validators.required}),
+    authenticationScheme: this._formBuilder.control(AuthenticationScheme.BASIC, {validators: Validators.required}),
+    userName: this._formBuilder.control('angular'),
+    password: this._formBuilder.control('public'),
+    reapplySubscriptions: this._formBuilder.control(true),
+    reconnectRetries: this._formBuilder.control(-1),
   });
 
   constructor() {
@@ -65,16 +50,16 @@ export class LoginComponent {
   }
 
   protected onLogin(): void {
-    const oAuthEnabled = this.form.get(AUTHENTICATION_SCHEME)!.value === AuthenticationScheme.OAUTH2;
+    const oAuthEnabled = this.form.controls.authenticationScheme.value === AuthenticationScheme.OAUTH2;
     const sessionConfig: SolaceMessageClientConfig = {
-      url: this.form.get(URL)!.value,
-      vpnName: this.form.get(VPN_NAME)!.value as string | undefined,
-      userName: this.form.get(USER_NAME)!.value as string | undefined,
-      password: this.form.get(PASSWORD)!.value as string | undefined,
-      reapplySubscriptions: this.form.get(REAPPLY_SUBSCRIPTIONS)!.value as boolean | undefined,
-      reconnectRetries: this.form.get(RECONNECT_RETRIES)!.value as number | undefined,
-      connectRetries: this.form.get(RECONNECT_RETRIES)!.value as number | undefined,
-      authenticationScheme: this.form.get(AUTHENTICATION_SCHEME)!.value as AuthenticationScheme | undefined,
+      url: this.form.controls.url.value,
+      vpnName: this.form.controls.vpnName.value,
+      userName: this.form.controls.userName.value,
+      password: this.form.controls.password.value,
+      reapplySubscriptions: this.form.controls.reapplySubscriptions.value,
+      reconnectRetries: this.form.controls.reconnectRetries.value,
+      connectRetries: this.form.controls.reconnectRetries.value,
+      authenticationScheme: this.form.controls.authenticationScheme.value,
       accessToken: oAuthEnabled ? promptForAccessToken : undefined,
     };
 
@@ -87,14 +72,14 @@ export class LoginComponent {
   }
 
   private installAuthenticationSchemeChangeListener(): void {
-    this.form.get(AUTHENTICATION_SCHEME)!.valueChanges
+    this.form.controls.authenticationScheme.valueChanges
       .pipe(
         startWith(undefined),
         takeUntilDestroyed(),
       )
       .subscribe(() => {
-        const basicAuthFormControls = [this.form.get(USER_NAME)!, this.form.get(PASSWORD)!];
-        const basicAuthEnabled = this.form.get(AUTHENTICATION_SCHEME)!.value === AuthenticationScheme.BASIC;
+        const basicAuthFormControls = [this.form.controls.userName, this.form.controls.password];
+        const basicAuthEnabled = this.form.controls.authenticationScheme.value === AuthenticationScheme.BASIC;
 
         basicAuthFormControls.forEach(formControl => {
           basicAuthEnabled ? formControl.addValidators(Validators.required) : formControl.removeValidators(Validators.required);

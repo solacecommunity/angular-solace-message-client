@@ -1,5 +1,5 @@
 import {ChangeDetectorRef, Component, DestroyRef, inject, output, viewChild} from '@angular/core';
-import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {MessageEnvelope, SolaceMessageClient} from '@solace-community/angular-solace-message-client';
 import {Observable, Subscription} from 'rxjs';
 import {filter, finalize} from 'rxjs/operators';
@@ -14,11 +14,6 @@ import {MatButtonModule} from '@angular/material/button';
 import {MatInputModule} from '@angular/material/input';
 import {AutofocusDirective} from '../autofocus.directive';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
-
-export const DESTINATION = 'destination';
-export const DESTINATION_TYPE = 'destinationType';
-export const SUBSCRIPTION = 'subscription';
-export const FOLLOW_TAIL = 'followTail';
 
 @Component({
   selector: 'app-subscriber',
@@ -44,21 +39,17 @@ export class SubscriberComponent {
   private readonly _solaceMessageClient = inject(SolaceMessageClient);
   private readonly _cd = inject(ChangeDetectorRef);
   private readonly _destroyRef = inject(DestroyRef);
+  private readonly _formBuilder = inject(NonNullableFormBuilder);
   private readonly _viewport = viewChild.required(SciViewportComponent);
 
-  protected readonly form = new FormGroup({
-    [SUBSCRIPTION]: new FormGroup({
-      [DESTINATION]: new FormControl('', {validators: Validators.required, nonNullable: true}),
-      [DESTINATION_TYPE]: new FormControl(SubscriptionDestinationType.TOPIC, {validators: Validators.required, nonNullable: true}),
+  protected readonly form = this._formBuilder.group({
+    subscription: this._formBuilder.group({
+      destination: this._formBuilder.control('', Validators.required),
+      destinationType: this._formBuilder.control<'QUEUE' | 'TOPIC' | 'TOPIC_ENDPOINT' | 'QUEUE_BROWSER'>('TOPIC', Validators.required),
     }),
-    [FOLLOW_TAIL]: new FormControl(true),
+    followTail: this._formBuilder.control(true),
   });
 
-  protected readonly DESTINATION = DESTINATION;
-  protected readonly DESTINATION_TYPE = DESTINATION_TYPE;
-  protected readonly SUBSCRIPTION = SUBSCRIPTION;
-  protected readonly FOLLOW_TAIL = FOLLOW_TAIL;
-  protected readonly SubscriptionDestinationType = SubscriptionDestinationType;
   protected readonly tooltips = {
     topic: 'Subscribes to messages published to the given topic.',
     queue: 'Subscribes for messages sent to the given durable queue. The queue needs to be administratively configured on the broker.',
@@ -81,27 +72,27 @@ export class SubscriberComponent {
   }
 
   protected onSubscribe(): void {
-    this.form.get(SUBSCRIPTION)!.disable();
+    this.form.controls.subscription.disable();
     this.subscribeError = null;
 
-    const destination = this.form.get([SUBSCRIPTION, DESTINATION])!.value as string;
-    const destinationType = this.form.get([SUBSCRIPTION, DESTINATION_TYPE])!.value as SubscriptionDestinationType;
+    const destination = this.form.controls.subscription.controls.destination.value;
+    const destinationType = this.form.controls.subscription.controls.destinationType.value;
 
     try {
       const message$: Observable<MessageEnvelope> = (() => {
         switch (destinationType) {
-          case SubscriptionDestinationType.TOPIC: {
+          case 'TOPIC': {
             return this._solaceMessageClient.observe$(destination);
           }
-          case SubscriptionDestinationType.QUEUE: {
+          case 'QUEUE': {
             return this._solaceMessageClient.consume$({
               queueDescriptor: new QueueDescriptor({type: QueueType.QUEUE, name: destination}),
             });
           }
-          case SubscriptionDestinationType.TOPIC_ENDPOINT: {
+          case 'TOPIC_ENDPOINT': {
             return this._solaceMessageClient.consume$(destination);
           }
-          case SubscriptionDestinationType.QUEUE_BROWSER: {
+          case 'QUEUE_BROWSER': {
             return this._solaceMessageClient.browse$(destination);
           }
         }
@@ -109,14 +100,14 @@ export class SubscriberComponent {
 
       this._subscription = message$
         .pipe(
-          finalize(() => this.form.get(SUBSCRIPTION)!.enable()),
+          finalize(() => this.form.controls.subscription.enable()),
           takeUntilDestroyed(this._destroyRef),
         )
         .subscribe({
           next: (envelope: MessageEnvelope) => {
             this.envelopes = this.envelopes.concat(envelope);
 
-            if (this.form.get(FOLLOW_TAIL)!.value) {
+            if (this.form.controls.followTail.value) {
               this._cd.detectChanges();
               this.scrollToEnd();
             }
@@ -125,7 +116,7 @@ export class SubscriberComponent {
         });
     }
     catch (error: unknown) {
-      this.form.get(SUBSCRIPTION)!.enable();
+      this.form.controls.subscription.enable();
       this.subscribeError = `${error}`; // eslint-disable-line @typescript-eslint/restrict-template-expressions
     }
   }
@@ -157,13 +148,13 @@ export class SubscriberComponent {
   }
 
   private installDestinationEmitter(): void {
-    this.form.get([SUBSCRIPTION, DESTINATION])!.valueChanges
+    this.form.controls.subscription.controls.destination.valueChanges
       .pipe(takeUntilDestroyed())
-      .subscribe((value: string) => this.destination.emit(value));
+      .subscribe(value => this.destination.emit(value));
   }
 
   private installFollowTailListener(): void {
-    this.form.get(FOLLOW_TAIL)!.valueChanges
+    this.form.controls.followTail.valueChanges
       .pipe(
         filter(Boolean),
         takeUntilDestroyed(),
@@ -172,11 +163,4 @@ export class SubscriberComponent {
         this.scrollToEnd();
       });
   }
-}
-
-export enum SubscriptionDestinationType {
-  QUEUE = 'QUEUE',
-  TOPIC = 'TOPIC',
-  TOPIC_ENDPOINT = 'TOPIC_ENDPOINT',
-  QUEUE_BROWSER = 'QUEUE_BROWSER',
 }

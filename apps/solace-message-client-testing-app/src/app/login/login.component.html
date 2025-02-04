@@ -6,45 +6,45 @@
       <!-- URL -->
       <mat-form-field>
         <mat-label>Url</mat-label>
-        <input matInput [formControlName]="URL">
+        <input matInput [formControl]="form.controls.url">
       </mat-form-field>
 
       <!-- VPN -->
       <mat-form-field>
         <mat-label>VPN</mat-label>
-        <input matInput [formControlName]="VPN_NAME">
+        <input matInput [formControl]="form.controls.vpnName">
       </mat-form-field>
 
-      @if (form.get(AUTHENTICATION_SCHEME)!.value === AuthenticationScheme.BASIC) {
+      @if (form.controls.authenticationScheme.value === AuthenticationScheme.BASIC) {
         <!-- Username -->
         <mat-form-field>
           <mat-label>Username</mat-label>
-          <input matInput [formControlName]="USER_NAME">
+          <input matInput [formControl]="form.controls.userName">
         </mat-form-field>
 
         <!-- Password -->
         <mat-form-field>
           <mat-label>Password</mat-label>
-          <input matInput [formControlName]="PASSWORD" type="password">
+          <input matInput [formControl]="form.controls.password" type="password">
         </mat-form-field>
       }
 
       <!-- Authentication Scheme -->
       <mat-form-field>
         <mat-label>Authentication Scheme</mat-label>
-        <mat-select [formControlName]="AUTHENTICATION_SCHEME">
+        <mat-select [formControl]="form.controls.authenticationScheme">
           <mat-option [value]="AuthenticationScheme.BASIC">BASIC</mat-option>
           <mat-option [value]="AuthenticationScheme.OAUTH2">OAUTH2</mat-option>
         </mat-select>
       </mat-form-field>
 
       <!-- Reapply Subscription -->
-      <mat-checkbox [formControlName]="REAPPLY_SUBSCRIPTIONS">Reapply Subscriptions</mat-checkbox>
+      <mat-checkbox [formControl]="form.controls.reapplySubscriptions">Reapply Subscriptions</mat-checkbox>
 
       <!-- Reconnect Retries -->
       <mat-form-field>
         <mat-label>Reconnect Retries</mat-label>
-        <input matInput type="number" [formControlName]="RECONNECT_RETRIES"/>
+        <input matInput type="number" [formControl]="form.controls.reconnectRetries"/>
       </mat-form-field>
 
       <!-- Buttons -->

@@ -1,5 +1,5 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, inject} from '@angular/core';
-import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {DestinationType, MessageDeliveryModeType, MessageType, SDTField, SDTFieldType, SolclientFactory} from 'solclientjs';
 import {Data, MessageEnvelope, PublishOptions, SolaceMessageClient} from '@solace-community/angular-solace-message-client';
 import {defer, Observable, Subscription, tap, throwError} from 'rxjs';
@@ -14,14 +14,6 @@ import {MessageListItemComponent} from '../message-list-item/message-list-item.c
 import {MatInputModule} from '@angular/material/input';
 import {MatButtonModule} from '@angular/material/button';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
-
-export const DESTINATION = 'destination';
-export const DESTINATION_TYPE = 'destinationType';
-export const DELIVERY_MODE = 'deliveryMode';
-export const MESSAGE = 'message';
-export const MESSAGE_TYPE = 'messageType';
-export const HEADERS = 'headers';
-export const REQUEST_REPLY = 'request/reply';
 
 @Component({
   selector: 'app-publisher',
@@ -44,29 +36,21 @@ export class PublisherComponent {
 
   private readonly _solaceMessageClient = inject(SolaceMessageClient);
   private readonly _cd = inject(ChangeDetectorRef);
-  private readonly _formBuilder = inject(FormBuilder);
+  private readonly _formBuilder = inject(NonNullableFormBuilder);
   private readonly _destroyRef = inject(DestroyRef);
-
-  protected readonly DESTINATION = DESTINATION;
-  protected readonly DESTINATION_TYPE = DESTINATION_TYPE;
-  protected readonly DELIVERY_MODE = DELIVERY_MODE;
-  protected readonly MESSAGE = MESSAGE;
-  protected readonly MESSAGE_TYPE = MESSAGE_TYPE;
-  protected readonly HEADERS = HEADERS;
-  protected readonly REQUEST_REPLY = REQUEST_REPLY;
 
   protected readonly MessageType = MessageType;
   protected readonly DestinationType = DestinationType;
   protected readonly MessageDeliveryModeType = MessageDeliveryModeType;
 
-  protected readonly form = new FormGroup({
-    [DESTINATION]: this._formBuilder.control('', Validators.required),
-    [DESTINATION_TYPE]: this._formBuilder.control(DestinationType.TOPIC, Validators.required),
-    [DELIVERY_MODE]: this._formBuilder.control(undefined),
-    [MESSAGE]: this._formBuilder.control(''),
-    [MESSAGE_TYPE]: this._formBuilder.control(MessageType.BINARY, Validators.required),
-    [HEADERS]: this._formBuilder.control(''),
-    [REQUEST_REPLY]: this._formBuilder.control(false),
+  protected readonly form = this._formBuilder.group({
+    destination: this._formBuilder.control('', Validators.required),
+    destinationType: this._formBuilder.control(DestinationType.TOPIC, Validators.required),
+    deliveryMode: this._formBuilder.control(MessageDeliveryModeType.DIRECT),
+    message: this._formBuilder.control(''),
+    messageType: this._formBuilder.control(MessageType.BINARY, Validators.required),
+    headers: this._formBuilder.control(''),
+    requestReply: this._formBuilder.control(false),
   });
 
   private _publishSubscription: Subscription | null = null;
@@ -107,8 +91,8 @@ export class PublisherComponent {
 
   private publish$(): Observable<any> {
     try {
-      const destination = this.form.get(DESTINATION)!.value!;
-      const destinationType = this.form.get(DESTINATION_TYPE)!.value;
+      const destination = this.form.controls.destination.value;
+      const destinationType = this.form.controls.destinationType.value;
       const message: Data | undefined = this.readMessageFromUI();
       const publishOptions: PublishOptions = this.readPublishOptionsFromUI();
 
@@ -148,7 +132,7 @@ export class PublisherComponent {
   }
 
   protected get requestReply(): boolean {
-    return this.form.get(REQUEST_REPLY)!.value!;
+    return this.form.controls.requestReply.value;
   }
 
   protected get publishing(): boolean {
@@ -158,17 +142,17 @@ export class PublisherComponent {
   private readPublishOptionsFromUI(): PublishOptions {
     return {
       headers: this.readHeadersFromUI(),
-      deliveryMode: this.form.get(DELIVERY_MODE)!.value! as MessageDeliveryModeType,
+      deliveryMode: this.form.controls.deliveryMode.value,
     };
   }
 
   private readMessageFromUI(): Data | undefined {
-    const message = this.form.get(MESSAGE)!.value as string | undefined;
+    const message = this.form.controls.message.value;
     if (!message) {
       return undefined;
     }
 
-    if (this.form.get(MESSAGE_TYPE)!.value === MessageType.TEXT) {
+    if (this.form.controls.messageType.value === MessageType.TEXT) {
       return SDTField.create(SDTFieldType.STRING, message); // structuredTextMessage
     }
     else {
@@ -177,7 +161,7 @@ export class PublisherComponent {
   }
 
   private readHeadersFromUI(): Map<string, string | boolean | number> | undefined {
-    const headers = this.form.get(HEADERS)!.value!;
+    const headers = this.form.controls.headers.value;
     if (!headers.length) {
       return undefined;
     }
