@@ -8,13 +8,13 @@
         <!-- Destination -->
         <mat-form-field class="destination">
           <mat-label>Destination</mat-label>
-          <input matInput [formControlName]="DESTINATION">
+          <input matInput [formControl]="form.controls.destination">
         </mat-form-field>
 
         <!-- Destination Type -->
         <mat-form-field class="destination-type">
           <mat-label>Destination Type</mat-label>
-          <mat-select [formControlName]="DESTINATION_TYPE">
+          <mat-select [formControl]="form.controls.destinationType">
             <mat-option [value]="DestinationType.TOPIC">Topic</mat-option>
             <mat-option [value]="DestinationType.QUEUE">Queue</mat-option>
           </mat-select>
@@ -23,13 +23,13 @@
         <!-- Message -->
         <mat-form-field>
           <mat-label>Message</mat-label>
-          <textarea matInput [formControlName]="MESSAGE" class="message"></textarea>
+          <textarea matInput [formControl]="form.controls.message" class="message"></textarea>
         </mat-form-field>
 
         <!-- Message Type -->
         <mat-form-field class="message-type">
           <mat-label>Message Type</mat-label>
-          <mat-select [formControlName]="MESSAGE_TYPE">
+          <mat-select [formControl]="form.controls.messageType">
             <mat-option [value]="MessageType.BINARY">Binary</mat-option>
             <mat-option [value]="MessageType.TEXT">Text</mat-option>
           </mat-select>
@@ -38,7 +38,7 @@
         <!-- Message Delivery Mode -->
         <mat-form-field class="message-delivery-mode">
           <mat-label>Message Delivery Mode</mat-label>
-          <mat-select [formControlName]="DELIVERY_MODE">
+          <mat-select [formControl]="form.controls.deliveryMode">
             <mat-option [value]="MessageDeliveryModeType.DIRECT">Direct (default)</mat-option>
             <mat-option [value]="MessageDeliveryModeType.PERSISTENT">Persistent</mat-option>
           </mat-select>
@@ -47,16 +47,15 @@
         <!-- Headers -->
         <mat-form-field>
           <mat-label>Headers</mat-label>
-          <input matInput [formControlName]="HEADERS" placeholder="name->value;name->value">
+          <input matInput [formControl]="form.controls.headers" placeholder="name->value;name->value">
         </mat-form-field>
 
         <!-- Request/Reply -->
-        <mat-checkbox [formControlName]="REQUEST_REPLY">Request/Reply</mat-checkbox>
+        <mat-checkbox [formControl]="form.controls.requestReply">Request/Reply</mat-checkbox>
 
         @if (publishing) {
           <button mat-stroked-button color="primary" (click)="onCancelPublish()">Cancel</button>
-        }
-        @else {
+        } @else {
           <button mat-stroked-button color="primary" (click)="onPublish()" [disabled]="form.invalid">Publish</button>
         }
       </form>
