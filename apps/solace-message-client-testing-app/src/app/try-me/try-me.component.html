@@ -6,22 +6,10 @@
           title="Click to see session properties">
     @if (solaceMessageClient.connected$ | async) {
       Connected to {{sessionConfig.url}} / {{sessionConfig.vpnName}}
-    }
-    @else {
+    } @else {
       Disconnected from the Solace Message Broker
     }
   </button>
-
-  @if (solaceMessageClient.connected$ | async) {
-    <button mat-stroked-button (click)="onDisconnect()" matTooltip="Disconnect">
-      <mat-icon>wifi</mat-icon>
-    </button>
-  }
-  @else {
-    <button mat-stroked-button (click)="onConnect()" matTooltip="Connect">
-      <mat-icon>wifi_off</mat-icon>
-    </button>
-  }
 
   @if (sessionConfig.authenticationScheme === AuthenticationScheme.OAUTH2) {
     <button mat-stroked-button (click)="onUpdateAccessToken()">
