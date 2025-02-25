@@ -43,7 +43,7 @@ This library provides fundamental messaging API to exchange messages via topic d
 
 [link-download]: https://www.npmjs.com/package/@solace-community/angular-solace-message-client
 [link-github-actions-workflow]: https://github.com/solacecommunity/angular-solace-message-client/actions
-[link-github-actions-workflow:status]: https://github.com/solacecommunity/angular-solace-message-client/workflows/Continuous%20Integration%20and%20Delivery/badge.svg?branch=master&event=push
+[link-github-actions-workflow:status]: https://github.com/solacecommunity/angular-solace-message-client/actions/workflows/workflow.yml/badge.svg
 [link-solclient]: https://docs.solace.com/API-Developer-Online-Ref-Documentation/js/index.html
 
 [menu-overview]: /README.md
