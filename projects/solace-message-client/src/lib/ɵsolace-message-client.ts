@@ -711,7 +711,7 @@ function collectNamedTopicSegmentValues(message: Message, subscriptionTopic: str
   const effectiveDestinationSegments = message.getDestination()!.getName().split('/');
   return subscriptionSegments.reduce((acc, subscriptionSegment, i) => {
     if (isNamedWildcardSegment(subscriptionSegment)) {
-      return acc.set(subscriptionSegment.substring(1), effectiveDestinationSegments[i]);
+      return acc.set(subscriptionSegment.substring(1), effectiveDestinationSegments[i]!);
     }
     return acc;
   }, new Map<string, string>());
