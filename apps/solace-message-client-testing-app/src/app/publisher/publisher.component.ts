@@ -75,7 +75,7 @@ export class PublisherComponent {
         takeUntilDestroyed(this._destroyRef),
       )
       .subscribe({
-        error: (error: unknown) => this.publishError = `${error}`, // eslint-disable-line @typescript-eslint/restrict-template-expressions
+        error: (error: unknown) => this.publishError = `${error}`,
       });
   }
 
@@ -170,13 +170,13 @@ export class PublisherComponent {
     headers.split(';').forEach(keyValue => {
       const [key, value] = keyValue.split('->');
       if (value === 'true' || value === 'false') {
-        headerMap.set(key, Boolean(value));
+        headerMap.set(key!, Boolean(value));
       }
       else if (!Number.isNaN(Number(value))) {
-        headerMap.set(key, Number(value));
+        headerMap.set(key!, Number(value));
       }
       else {
-        headerMap.set(key, value);
+        headerMap.set(key!, value!);
       }
     });
     return headerMap;

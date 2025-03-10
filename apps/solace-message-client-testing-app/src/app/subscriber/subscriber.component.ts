@@ -117,7 +117,7 @@ export class SubscriberComponent {
     }
     catch (error: unknown) {
       this.form.controls.subscription.enable();
-      this.subscribeError = `${error}`; // eslint-disable-line @typescript-eslint/restrict-template-expressions
+      this.subscribeError = `${error}`;
     }
   }
 
@@ -136,7 +136,7 @@ export class SubscriberComponent {
 
   protected onReply(messageToReplyTo: Message): void {
     this._solaceMessageClient.reply(messageToReplyTo, 'this is a reply')
-      .catch((error: unknown) => this.subscribeError = `${error}`); // eslint-disable-line @typescript-eslint/restrict-template-expressions
+      .catch((error: unknown) => this.subscribeError = `${error}`);
   }
 
   protected get isSubscribed(): boolean {

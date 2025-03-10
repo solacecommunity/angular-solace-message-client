@@ -41,7 +41,7 @@ export class Logger {
   }
 
   private addLogPrefix(args: unknown[]): unknown[] {
-    return [`[SolaceMessageClient] ${args[0]}`, ...args.slice(1)]; // eslint-disable-line @typescript-eslint/restrict-template-expressions
+    return [`[SolaceMessageClient] ${args[0]}`, ...args.slice(1)];
   }
 
   private readLogLevelFromSessionStorage(defaultLogLevel: LogLevel): LogLevel {
