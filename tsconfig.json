@@ -29,19 +29,35 @@
       ]
     }
     /*
-     * ======================================+
-     * |    PATH-OVERRIDE-FOR-DEVELOPMENT    |
-     * |                                     |
-     * |   DO NOT ACTIVATE FOR PRODUCTION!   |
-     * +=====================================+
+     * +============================================================================================================================+
+     * | ## PATH-OVERRIDE-FOR-DEVELOPMENT                                                                                           |
+     * | ## DO NOT ACTIVATE FOR PRODUCTION!                                                                                         |
+     * |                                                                                                                            |
+     * | To debug dependent modules, please uncomment lines accordingly.                                                            |
+     * | The most specific paths win, or the latter with equal specificity.                                                         |
+     * |                                                                                                                            |
+     * | ## To debug dependent SCION libraries:                                                                                     |
+     * | 1. Clone dependent repositories into a directory at the same level as the angular-solace-message-client checkout folder:   |
+     * |    ├── angular-solace-message-client                                                                                       |
+     * |    ├── scion-toolkit (git clone git@github.com:SchweizerischeBundesbahnen/scion-toolkit.git)                               |
+     * | 2. Run `npm run copy-src` to copy their source into the `src-lib` folder.                                                  |
+     * +============================================================================================================================+
      */
     //    "paths": {
     //      "@solace-community/angular-solace-message-client": [
     //        "./projects/solace-message-client/src/public-api"
     //      ],
-    ////      "solclientjs": [
-    ////        "./node_modules/solclientjs/lib-browser/solclient-debug"
-    ////      ]
+    //      //      "@scion/toolkit/*": [
+    //      //        "./src-lib/@scion/toolkit/*",
+    //      //        "./src-lib/@scion/toolkit/*/src/public_api"
+    //      //      ],
+    //      //      "@scion/components/*": [
+    //      //        "./src-lib/@scion/components/*",
+    //      //        "./src-lib/@scion/components/*/src/public_api"
+    //      //      ],
+    //      //      "solclientjs": [
+    //      //        "./node_modules/solclientjs/lib-browser/solclient-debug"
+    //      //      ]
     //    }
   },
   "angularCompilerOptions": {

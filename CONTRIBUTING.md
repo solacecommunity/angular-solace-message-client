@@ -34,13 +34,26 @@ This section explains how to submit a pull request.
   <summary><strong>Development</strong></summary>
   <br>
 
-Make sure to use Node.js version 22.11.0 for contributing to this library. We suggest using [Node Version Manager](https://github.com/nvm-sh/nvm) if you need different Node.js versions for other projects.
+Before you start development, we recommend that you build all projects using the `npm run build` command. Please make sure that path overrides are disabled in `tsconfig.json`.
 
-For development, you can uncomment the section `PATH-OVERRIDE-FOR-DEVELOPMENT` in `tsconfig.json`. This allows running tests or serving applications without having to build dependent modules first.
+**Node Version**
 
-The following is a summary of commands useful for development of `angular-solace-message-client`. See file `package.json` for a complete list of available NPM scripts.
+Make sure to use Node.js version `22.11.0` for contributing to this project. We recommend using [Node Version Manager](https://github.com/nvm-sh/nvm) if you need different Node.js versions for other projects.
 
-### Commands for working on the solace-message-client library
+
+**Enable Hot Code Replacement**
+
+To enable hot code replacement for `@solace-community/angular-solace-message-client`, uncomment the `PATH-OVERRIDE-FOR-DEVELOPMENT` section in the `tsconfig.json` file.
+
+*Optional*: To debug dependent SCION libraries:
+1. Clone dependent repositories into a directory at the same level as the angular-solace-message-client checkout folder:
+   ``` 
+   ├── angular-solace-message-client
+   ├── scion-toolkit (git clone git@github.com:SchweizerischeBundesbahnen/scion-toolkit.git)
+   ```
+2. Run `npm run copy-src` to copy their source into the `src-lib` folder. This folder is referenced in the path overrides in `tsconfig.json`.
+
+**Commands for working on the @solace-community/angular-solace-message-client library**
 
 - `npm run solace-message-client:lint`\
   Lints the library.
@@ -51,7 +64,7 @@ The following is a summary of commands useful for development of `angular-solace
 - `npm run solace-message-client:test`\
   Runs unit tests.
 
-### Commands for working on the testing application (Try Me)
+**Commands for working on the testing application (Try Me)**
 
 - `npm run solace-message-client-testing-app:serve` or `npm run start`\
   Serves the testing app (try me app) on [http://localhost:4200](http://localhost:4200).\
@@ -63,7 +76,7 @@ The following is a summary of commands useful for development of `angular-solace
 - `npm run solace-message-client-testing-app:lint`\
   Lints the testing app.
 
-### Commands for generating the project documentation
+**Commands for generating the project documentation**
 
 - `npm run solace-message-client:typedoc`\
   Generates the API documentation (TypeDoc) for the library. The output is written to `dist/solace-message-client-api`.
