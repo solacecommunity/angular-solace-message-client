@@ -13,8 +13,8 @@ describe('SolaceMessageClient - Consume', () => {
   beforeEach(() => initSolclientFactory());
 
   beforeEach(() => {
-    spyOn(console, 'warn');
-    spyOn(console, 'error');
+    spyOn(console, 'warn').and.callThrough();
+    spyOn(console, 'error').and.callThrough();
   });
 
   it('should connect to a non-durable topic endpoint if passing a topic \'string\' literal', async () => {

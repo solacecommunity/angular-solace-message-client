@@ -21,10 +21,10 @@ export class SessionConfigStore {
     localStorage.setItem(SESSION_CONFIG_STORAGE_KEY, json);
   }
 
-  public static load(): SolaceMessageClientConfig | undefined {
+  public static load(): SolaceMessageClientConfig {
     const config = localStorage.getItem(SESSION_CONFIG_STORAGE_KEY);
     if (!config) {
-      return undefined;
+      throw Error('Missing required config for Solace Message Client.');
     }
 
     return JSON.parse(config, (key, value) => {

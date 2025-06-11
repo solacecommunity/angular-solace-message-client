@@ -10,7 +10,7 @@ export const routes: Routes = [
     path: '',
     canActivate: [requireLogin],
     component: TryMeComponent,
-    providers: [provideSolaceMessageClient(SessionConfigStore.load())],
+    providers: [provideSolaceMessageClient(() => SessionConfigStore.load())],
   },
   {
     path: 'login',
@@ -18,7 +18,7 @@ export const routes: Routes = [
   },
 ];
 
-function requireLogin(): boolean | UrlTree {
+function requireLogin(): true | UrlTree {
   if (SessionConfigStore.empty()) {
     return inject(Router).createUrlTree(['/login']);
   }

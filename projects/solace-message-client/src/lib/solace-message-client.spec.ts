@@ -8,6 +8,7 @@ import {SessionFixture} from './testing/session.fixture';
 import {createTopicMessage, drainMicrotaskQueue, initSolclientFactory} from './testing/testing.utils';
 import {provideSession} from './testing/session-provider';
 import {provideSolaceMessageClient} from './solace-message-client.provider';
+import {ɵSolaceMessageClient} from './ɵsolace-message-client';
 
 describe('SolaceMessageClient', () => {
 
@@ -55,75 +56,6 @@ describe('SolaceMessageClient', () => {
     await expectAsync(solaceMessageClient.session).toBeRejected();
     expect(sessionFixture.session.connect).toHaveBeenCalledTimes(1);
     expect(sessionFixture.sessionProvider.provide).toHaveBeenCalledWith(jasmine.objectContaining({url: 'url', vpnName: 'vpn'}));
-  });
-
-  it('should allow to disconnect and re-connect from the Solace message broker', async () => {
-    const sessionFixture = new SessionFixture();
-    TestBed.configureTestingModule({
-      providers: [
-        provideSolaceMessageClient({url: 'url', vpnName: 'vpn'}),
-        provideSession(sessionFixture),
-      ],
-    });
-    const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-    await sessionFixture.simulateEvent(SessionEventCode.UP_NOTICE);
-
-    expect(sessionFixture.session.connect).toHaveBeenCalledTimes(1);
-    sessionFixture.session.connect.calls.reset();
-    sessionFixture.sessionProvider.provide.calls.reset();
-
-    // Disconnect
-    await solaceMessageClient.disconnect();
-    expect(sessionFixture.session.dispose).toHaveBeenCalledTimes(1);
-    expect(sessionFixture.session.disconnect).toHaveBeenCalledTimes(1);
-    sessionFixture.session.dispose.calls.reset();
-    sessionFixture.session.disconnect.calls.reset();
-
-    // Connect
-    const connected = solaceMessageClient.connect({url: 'other-url', vpnName: 'other-vpn'});
-    await sessionFixture.simulateEvent(SessionEventCode.UP_NOTICE);
-    await expectAsync(solaceMessageClient.session).toBeResolved();
-
-    await connected;
-    expect(sessionFixture.session.connect).toHaveBeenCalledTimes(1);
-    expect(sessionFixture.sessionProvider.provide).toHaveBeenCalledWith(jasmine.objectContaining({url: 'other-url', vpnName: 'other-vpn'}));
-  });
-
-  it('should clear pending subscriptions when the connection goes down', async () => {
-    const sessionFixture = new SessionFixture();
-    const sessionSubscribeCaptor = sessionFixture.installSessionSubscribeCaptor();
-    TestBed.configureTestingModule({
-      providers: [
-        provideSolaceMessageClient({url: 'url', vpnName: 'vpn'}),
-        provideSession(sessionFixture),
-      ],
-    });
-    const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-    await sessionFixture.simulateEvent(SessionEventCode.UP_NOTICE);
-
-    // Subscribe to topic-1 (success)
-    solaceMessageClient.observe$('topic-1').subscribe();
-    await drainMicrotaskQueue();
-    await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
-
-    // Subscribe to topic-2 (pending confirmation)
-    solaceMessageClient.observe$('topic-2').subscribe();
-
-    // Simulate the connection to be permanently down
-    await sessionFixture.simulateEvent(SessionEventCode.DOWN_ERROR);
-
-    // Reconnect to the broker
-    const connected = solaceMessageClient.connect({url: 'other-url', vpnName: 'other-vpn'});
-    await sessionFixture.simulateEvent(SessionEventCode.UP_NOTICE);
-    await expectAsync(connected).toBeResolved();
-    sessionFixture.session.subscribe.calls.reset();
-
-    // Subscribe to topic-3 (success)
-    solaceMessageClient.observe$('topic-3').subscribe();
-    await drainMicrotaskQueue();
-    await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
-    expect(sessionFixture.session.subscribe).toHaveBeenCalledTimes(1);
-    expect(sessionFixture.session.subscribe).toHaveBeenCalledWith(jasmine.objectContaining({name: 'topic-3'}), true /* requestConfirmation */, sessionSubscribeCaptor.correlationKey /* correlationKey */, undefined /* requestTimeout */);
   });
 
   it('should create a single subscription per topic on the Solace session', async () => {
@@ -1094,7 +1026,7 @@ describe('SolaceMessageClient', () => {
         provideSession(sessionFixture),
       ],
     });
-    const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+    const solaceMessageClient = TestBed.inject(ɵSolaceMessageClient);
     await sessionFixture.simulateEvent(SessionEventCode.UP_NOTICE);
 
     // Subscribe to a topic
@@ -1104,7 +1036,7 @@ describe('SolaceMessageClient', () => {
     await drainMicrotaskQueue();
     await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
 
-    await solaceMessageClient.disconnect();
+    await solaceMessageClient.dispose();
     expect(observeCaptor.hasCompleted()).toBeTrue();
   });
 
@@ -1116,52 +1048,13 @@ describe('SolaceMessageClient', () => {
         provideSession(sessionFixture),
       ],
     });
-    const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+    const solaceMessageClient = TestBed.inject(ɵSolaceMessageClient);
     await sessionFixture.simulateEvent(SessionEventCode.UP_NOTICE);
 
-    await solaceMessageClient.disconnect();
+    await solaceMessageClient.dispose();
 
     expect(sessionFixture.session.dispose).toHaveBeenCalledTimes(1);
     expect(sessionFixture.session.disconnect).toHaveBeenCalledTimes(1);
-  });
-
-  it('should clear Solace subscription registry when disconnecting from the broker', async () => {
-    const sessionFixture = new SessionFixture();
-    const sessionSubscribeCaptor = sessionFixture.installSessionSubscribeCaptor();
-    const observeCaptor = new ObserveCaptor(extractMessage);
-    TestBed.configureTestingModule({
-      providers: [
-        provideSolaceMessageClient({url: 'url', vpnName: 'vpn'}),
-        provideSession(sessionFixture),
-      ],
-    });
-    const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-    await sessionFixture.simulateEvent(SessionEventCode.UP_NOTICE);
-
-    // Subscribe to 'topic'
-    solaceMessageClient.observe$('topic').subscribe(observeCaptor);
-    await drainMicrotaskQueue();
-    expect(sessionSubscribeCaptor.correlationKey).toBeDefined();
-    expect(sessionFixture.session.subscribe).toHaveBeenCalledTimes(1);
-    expect(sessionFixture.session.subscribe).toHaveBeenCalledWith(jasmine.objectContaining({name: 'topic'}), true /* requestConfirmation */, sessionSubscribeCaptor.correlationKey /* correlationKey */, undefined /* requestTimeout */);
-    await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
-    sessionFixture.session.subscribe.calls.reset();
-    sessionSubscribeCaptor.reset();
-
-    // Disconnect
-    await solaceMessageClient.disconnect();
-
-    // Connect
-    const connected = solaceMessageClient.connect({url: 'other-url', vpnName: 'other-vpn'});
-    await sessionFixture.simulateEvent(SessionEventCode.UP_NOTICE);
-    await connected;
-
-    // Subscribe again to 'topic', but after a re-connect, expecting a new subscription to be created
-    solaceMessageClient.observe$('topic').subscribe();
-    await drainMicrotaskQueue();
-    expect(sessionSubscribeCaptor.correlationKey).toBeDefined();
-    expect(sessionFixture.session.subscribe).toHaveBeenCalledTimes(1);
-    expect(sessionFixture.session.subscribe).toHaveBeenCalledWith(jasmine.objectContaining({name: 'topic'}), true /* requestConfirmation */, sessionSubscribeCaptor.correlationKey /* correlationKey */, undefined /* requestTimeout */);
   });
 
   it('should not cancel Solace subscriptions but complete Observables when the Solace session died (e.g. network interruption, with the max reconnect count exceeded)', async () => {
@@ -1303,23 +1196,21 @@ describe('SolaceMessageClient', () => {
         provideSession(sessionFixture),
       ],
     });
-    const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+    const solaceMessageClient = TestBed.inject(ɵSolaceMessageClient);
     await sessionFixture.simulateEvent(SessionEventCode.UP_NOTICE);
 
     // Disconnect
-    let resolved = false;
-    const whenDisconnected = solaceMessageClient.disconnect().then(() => resolved = true);
+    const whenDisposed = solaceMessageClient.dispose();
     await drainMicrotaskQueue();
 
     expect(sessionFixture.session.disconnect).toHaveBeenCalledTimes(1);
     expect(sessionFixture.session.dispose).toHaveBeenCalledTimes(0);
-    expect(resolved).toBeFalse();
+    await expectAsync(whenDisposed).toBePending();
 
     // Simulate the session to be disconnected
     await sessionFixture.simulateEvent(SessionEventCode.DISCONNECTED);
-    await expectAsync(whenDisconnected).toBeResolved();
+    await expectAsync(whenDisposed).toBeResolved();
     expect(sessionFixture.session.dispose).toHaveBeenCalledTimes(1);
-    expect(resolved).toBeTrue();
   });
 
   it('should subscribe sequentially', async () => {

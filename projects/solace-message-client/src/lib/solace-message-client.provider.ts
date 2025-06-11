@@ -116,12 +116,13 @@ import {LogLevel} from 'solclientjs';
  *                 Can be an object or a function to provide the config asynchronously.
  *                 The function can call `inject` to get any required dependencies.
  */
-export function provideSolaceMessageClient(config?: SolaceMessageClientConfig | SolaceMessageClientConfigFn): EnvironmentProviders {
+export function provideSolaceMessageClient(config: SolaceMessageClientConfig | SolaceMessageClientConfigFn): EnvironmentProviders {
   const SOLACE_SESSION_PROVIDER = new InjectionToken<SolaceSessionProvider>('SOLACE_SESSION_PROVIDER');
 
   return makeEnvironmentProviders([
     {provide: SOLACE_MESSAGE_CLIENT_CONFIG, useValue: config},
-    {provide: SolaceMessageClient, useClass: ɵSolaceMessageClient},
+    {provide: ɵSolaceMessageClient, useClass: ɵSolaceMessageClient},
+    {provide: SolaceMessageClient, useExisting: ɵSolaceMessageClient},
     {provide: SOLACE_SESSION_PROVIDER, useClass: ɵSolaceSessionProvider},
     // Provide inherited 'SolaceSessionProvider' or provide new instance otherwise.
     {provide: SolaceSessionProvider, useFactory: () => inject(SolaceSessionProvider, {skipSelf: true, optional: true}) ?? inject(SOLACE_SESSION_PROVIDER)},

@@ -14,8 +14,10 @@ export function initSolclientFactory(): void {
 /**
  * Waits until all microtasks (Promise) and elapsed macrotasks (setTimeout) completed.
  */
-export async function drainMicrotaskQueue(): Promise<void> {
-  await new Promise(resolve => asyncScheduler.schedule(resolve));
+export async function drainMicrotaskQueue(iterations?: number): Promise<void> {
+  for (let i = 0; i < (iterations ?? 1); i++) {
+    await new Promise(resolve => asyncScheduler.schedule(resolve));
+  }
 }
 
 /**
