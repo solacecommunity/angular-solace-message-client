@@ -13,8 +13,8 @@ describe('SolaceMessageClient - Browse', () => {
   beforeEach(() => initSolclientFactory());
 
   beforeEach(() => {
-    spyOn(console, 'warn');
-    spyOn(console, 'error');
+    spyOn(console, 'warn').and.callThrough();
+    spyOn(console, 'error').and.callThrough();
   });
 
   it('should connect to a queue if passing a queue \'string\' literal', async () => {

@@ -14,8 +14,8 @@ describe('OAuth 2.0', () => {
   beforeEach(() => initSolclientFactory());
 
   beforeEach(() => {
-    spyOn(console, 'warn');
-    spyOn(console, 'error');
+    spyOn(console, 'warn').and.callThrough();
+    spyOn(console, 'error').and.callThrough();
   });
 
   it('should invoke access token function in Angular zone', async () => {

@@ -13,8 +13,8 @@ describe('SolaceMessageClient - Request Reply', () => {
   beforeEach(() => initSolclientFactory());
 
   beforeEach(() => {
-    spyOn(console, 'warn');
-    spyOn(console, 'error');
+    spyOn(console, 'warn').and.callThrough();
+    spyOn(console, 'error').and.callThrough();
   });
 
   describe('SolaceMessageClient#request$', () => {

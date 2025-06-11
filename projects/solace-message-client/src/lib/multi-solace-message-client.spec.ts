@@ -36,14 +36,14 @@ describe('Multi Environment Configuration', () => {
     // Inject SolaceMessageClient 1.
     const solaceMessageClient1 = environment1.get(SolaceMessageClient);
     await sessionFixture1.simulateEvent(SessionEventCode.UP_NOTICE);
+    expect(sessionFixture1.session.connect).toHaveBeenCalledTimes(1);
+    expect(sessionFixture1.session.getSessionProperties()).toEqual(jasmine.objectContaining({url: 'url1', vpnName: 'vpn1'}));
 
     // Inject SolaceMessageClient 2.
     const solaceMessageClient2 = environment2.get(SolaceMessageClient);
     await sessionFixture2.simulateEvent(SessionEventCode.UP_NOTICE);
-
-    // Expect config passed to SolaceSessionProvider.
-    expect(sessionFixture1.sessionProvider.provide).toHaveBeenCalledWith(jasmine.objectContaining({url: 'url1', vpnName: 'vpn1'}));
-    expect(sessionFixture2.sessionProvider.provide).toHaveBeenCalledWith(jasmine.objectContaining({url: 'url2', vpnName: 'vpn2'}));
+    expect(sessionFixture2.session.connect).toHaveBeenCalledTimes(1);
+    expect(sessionFixture2.session.getSessionProperties()).toEqual(jasmine.objectContaining({url: 'url2', vpnName: 'vpn2'}));
 
     // Expect different clients and sessions.
     expect(solaceMessageClient1).not.toBe(solaceMessageClient2);
@@ -53,7 +53,7 @@ describe('Multi Environment Configuration', () => {
 
     // Destroy environment 1.
     environment1.destroy();
-    await drainMicrotaskQueue();
+    await drainMicrotaskQueue(2);
 
     // Expect session 1 to be destroyed.
     expect(sessionFixture1.session.dispose).toHaveBeenCalled();
@@ -62,7 +62,7 @@ describe('Multi Environment Configuration', () => {
 
     // Destroy environment 2.
     environment2.destroy();
-    await drainMicrotaskQueue();
+    await drainMicrotaskQueue(2);
 
     // Expect session 2 to be destroyed.
     expect(sessionFixture1.session.dispose).not.toHaveBeenCalled();
@@ -71,7 +71,7 @@ describe('Multi Environment Configuration', () => {
 
   it('should provide default `SolaceSessionProvider`', async () => {
     const environment = createEnvironmentInjector(
-      [provideSolaceMessageClient()],
+      [provideSolaceMessageClient({url: 'url', vpnName: 'vpn'})],
       TestBed.inject(EnvironmentInjector),
     );
 
@@ -105,7 +105,7 @@ describe('Multi Environment Configuration', () => {
 
   it('should provide default `LogLevel`', async () => {
     const environment = createEnvironmentInjector(
-      [provideSolaceMessageClient()],
+      [provideSolaceMessageClient({url: 'url', vpnName: 'vpn'})],
       TestBed.inject(EnvironmentInjector),
     );
 
@@ -122,7 +122,7 @@ describe('Multi Environment Configuration', () => {
 
     // Configure child environment.
     const childEnvironment = createEnvironmentInjector(
-      [provideSolaceMessageClient()],
+      [provideSolaceMessageClient({url: 'url', vpnName: 'vpn'})],
       TestBed.inject(EnvironmentInjector),
     );
 
@@ -141,7 +141,7 @@ describe('Multi Environment Configuration', () => {
     // Configure child environment with INFO log level.
     const childEnvironment = createEnvironmentInjector(
       [
-        provideSolaceMessageClient(),
+        provideSolaceMessageClient({url: 'url', vpnName: 'vpn'}),
         {provide: LogLevel, useValue: LogLevel.INFO},
       ],
       TestBed.inject(EnvironmentInjector),

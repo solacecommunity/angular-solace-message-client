@@ -27,7 +27,7 @@ export class SessionFixture {
   public sessionProperties: SessionProperties | undefined;
 
   constructor() {
-    this.session = jasmine.createSpyObj<Session>('Session', ['on', 'connect', 'subscribe', 'unsubscribe', 'send', 'dispose', 'disconnect', 'createMessageConsumer', 'createQueueBrowser', 'sendRequest', 'sendReply', 'updateAuthenticationOnReconnect']);
+    this.session = jasmine.createSpyObj<Session>('Session', ['on', 'connect', 'subscribe', 'unsubscribe', 'send', 'dispose', 'disconnect', 'createMessageConsumer', 'createQueueBrowser', 'sendRequest', 'sendReply', 'updateAuthenticationOnReconnect', 'getSessionProperties']);
 
     this.sessionProvider = jasmine.createSpyObj<SolaceSessionProvider>('SolaceSessionProvider', ['provide']);
     this.sessionProvider.provide.and.callFake((properties: SessionProperties) => {
@@ -49,6 +49,9 @@ export class SessionFixture {
     this.session.disconnect.and.callFake(() => {
       return void this.simulateEvent(SessionEventCode.DISCONNECTED);
     });
+
+    // Provide session properties.
+    this.session.getSessionProperties.and.callFake(() => this.sessionProperties!);
   }
 
   /**

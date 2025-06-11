@@ -37,7 +37,7 @@ export class TryMeComponent {
   private readonly _matDialog = inject(MatDialog);
 
   protected readonly solaceMessageClient = inject(SolaceMessageClient);
-  protected readonly sessionConfig = SessionConfigStore.load()!;
+  protected readonly sessionConfig = SessionConfigStore.load();
   protected readonly AuthenticationScheme = AuthenticationScheme;
 
   protected onLoginPage(): void {

@@ -6,7 +6,7 @@ import {Observable} from 'rxjs';
 /**
  * DI token to inject the config of Angular Solace Message Client.
  */
-export const SOLACE_MESSAGE_CLIENT_CONFIG = new InjectionToken<SolaceMessageClientConfig | SolaceMessageClientConfigFn | undefined>('SOLACE_MESSAGE_CLIENT_CONFIG');
+export const SOLACE_MESSAGE_CLIENT_CONFIG = new InjectionToken<SolaceMessageClientConfig | SolaceMessageClientConfigFn>('SOLACE_MESSAGE_CLIENT_CONFIG');
 
 /**
  * Configures the {@link SolaceMessageClient} to connect to the Solace message broker.
