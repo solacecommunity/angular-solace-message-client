@@ -3,8 +3,8 @@ import {MAT_SNACK_BAR_DATA, MatSnackBar} from '@angular/material/snack-bar';
 import {Clipboard} from '@angular/cdk/clipboard';
 import {SessionProperties} from 'solclientjs';
 import {KeyValuePipe} from '@angular/common';
-import {MatIconModule} from '@angular/material/icon';
-import {MatButtonModule} from '@angular/material/button';
+import {MatButton, MatMiniFabButton} from '@angular/material/button';
+import {MatIcon} from '@angular/material/icon';
 
 @Component({
   selector: 'app-session-properties',
@@ -12,8 +12,9 @@ import {MatButtonModule} from '@angular/material/button';
   styleUrls: ['./session-properties.component.scss'],
   imports: [
     KeyValuePipe,
-    MatIconModule,
-    MatButtonModule,
+    MatIcon,
+    MatButton,
+    MatMiniFabButton,
   ],
 })
 export class SessionPropertiesComponent {

@@ -5,15 +5,15 @@ import {Data, MessageEnvelope, PublishOptions, SolaceMessageClient} from '@solac
 import {defer, Observable, Subscription, tap, throwError} from 'rxjs';
 import {finalize} from 'rxjs/operators';
 import {Arrays} from '@scion/toolkit/util';
-import {MatCardModule} from '@angular/material/card';
+import {MatCard, MatCardContent, MatCardFooter} from '@angular/material/card';
 import {SciViewportComponent} from '@scion/components/viewport';
-import {MatFormFieldModule} from '@angular/material/form-field';
-import {MatSelectModule} from '@angular/material/select';
-import {MatCheckboxModule} from '@angular/material/checkbox';
+import {MatFormField, MatLabel} from '@angular/material/form-field';
 import {MessageListItemComponent} from '../message-list-item/message-list-item.component';
-import {MatInputModule} from '@angular/material/input';
-import {MatButtonModule} from '@angular/material/button';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {MatInput} from '@angular/material/input';
+import {MatButton} from '@angular/material/button';
+import {MatOption, MatSelect} from '@angular/material/select';
+import {MatCheckbox} from '@angular/material/checkbox';
 
 @Component({
   selector: 'app-publisher',
@@ -23,13 +23,17 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
   imports: [
     ReactiveFormsModule,
     SciViewportComponent,
-    MatCardModule,
-    MatFormFieldModule,
-    MatSelectModule,
-    MatCheckboxModule,
-    MatInputModule,
-    MatButtonModule,
     MessageListItemComponent,
+    MatCard,
+    MatCardFooter,
+    MatCardContent,
+    MatLabel,
+    MatFormField,
+    MatSelect,
+    MatOption,
+    MatInput,
+    MatButton,
+    MatCheckbox,
   ],
 })
 export class PublisherComponent {

@@ -2,9 +2,8 @@ import {Component, inject} from '@angular/core';
 import {MatDialogActions, MatDialogContent, MatDialogRef, MatDialogTitle} from '@angular/material/dialog';
 import {FormControl, ReactiveFormsModule, Validators} from '@angular/forms';
 import {PromptAccessTokenProvider} from '../prompt-access-token.provider';
-import {MatInputModule} from '@angular/material/input';
-import {A11yModule} from '@angular/cdk/a11y';
-import {MatButtonModule} from '@angular/material/button';
+import {MatFormField, MatInput} from '@angular/material/input';
+import {MatButton} from '@angular/material/button';
 
 @Component({
   selector: 'app-enter-access-token',
@@ -14,10 +13,10 @@ import {MatButtonModule} from '@angular/material/button';
     MatDialogTitle,
     MatDialogContent,
     ReactiveFormsModule,
-    MatInputModule,
-    A11yModule,
+    MatFormField,
+    MatInput,
     MatDialogActions,
-    MatButtonModule,
+    MatButton,
   ],
 })
 export class EnterAccessTokenComponent {

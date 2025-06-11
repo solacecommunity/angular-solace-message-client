@@ -3,7 +3,6 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "outDir": "./dist/out-tsc",
     "strict": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
@@ -11,18 +10,12 @@
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,
     "isolatedModules": true,
-    "esModuleInterop": true,
     "experimentalDecorators": true,
-    "moduleResolution": "bundler",
     "importHelpers": true,
     "target": "ES2022",
-    "module": "ES2022",
+    "module": "preserve",
     "noUnusedLocals": true,
     "noUncheckedIndexedAccess": true,
-    "lib": [
-      "ES2022",
-      "dom"
-    ],
     "paths": {
       "@solace-community/angular-solace-message-client": [
         "./dist/@solace-community/angular-solace-message-client"
@@ -64,6 +57,19 @@
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,
+    "typeCheckHostBindings": true,
     "strictTemplates": true
-  }
+  },
+  "files": [],
+  "references": [
+    {
+      "path": "./projects/solace-message-client/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/solace-message-client/tsconfig.spec.json"
+    },
+    {
+      "path": "./apps/solace-message-client-testing-app/tsconfig.app.json"
+    },
+  ]
 }

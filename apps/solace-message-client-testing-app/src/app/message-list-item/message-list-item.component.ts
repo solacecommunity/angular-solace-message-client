@@ -5,8 +5,8 @@ import {MessageDumpFlag, MessageType} from 'solclientjs';
 import {DatePipe} from '@angular/common';
 import {StringifyMapPipe} from '../stringify-map.pipe';
 import {SciViewportComponent} from '@scion/components/viewport';
-import {MatIconModule} from '@angular/material/icon';
-import {MatButtonModule} from '@angular/material/button';
+import {MatIcon} from '@angular/material/icon';
+import {MatMiniFabButton} from '@angular/material/button';
 
 @Component({
   selector: 'app-message-list-item',
@@ -17,8 +17,8 @@ import {MatButtonModule} from '@angular/material/button';
     DatePipe,
     StringifyMapPipe,
     SciViewportComponent,
-    MatIconModule,
-    MatButtonModule,
+    MatIcon,
+    MatMiniFabButton,
   ],
 })
 export class MessageListItemComponent {
