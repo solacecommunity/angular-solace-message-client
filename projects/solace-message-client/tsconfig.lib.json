@@ -8,10 +8,11 @@
     "declarationMap": true,
     "stripInternal": true,
     "inlineSources": true,
-    "types": [
-      "node" // required by solclientjs
-    ]
+    "types": []
   },
+  "include": [
+    "src/**/*.ts"
+  ],
   "exclude": [
     "**/*.spec.ts",
     "**/testing/"

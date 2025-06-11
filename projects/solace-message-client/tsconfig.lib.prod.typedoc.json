@@ -1,7 +1,7 @@
 {
   "extends": "./tsconfig.lib.prod.json",
   "compilerOptions": {
-    "inlineSourceMap": true
+    "sourceMap": true
   },
   "typedocOptions": {
     "name": "Angular Solace Message Client",

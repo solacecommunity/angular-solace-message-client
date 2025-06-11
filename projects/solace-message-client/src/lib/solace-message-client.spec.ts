@@ -1607,7 +1607,7 @@ describe('SolaceMessageClient', () => {
       await sessionFixture.simulateMessage(message);
 
       await observeCaptor.waitUntilEmitCount(1);
-      expect(observeCaptor.getLastValue().headers).toEqual(new Map()
+      expect(observeCaptor.getLastValue()!.headers).toEqual(new Map()
         .set('key1', 'value')
         .set('key2', true)
         .set('key3', false)

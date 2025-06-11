@@ -1,27 +1,32 @@
 import {Component} from '@angular/core';
 import {Arrays} from '@scion/toolkit/util';
-import {MatCardModule} from '@angular/material/card';
-import {MatDividerModule} from '@angular/material/divider';
-import {MatIconModule} from '@angular/material/icon';
-import {MatTabsModule} from '@angular/material/tabs';
+import {MatCard, MatCardContent, MatCardHeader} from '@angular/material/card';
+import {MatDivider} from '@angular/material/divider';
+import {MatIcon} from '@angular/material/icon';
+import {MatTab, MatTabGroup, MatTabLabel} from '@angular/material/tabs';
 import {SciViewportComponent} from '@scion/components/viewport';
 import {SubscriberComponent} from '../subscriber/subscriber.component';
-import {MatButtonModule} from '@angular/material/button';
-import {MatTooltipModule} from '@angular/material/tooltip';
+import {MatFabButton, MatIconButton} from '@angular/material/button';
+import {MatTooltip} from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-subscribers',
   templateUrl: './subscribers.component.html',
   styleUrls: ['./subscribers.component.scss'],
   imports: [
-    MatCardModule,
-    MatDividerModule,
-    MatIconModule,
-    MatTabsModule,
-    MatTooltipModule,
-    MatButtonModule,
     SciViewportComponent,
     SubscriberComponent,
+    MatCardContent,
+    MatTabGroup,
+    MatTab,
+    MatIcon,
+    MatCard,
+    MatCardHeader,
+    MatDivider,
+    MatTabLabel,
+    MatIconButton,
+    MatFabButton,
+    MatTooltip,
   ],
 })
 export class SubscribersComponent {

@@ -8,12 +8,12 @@ import {EnterAccessTokenComponent} from '../enter-access-token/enter-access-toke
 import {MatDialog} from '@angular/material/dialog';
 import {AuthenticationScheme} from 'solclientjs';
 import {AsyncPipe} from '@angular/common';
-import {MatIconModule} from '@angular/material/icon';
 import {SciSashboxComponent, SciSashDirective} from '@scion/components/sashbox';
 import {PublisherComponent} from '../publisher/publisher.component';
 import {SubscribersComponent} from '../subscribers/subscribers.component';
-import {MatButtonModule} from '@angular/material/button';
-import {MatTooltipModule} from '@angular/material/tooltip';
+import {MatButton} from '@angular/material/button';
+import {MatTooltip} from '@angular/material/tooltip';
+import {MatIcon} from '@angular/material/icon';
 
 @Component({
   selector: 'app-try-me',
@@ -21,13 +21,13 @@ import {MatTooltipModule} from '@angular/material/tooltip';
   styleUrls: ['./try-me.component.scss'],
   imports: [
     AsyncPipe,
-    MatIconModule,
-    MatButtonModule,
-    MatTooltipModule,
     SciSashboxComponent,
     SciSashDirective,
     PublisherComponent,
     SubscribersComponent,
+    MatButton,
+    MatTooltip,
+    MatIcon,
   ],
 })
 export class TryMeComponent {

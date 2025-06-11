@@ -5,15 +5,15 @@ import {Observable, Subscription} from 'rxjs';
 import {filter, finalize} from 'rxjs/operators';
 import {SciViewportComponent} from '@scion/components/viewport';
 import {Message, QueueDescriptor, QueueType} from 'solclientjs';
-import {MatFormFieldModule} from '@angular/material/form-field';
-import {MatSelectModule} from '@angular/material/select';
-import {MatTooltipModule} from '@angular/material/tooltip';
+import {MatFormField, MatLabel} from '@angular/material/form-field';
 import {MessageListItemComponent} from '../message-list-item/message-list-item.component';
-import {MatCheckboxModule} from '@angular/material/checkbox';
-import {MatButtonModule} from '@angular/material/button';
-import {MatInputModule} from '@angular/material/input';
+import {MatCheckbox} from '@angular/material/checkbox';
 import {AutofocusDirective} from '../autofocus.directive';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {MatInput} from '@angular/material/input';
+import {MatOption, MatSelect} from '@angular/material/select';
+import {MatTooltip} from '@angular/material/tooltip';
+import {MatButton} from '@angular/material/button';
 
 @Component({
   selector: 'app-subscriber',
@@ -21,15 +21,17 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
   styleUrls: ['./subscriber.component.scss'],
   imports: [
     ReactiveFormsModule,
-    MatFormFieldModule,
-    MatSelectModule,
-    MatTooltipModule,
     MessageListItemComponent,
-    MatCheckboxModule,
-    MatButtonModule,
-    MatInputModule,
     SciViewportComponent,
     AutofocusDirective,
+    MatLabel,
+    MatFormField,
+    MatInput,
+    MatSelect,
+    MatOption,
+    MatTooltip,
+    MatButton,
+    MatCheckbox,
   ],
 })
 export class SubscriberComponent {

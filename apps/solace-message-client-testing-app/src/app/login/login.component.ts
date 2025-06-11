@@ -6,13 +6,13 @@ import {SessionConfigStore} from '../session-config-store';
 import {AuthenticationScheme} from 'solclientjs';
 import {promptForAccessToken} from '../prompt-access-token.provider';
 import {startWith} from 'rxjs';
-import {MatCardModule} from '@angular/material/card';
-import {MatFormFieldModule} from '@angular/material/form-field';
-import {MatInputModule} from '@angular/material/input';
-import {MatSelectModule} from '@angular/material/select';
-import {MatCheckboxModule} from '@angular/material/checkbox';
-import {MatButtonModule} from '@angular/material/button';
+import {MatFormField, MatInput} from '@angular/material/input';
+import {MatOption, MatSelect} from '@angular/material/select';
+import {MatCheckbox} from '@angular/material/checkbox';
+import {MatButton} from '@angular/material/button';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {MatCard, MatCardContent} from '@angular/material/card';
+import {MatLabel} from '@angular/material/form-field';
 
 @Component({
   selector: 'app-login',
@@ -20,12 +20,15 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
   styleUrls: ['./login.component.scss'],
   imports: [
     ReactiveFormsModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatCheckboxModule,
-    MatButtonModule,
+    MatFormField,
+    MatLabel,
+    MatInput,
+    MatCard,
+    MatCardContent,
+    MatSelect,
+    MatOption,
+    MatCheckbox,
+    MatButton,
   ],
 })
 export class LoginComponent {

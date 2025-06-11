@@ -1,7 +1,7 @@
 name: Continuous Integration and Delivery
 on: [push, pull_request]
 env:
-  NODE_VERSION: 22.11.0
+  NODE_VERSION: 22.16.0
   PUPPETEER_CACHE_DIR: ${{ github.workspace }}/node_modules/.cache/puppeteer
 jobs:
   install:
@@ -112,7 +112,7 @@ jobs:
         with:
           path: ./node_modules
           key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
-      - run: npm run test:headless
+      - run: npm run test:headless -- --no-watch
   release-guard:
     name: 'Release Guard'
     if: github.ref == 'refs/heads/master'

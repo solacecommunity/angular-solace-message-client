@@ -15,10 +15,8 @@ Run the following commands to install the Solace Message Client and required dep
 
 ```sh
 npm install @solace-community/angular-solace-message-client solclientjs @scion/toolkit --save
-npm install @types/events@3 long@5 @types/node --save-dev // required by solclientjs
 ```
 
-> `solclientjs` requires type definitions for node. In your tsconfig, add `node` to the `types` array in `compilerOptions`. If you have not specified `types`, no manual registration of `node` is required, since without `types` array all @types packages are included in the build.
 </details>
 
 <details>
