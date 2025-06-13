@@ -1,7 +1,7 @@
 {
   "name": "solace-message-client",
   "scripts": {
-    "before-push": "run-s build lint test:headless",
+    "before-push": "run-s build lint \"test:headless -- --no-watch\"",
     "build": "run-s **:*:build **:*:typedoc",
     "lint": "run-p **:*:lint",
     "test": "run-s **:*:test",
