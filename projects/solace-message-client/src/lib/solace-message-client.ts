@@ -542,7 +542,8 @@ export interface MessageEnvelope {
  * By default, data is transported as unstructured bytes in the binary attachment message part.
  *
  * Supported data types are:
- * - ArrayBufferLike, e.g. `ArrayBuffer`, `Uint8Array`, `Uint32Array`, or similar
+ * - ArrayBufferLike
+ * - Uint8Array
  * - DataView
  * - string (latin1-encoded; only supported for backwards compatibility; use `new TextEncoder.encode(...)` instead)
  *
@@ -556,4 +557,4 @@ export interface MessageEnvelope {
  *
  * https://solace.com/blog/inside-solace-message-introduction/
  */
-export type Data = ArrayBufferLike | DataView | string | SDTField;
+export type Data = ArrayBufferLike | Uint8Array | DataView | string | SDTField;

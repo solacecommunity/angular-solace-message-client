@@ -7,6 +7,9 @@
 
 This short manual explains how to install and use the library.
 
+> [!WARNING]
+> `@solace-community/angular-solace-message-client` does not support zoneless mode and may not work as expected. Support is planned for 2026.
+
 <details>
   <summary><strong>Step 1: Install the Library from NPM</strong></summary>
   <br>
@@ -26,7 +29,7 @@ npm install @solace-community/angular-solace-message-client solclientjs @scion/t
 Open `app.config.ts` and register Solace Message Client providers.
 
 ```ts
-import {ApplicationConfig} from '@angular/core';
+import {ApplicationConfig, provideZoneChangeDetection} from '@angular/core';
 import {provideSolaceMessageClient} from '@solace-community/angular-solace-message-client';
 
 export const appConfig: ApplicationConfig = {
@@ -36,7 +39,8 @@ export const appConfig: ApplicationConfig = {
       vpnName:  'YOUR VPN',
       userName: 'YOUR USERNAME',
       password: 'YOUR PASSWORD',
-    })
+    }),
+    provideZoneChangeDetection(), // provide zone change detection until `@solace-community/angular-solace-message-client` supports zoneless
   ],
 };
 ```
@@ -46,6 +50,7 @@ If you are not using `app.config.ts`, register the Solace Message Client directl
 ```ts
 import {bootstrapApplication} from '@angular/platform-browser';
 import {provideSolaceMessageClient} from '@solace-community/angular-solace-message-client';
+import {provideZoneChangeDetection} from '@angular/core';
 
 bootstrapApplication(AppComponent, {
   providers: [
@@ -54,7 +59,8 @@ bootstrapApplication(AppComponent, {
       vpnName: 'YOUR VPN',
       userName: 'YOUR USERNAME',
       password: 'YOUR PASSWORD',
-    })
+    }),
+    provideZoneChangeDetection(), // provide zone change detection until `@solace-community/angular-solace-message-client` supports zoneless
   ],
 });
 ```
@@ -63,7 +69,7 @@ Or for `NgModule` based applications:
 
 ```ts
 import {provideSolaceMessageClient} from '@solace-community/angular-solace-message-client';
-import {NgModule} from '@angular/core';
+import {NgModule, provideZoneChangeDetection} from '@angular/core';
 
 @NgModule({
   providers: [
@@ -73,6 +79,7 @@ import {NgModule} from '@angular/core';
       userName: 'YOUR USERNAME',
       password: 'YOUR PASSWORD',
     }),
+    provideZoneChangeDetection(), // provide zone change detection until `@solace-community/angular-solace-message-client` supports zoneless
   ],
   bootstrap: [
     AppComponent,
