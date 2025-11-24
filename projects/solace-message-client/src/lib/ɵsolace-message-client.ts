@@ -497,7 +497,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient {
     return this.sendMessage(null, data, options, send);
   }
 
-  private async sendMessage(destination: Destination | null, data: ArrayBufferLike | DataView | string | SDTField | Message | undefined, options: PublishOptions | undefined, send: Send): Promise<void> {
+  private async sendMessage(destination: Destination | null, data: Data | Message | undefined, options: PublishOptions | undefined, send: Send): Promise<void> {
     const message: Message = data instanceof Message ? data : SolclientFactory.createMessage();
 
     // Set the destination. May not be set if replying to a request.
