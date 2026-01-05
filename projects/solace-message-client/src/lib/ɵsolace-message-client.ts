@@ -691,7 +691,13 @@ function mapToMessageEnvelope(subscriptionTopic?: string): OperatorFunction<Mess
 function collectHeaders(message: Message): Map<string, unknown> {
   const userPropertyMap = message.getUserPropertyMap();
   return userPropertyMap?.getKeys().reduce((acc, key) => {
-    return acc.set(key, userPropertyMap.getField(key).getValue());
+    const field = userPropertyMap.getField(key);
+    try {
+      return acc.set(key, field.getValue());
+    }
+    catch (e) {
+      return acc.set(key, e);
+    }
   }, new Map<string, unknown>()) ?? new Map<string, unknown>();
 }
 
