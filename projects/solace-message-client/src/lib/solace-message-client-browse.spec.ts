@@ -2,7 +2,7 @@ import {MessageEnvelope, SolaceMessageClient} from './solace-message-client';
 import {ObserveCaptor} from '@scion/toolkit/testing';
 import {TestBed} from '@angular/core/testing';
 import {NgZone} from '@angular/core';
-import {QueueBrowserEventName, QueueBrowserProperties, QueueDescriptor, QueueType, SDTFieldType, SDTMapContainer, SessionEventCode} from 'solclientjs';
+import {QueueBrowserEventName, QueueBrowserProperties, QueueDescriptor, QueueType, SDTFieldType, SDTMapContainer, SessionEventCode} from 'solclientjs/lib-browser/solclient-full';
 import {SessionFixture} from './testing/session.fixture';
 import {createOperationError, createQueueMessage, drainMicrotaskQueue, initSolclientFactory} from './testing/testing.utils';
 import {provideSession} from './testing/session-provider';

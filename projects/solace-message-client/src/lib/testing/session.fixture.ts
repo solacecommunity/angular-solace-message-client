@@ -1,4 +1,4 @@
-import {Destination, Message, MessageType, Session, SessionEvent, SessionEventCode, SessionProperties} from 'solclientjs';
+import {Destination, Message, MessageType, Session, SessionEvent, SessionEventCode, SessionProperties} from 'solclientjs/lib-browser/solclient-full';
 import {drainMicrotaskQueue} from './testing.utils';
 import {MessageConsumerFixture} from './message-consumer.fixture';
 import {QueueBrowserFixture} from './queue-browser.fixture';

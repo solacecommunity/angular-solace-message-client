@@ -1,4 +1,4 @@
-import {SessionProperties} from 'solclientjs';
+import {SessionProperties} from 'solclientjs/lib-browser/solclient-full';
 import {InjectionToken} from '@angular/core';
 import {OAuthAccessTokenFn} from './oauth-access-token-provider';
 import {Observable} from 'rxjs';

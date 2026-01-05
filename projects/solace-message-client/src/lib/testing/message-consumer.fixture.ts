@@ -1,4 +1,4 @@
-import {Message, MessageConsumer, MessageConsumerEvent, MessageConsumerEventName, MessageConsumerProperties, OperationError, Session} from 'solclientjs';
+import {Message, MessageConsumer, MessageConsumerEvent, MessageConsumerEventName, MessageConsumerProperties, OperationError, Session} from 'solclientjs/lib-browser/solclient-full';
 import {noop} from 'rxjs';
 import {drainMicrotaskQueue} from './testing.utils';
 

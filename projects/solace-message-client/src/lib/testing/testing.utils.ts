@@ -1,5 +1,5 @@
 import {asyncScheduler} from 'rxjs';
-import {LogLevel, Message, OperationError, RequestError, SolclientFactory, SolclientFactoryProfiles, SolclientFactoryProperties} from 'solclientjs';
+import {LogLevel, Message, OperationError, RequestError, SolclientFactory, SolclientFactoryProfiles, SolclientFactoryProperties} from 'solclientjs/lib-browser/solclient-full';
 
 /**
  * Initializes `SolclientFactory`.

@@ -1,4 +1,4 @@
-import {Message, OperationError, QueueBrowser, QueueBrowserEventName, QueueBrowserProperties, Session} from 'solclientjs';
+import {Message, OperationError, QueueBrowser, QueueBrowserEventName, QueueBrowserProperties, Session} from 'solclientjs/lib-browser/solclient-full';
 import {drainMicrotaskQueue} from './testing.utils';
 
 /**

@@ -1,6 +1,6 @@
 import {SolaceMessageClient} from './solace-message-client';
 import {provideSolaceMessageClient} from './solace-message-client.provider';
-import {AuthenticationScheme, SessionEventCode} from 'solclientjs';
+import {AuthenticationScheme, SessionEventCode} from 'solclientjs/lib-browser/solclient-full';
 import {SessionFixture} from './testing/session.fixture';
 import {provideSession} from './testing/session-provider';
 import {TestBed} from '@angular/core/testing';

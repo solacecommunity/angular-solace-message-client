@@ -2,7 +2,7 @@ import {mapToBinary, mapToText, MessageEnvelope, Params, PublishOptions, SolaceM
 import {ObserveCaptor} from '@scion/toolkit/testing';
 import {TestBed} from '@angular/core/testing';
 import {Component, NgZone} from '@angular/core';
-import {DestinationType, Message, MessageDeliveryModeType, MessageType, SDTField, SDTFieldType, SDTMapContainer, SessionEventCode, SolclientFactory} from 'solclientjs';
+import {DestinationType, Message, MessageDeliveryModeType, MessageType, SDTField, SDTFieldType, SDTMapContainer, SessionEventCode, SolclientFactory} from 'solclientjs/lib-browser/solclient-full';
 import {UUID} from '@scion/toolkit/uuid';
 import {SessionFixture} from './testing/session.fixture';
 import {createTopicMessage, drainMicrotaskQueue, initSolclientFactory} from './testing/testing.utils';
