@@ -63,7 +63,7 @@ describe('SolaceMessageClient', () => {
     expect(new TopicMatcher('a/b/c').matches('a/b/c/d')).toBeFalse();
   });
 
-  it('should fulfill examples at https://docs.solace.com/PubSub-Basics/Wildcard-Charaters-Topic-Subs.htm', () => {
+  it('should fulfill examples at https://docs.solace.com/Messaging/Wildcard-Charaters-Topic-Subs.htm', () => {
     expect(new TopicMatcher('animals/domestic/*').matches('animals/domestic/cats')).toBeTrue();
     expect(new TopicMatcher('animals/domestic/*').matches('animals/domestic/dogs')).toBeTrue();
     expect(new TopicMatcher('animals/domestic/*').matches('animals/domestic/dogs/beagles')).toBeFalse();

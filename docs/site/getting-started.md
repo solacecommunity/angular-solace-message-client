@@ -128,7 +128,7 @@ inject(SolaceMessageClient).observe$('myhome/livingroom/temperature').subscribe(
 });
 ```
 
-> Topics are case-sensitive and consist of one or more segments, each separated by a forward slash. You can subscribe to an exact topic, or use wildcards (single-level `*` or multi-level `>`) to subscribe to multiple topics simultaneously. Refer to https://docs.solace.com/PubSub-Basics/Wildcard-Charaters-Topic-Subs.htm for more information about the usage of wildcards.
+> Topics are case-sensitive and consist of one or more segments, each separated by a forward slash. You can subscribe to an exact topic, or use wildcards (single-level `*` or multi-level `>`) to subscribe to multiple topics simultaneously. Refer to https://docs.solace.com/Messaging/Wildcard-Charaters-Topic-Subs.htm for more information about the usage of wildcards.
 
 The following example subscribes to the temperature of any room.
 
