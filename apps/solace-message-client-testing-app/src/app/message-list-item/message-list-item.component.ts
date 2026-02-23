@@ -75,7 +75,7 @@ function getContent(envelope: MessageEnvelope): string | undefined {
     case MessageType.BINARY:
       return decode(envelope.message.getBinaryAttachment(), encoding);
     case MessageType.TEXT:
-      return decode(envelope.message.getSdtContainer()!.getValue() as string, encoding);
+      return decode(envelope.message.getSdtContainer()?.getValue() as string, encoding);
     default:
       return undefined;
   }
