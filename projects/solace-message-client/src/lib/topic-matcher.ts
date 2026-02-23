@@ -2,7 +2,7 @@
  * Matches exact topics as used when publishing messages against subscription topics.
  *
  * This class implements the rules for 'Wildcard Characters in SMF Topic Subscriptions',
- * as outlined here: https://docs.solace.com/PubSub-Basics/Wildcard-Charaters-Topic-Subs.htm.
+ * as outlined here: https://docs.solace.com/Messaging/Wildcard-Charaters-Topic-Subs.htm.
  */
 export class TopicMatcher {
 

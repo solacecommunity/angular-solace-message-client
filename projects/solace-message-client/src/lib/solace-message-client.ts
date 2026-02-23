@@ -42,7 +42,7 @@ export abstract class SolaceMessageClient {
    * **Multi-Level Wildcard Character (`>`)**:
    * -  when used as the last segment, it provides a "one or more" wildcard match for any topics with an identical prefix to the subscription.
    *
-   * See https://docs.solace.com/PubSub-Basics/Wildcard-Charaters-Topic-Subs.htm for more information and examples.
+   * See https://docs.solace.com/Messaging/Wildcard-Charaters-Topic-Subs.htm for more information and examples.
    *
    * If a segment begins with a colon (`:`), it is called a named wildcard segment that acts as a placeholder for any value. The characters after the colon give the segment its name.
    * Internally, named wildcard segments are translated to single-level wildcard segments. Named segments can be read from the received message
@@ -113,7 +113,7 @@ export abstract class SolaceMessageClient {
    * **Multi-Level Wildcard Character (`>`)**:
    * -  when used as the last segment, it provides a "one or more" wildcard match for any topics with an identical prefix to the subscription.
    *
-   * See https://docs.solace.com/PubSub-Basics/Wildcard-Charaters-Topic-Subs.htm for more information and examples.
+   * See https://docs.solace.com/Messaging/Wildcard-Charaters-Topic-Subs.htm for more information and examples.
    *
    * If a segment begins with a colon (`:`), it is called a named wildcard segment that acts as a placeholder for any value. The characters after the colon give the segment its name.
    * Internally, named wildcard segments are translated to single-level wildcard segments. Named segments can be read from the received message
