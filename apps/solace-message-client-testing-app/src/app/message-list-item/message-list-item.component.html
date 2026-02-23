@@ -19,12 +19,14 @@
 <span>Details:</span>
 <sci-viewport class="content">{{details()}}</sci-viewport>
 
-<span>Content:</span>
-<sci-viewport class="content">
-  <section [class.zipped]="envelope().headers.get('Content-Encoding') === 'gzip'">
-    {{content()}}
-  </section>
-</sci-viewport>
+@if (content(); as content) {
+  <span>Content:</span>
+  <sci-viewport class="content">
+    <section [class.zipped]="envelope().headers.get('Content-Encoding') === 'gzip'">
+      {{content}}
+    </section>
+  </sci-viewport>
+}
 
 <section class="actions">
   @if (envelope().message.getReplyTo()) {
