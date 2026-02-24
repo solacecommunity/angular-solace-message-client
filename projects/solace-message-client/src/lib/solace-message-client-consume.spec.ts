@@ -2,7 +2,7 @@ import {MessageEnvelope, SolaceMessageClient} from './solace-message-client';
 import {ObserveCaptor} from '@scion/toolkit/testing';
 import {TestBed} from '@angular/core/testing';
 import {NgZone} from '@angular/core';
-import {MessageConsumerEventName, MessageConsumerProperties, QueueDescriptor, QueueType, SDTFieldType, SDTMapContainer, SessionEventCode, SolclientFactory} from 'solclientjs';
+import {MessageConsumerEventName, MessageConsumerProperties, QueueDescriptor, QueueType, SDTField, SDTFieldType, SDTMapContainer, SDTUnsupportedValueError, SDTValueErrorSubcode, SessionEventCode, SolclientFactory} from 'solclientjs';
 import {SessionFixture} from './testing/session.fixture';
 import {createOperationError, createTopicMessage, drainMicrotaskQueue, initSolclientFactory} from './testing/testing.utils';
 import {provideSession} from './testing/session-provider';
@@ -362,6 +362,49 @@ describe('SolaceMessageClient - Consume', () => {
         .set('key1', 'value')
         .set('key2', true)
         .set('key3', 123),
+    })]);
+  });
+
+  it('not javascript compatible headers should not break consumer', async () => {
+    const sessionFixture = new SessionFixture();
+    const messageConsumerFixture = sessionFixture.messageConsumerFixture;
+    const messageCaptor = new ObserveCaptor<MessageEnvelope>();
+    TestBed.configureTestingModule({
+      providers: [
+        provideSolaceMessageClient({url: 'url', vpnName: 'vpn'}),
+        provideSession(sessionFixture),
+      ],
+    });
+    const solaceMessageClient = TestBed.inject(SolaceMessageClient);
+    await sessionFixture.simulateEvent(SessionEventCode.UP_NOTICE);
+
+    // Subscribe to a topic endpoint
+    solaceMessageClient.consume$('topic').subscribe(messageCaptor);
+
+    // Simulate the message consumer to be connected to the broker
+    await messageConsumerFixture.simulateEvent(MessageConsumerEventName.UP);
+
+    // Simulate to receive a message
+    const message = createTopicMessage('topic');
+    const userPropertyMap = new SDTMapContainer();
+
+    // @ts-expect-error protected class
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const fieldError = new SDTUnsupportedValueError('Value is not supported', SDTValueErrorSubcode.VALUE_OUTSIDE_SUPPORTED_RANGE, '');
+
+    const field = SDTField.create(SDTFieldType.INT64, 1337);
+    (field as any).setError(fieldError);
+
+    userPropertyMap.addField('key1', field);
+    message.setUserPropertyMap(userPropertyMap);
+
+    await messageConsumerFixture.simulateMessage(message);
+
+    // Expect headers to be contained in the envelope
+    expect(messageCaptor.getValues()).toEqual([jasmine.objectContaining<MessageEnvelope>({
+      message: message,
+      headers: new Map()
+        .set('key1', fieldError),
     })]);
   });
 
