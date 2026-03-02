@@ -4,7 +4,7 @@ import {provideLogger} from './logger';
 import {ɵSolaceMessageClient} from './ɵsolace-message-client';
 import {SolaceSessionProvider, ɵSolaceSessionProvider} from './solace-session-provider';
 import {NullSolaceMessageClient, SolaceMessageClient} from './solace-message-client';
-import {LogLevel} from 'solclientjs';
+import {LogLevel} from 'solclientjs/lib-browser/solclient-full';
 
 /**
  * Enables and configures the Angular Solace Message Client, returning a set of dependency-injection providers to be registered in Angular.
@@ -96,7 +96,7 @@ import {LogLevel} from 'solclientjs';
  * ```ts
  * import {bootstrapApplication} from '@angular/platform-browser';
  * import {provideSolaceMessageClient} from '@solace-community/angular-solace-message-client';
- * import {LogLevel} from 'solclientjs';
+ * import {LogLevel} from 'solclientjs/lib-browser/solclient-full';
  *
  * bootstrapApplication(AppComponent, {
  *   providers: [

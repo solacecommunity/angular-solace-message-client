@@ -1,5 +1,5 @@
 import {inject, Injectable} from '@angular/core';
-import {Session, SessionProperties, SolclientFactory, SolclientFactoryProfiles, SolclientFactoryProperties} from 'solclientjs';
+import {Session, SessionProperties, SolclientFactory, SolclientFactoryProfiles, SolclientFactoryProperties} from 'solclientjs/lib-browser/solclient-full';
 import {Logger} from './logger';
 
 /**

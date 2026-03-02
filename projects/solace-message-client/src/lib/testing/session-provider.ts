@@ -1,7 +1,7 @@
 import {EnvironmentProviders, makeEnvironmentProviders} from '@angular/core';
 import {SolaceSessionProvider} from '../solace-session-provider';
 import {SessionFixture} from './session.fixture';
-import {SessionProperties} from 'solclientjs';
+import {SessionProperties} from 'solclientjs/lib-browser/solclient-full';
 
 /**
  * Creates {@link EnvironmentProviders} with a {@link SolaceSessionProvider} that provides the {@link Session} of the passed {@link SessionFixture}.

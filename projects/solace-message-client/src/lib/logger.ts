@@ -1,5 +1,5 @@
 import {EnvironmentProviders, inject, Injectable, makeEnvironmentProviders, Type} from '@angular/core';
-import {LogLevel} from 'solclientjs';
+import {LogLevel} from 'solclientjs/lib-browser/solclient-full';
 
 /**
  * Logger used by the Angular Solace Message Client.

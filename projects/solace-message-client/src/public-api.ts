@@ -1,3 +1,4 @@
+/// <reference path="./solclientjs.d.ts" />
 export {type SolaceMessageClientConfig, type SolaceMessageClientConfigFn} from './lib/solace-message-client.config';
 export {type OAuthAccessTokenFn} from './lib/oauth-access-token-provider';
 export {SolaceSessionProvider} from './lib/solace-session-provider';

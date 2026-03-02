@@ -1,4 +1,4 @@
-import {Message, RequestError, Session} from 'solclientjs';
+import {Message, RequestError, Session} from 'solclientjs/lib-browser/solclient-full';
 
 /**
  * Fixture to simulate request-response communication.

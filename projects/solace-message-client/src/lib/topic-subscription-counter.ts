@@ -1,4 +1,4 @@
-import {Destination} from 'solclientjs';
+import {Destination} from 'solclientjs/lib-browser/solclient-full';
 
 /**
  * Maintains the subscription count per topic.

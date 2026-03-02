@@ -15,7 +15,7 @@ import {Observable} from 'rxjs';
  * ```ts
  * import {bootstrapApplication} from '@angular/platform-browser';
  * import {provideSolaceMessageClient} from '@solace-community/angular-solace-message-client';
- * import {AuthenticationScheme} from 'solclientjs';
+ * import {AuthenticationScheme} from 'solclientjs/lib-browser/solclient-full';
  * import {inject} from '@angular/core';
  *
  * bootstrapApplication(AppComponent, {

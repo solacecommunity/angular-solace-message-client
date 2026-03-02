@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {BehaviorSubject, NEVER, noop, Observable, OperatorFunction} from 'rxjs';
-import {Destination, Message, MessageConsumer, MessageConsumerProperties, MessageDeliveryModeType, MessageType, QueueBrowserProperties, SDTField, Session} from 'solclientjs';
+import {Destination, Message, MessageConsumer, MessageConsumerProperties, MessageDeliveryModeType, MessageType, QueueBrowserProperties, SDTField, Session} from 'solclientjs/lib-browser/solclient-full';
 import {map} from 'rxjs/operators';
 
 /**
