@@ -4,8 +4,8 @@
     "before-push": "run-s build lint \"test:headless -- --no-watch\"",
     "build": "run-s **:*:build **:*:typedoc",
     "lint": "run-p **:*:lint",
-    "test": "run-s **:*:test",
-    "test:headless": "cross-env HEADLESS=true run-p \"**:*:test -- {@}\" --",
+    "test": "run-p **:*:test*",
+    "test:headless": "cross-env HEADLESS=true run-p \"**:*:test* -- {@}\" --",
     "start": "run-s solace-message-client-testing-app:serve",
     "changelog": "run-p changelog:*",
     "changelog:fullest": "conventional-changelog -k projects/solace-message-client/package.json -p angular -i CHANGELOG.md -s && markdown-include docs/site/changelog/changelog.template.json",
@@ -17,6 +17,7 @@
 
     "solace-message-client:lint": "ng lint solace-message-client",
     "solace-message-client:test": "ng test solace-message-client",
+    "solace-message-client:test-zone": "ng run solace-message-client:test-zone",
     "solace-message-client:build": "ng build --configuration production solace-message-client",
     "solace-message-client:typedoc": "typedoc --tsconfig projects/solace-message-client/tsconfig.lib.prod.typedoc.json --favicon resources/branding/favicon.ico",
 
@@ -35,7 +36,7 @@
     "@angular/material": "21.0.0",
     "@angular/platform-browser": "21.0.0",
     "@angular/router": "21.0.0",
-    "@scion/components": "21.0.0",
+    "@scion/components": "21.1.0",
     "@scion/toolkit": "2.0.2",
     "pako": "2.1.0",
     "rxjs": "7.8.2",

@@ -1,7 +1,6 @@
 import {MessageEnvelope, SolaceMessageClient} from './solace-message-client';
 import {ObserveCaptor} from '@scion/toolkit/testing';
 import {TestBed} from '@angular/core/testing';
-import {NgZone} from '@angular/core';
 import {SessionEventCode, SolclientFactory} from 'solclientjs';
 import {SessionFixture} from './testing/session.fixture';
 import {createRequestError, createTopicMessage, drainMicrotaskQueue, initSolclientFactory} from './testing/testing.utils';
@@ -93,54 +92,6 @@ describe('SolaceMessageClient - Request Reply', () => {
       expect(sessionFixture.session.sendRequest).toHaveBeenCalledTimes(1);
       expect(replyCaptor.getValues()).toEqual([]);
       expect(replyCaptor.hasErrored()).toBeTrue();
-    });
-
-    it('should receive reply in the zone subscribed (inside Angular)', async () => {
-      const sessionFixture = new SessionFixture();
-      const sendRequestFixture = sessionFixture.sendRequestFixture;
-      const zoneCaptor = new ObserveCaptor<MessageEnvelope, boolean>(() => NgZone.isInAngularZone());
-      TestBed.configureTestingModule({
-        providers: [
-          provideSolaceMessageClient({url: 'url', vpnName: 'vpn'}),
-          provideSession(sessionFixture),
-        ],
-      });
-      const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-      await sessionFixture.simulateEvent(SessionEventCode.UP_NOTICE);
-
-      // Send request inside the Angular zone.
-      TestBed.inject(NgZone).run(() => solaceMessageClient.request$('topic').subscribe(zoneCaptor));
-      await drainMicrotaskQueue();
-
-      // Simulate to receive a reply
-      await sendRequestFixture.simulateReply(createTopicMessage('reply'));
-
-      // Expect reply to be received inside the Angular zone
-      expect(zoneCaptor.getValues()).toEqual([true]);
-    });
-
-    it('should receive replies in the zone subscribed (outside Angular)', async () => {
-      const sessionFixture = new SessionFixture();
-      const sendRequestFixture = sessionFixture.sendRequestFixture;
-      const zoneCaptor = new ObserveCaptor<MessageEnvelope, boolean>(() => NgZone.isInAngularZone());
-      TestBed.configureTestingModule({
-        providers: [
-          provideSolaceMessageClient({url: 'url', vpnName: 'vpn'}),
-          provideSession(sessionFixture),
-        ],
-      });
-      const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-      await sessionFixture.simulateEvent(SessionEventCode.UP_NOTICE);
-
-      // Send request outside the Angular zone.
-      TestBed.inject(NgZone).runOutsideAngular(() => solaceMessageClient.request$('topic').subscribe(zoneCaptor));
-      await drainMicrotaskQueue();
-
-      // Simulate to receive a reply
-      await sendRequestFixture.simulateReply(createTopicMessage('reply'));
-
-      // Expect reply to be received outside the Angular zone
-      expect(zoneCaptor.getValues()).toEqual([false]);
     });
 
     it('should send the request to the specified topic', async () => {

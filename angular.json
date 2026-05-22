@@ -26,11 +26,25 @@
           "options": {
             "tsConfig": "projects/solace-message-client/tsconfig.spec.json",
             "karmaConfig": "projects/solace-message-client/karma.conf.js",
+            "exclude": [
+              "**/*.zone.spec.ts"
+            ],
+            "inlineStyleLanguage": "scss"
+          }
+        },
+        "test-zone": {
+          "builder": "@angular/build:karma",
+          "options": {
+            "tsConfig": "projects/solace-message-client/tsconfig.spec.json",
+            "karmaConfig": "projects/solace-message-client/karma.conf.js",
+            "include": [
+              "**/*.zone.spec.ts"
+            ],
+            "inlineStyleLanguage": "scss",
             "polyfills": [
               "zone.js",
               "zone.js/testing"
-            ],
-            "inlineStyleLanguage": "scss"
+            ]
           }
         },
         "lint": {
@@ -60,9 +74,6 @@
           "builder": "@angular/build:application",
           "options": {
             "browser": "apps/solace-message-client-testing-app/src/main.ts",
-            "polyfills": [
-              "zone.js"
-            ],
             "tsConfig": "apps/solace-message-client-testing-app/tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [

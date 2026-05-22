@@ -439,7 +439,7 @@ environment2.destroy();
   <summary><strong>Control Angular Zone</strong></summary>
   <br>
 
-Messages are received in the zone in which subscribed to the Observable.
+If running with zone change detection, messages are received in the zone in which subscribed to the Observable.
 
 The following example receives messages outside the Angular zone:
 

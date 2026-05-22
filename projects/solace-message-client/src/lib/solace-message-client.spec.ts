@@ -1,7 +1,7 @@
 import {mapToBinary, mapToText, MessageEnvelope, Params, PublishOptions, SolaceMessageClient} from './solace-message-client';
 import {ObserveCaptor} from '@scion/toolkit/testing';
 import {TestBed} from '@angular/core/testing';
-import {Component, NgZone} from '@angular/core';
+import {Component} from '@angular/core';
 import {DestinationType, Message, MessageDeliveryModeType, MessageType, SDTField, SDTFieldType, SDTMapContainer, SessionEventCode, SolclientFactory} from 'solclientjs';
 import {UUID} from '@scion/toolkit/uuid';
 import {SessionFixture} from './testing/session.fixture';
@@ -461,58 +461,6 @@ describe('SolaceMessageClient', () => {
     expect(observeCaptor1_topic1.getValues()).toEqual([message1, message2, message4, message7, message10]);
     expect(observeCaptor2_topic2.getValues()).toEqual([message5, message8, message11, message14]);
     expect(observeCaptor3_topic2.getValues()).toEqual([message8]);
-  });
-
-  it('should receive messages in the zone subscribed (inside Angular)', async () => {
-    const sessionFixture = new SessionFixture();
-    const sessionSubscribeCaptor = sessionFixture.installSessionSubscribeCaptor();
-    const observeCaptor = new ObserveCaptor(() => NgZone.isInAngularZone());
-    TestBed.configureTestingModule({
-      providers: [
-        provideSolaceMessageClient({url: 'url', vpnName: 'vpn'}),
-        provideSession(sessionFixture),
-      ],
-    });
-    const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-    await sessionFixture.simulateEvent(SessionEventCode.UP_NOTICE);
-
-    // Subscribe inside the Angular zone.
-    TestBed.inject(NgZone).run(() => solaceMessageClient.observe$('topic').subscribe(observeCaptor));
-
-    await drainMicrotaskQueue();
-    await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
-
-    // Simulate receiving a message from the Solace broker
-    await sessionFixture.simulateMessage(createTopicMessage('topic'));
-
-    // Expect message to be received inside the Angular zone
-    expect(observeCaptor.getValues()).toEqual([true]);
-  });
-
-  it('should receive messages in the zone subscribed (outside Angular)', async () => {
-    const sessionFixture = new SessionFixture();
-    const sessionSubscribeCaptor = sessionFixture.installSessionSubscribeCaptor();
-    const observeCaptor = new ObserveCaptor(() => NgZone.isInAngularZone());
-    TestBed.configureTestingModule({
-      providers: [
-        provideSolaceMessageClient({url: 'url', vpnName: 'vpn'}),
-        provideSession(sessionFixture),
-      ],
-    });
-    const solaceMessageClient = TestBed.inject(SolaceMessageClient);
-    await sessionFixture.simulateEvent(SessionEventCode.UP_NOTICE);
-
-    // Subscribe outside the Angular zone.
-    TestBed.inject(NgZone).runOutsideAngular(() => solaceMessageClient.observe$('topic').subscribe(observeCaptor));
-
-    await drainMicrotaskQueue();
-    await sessionFixture.simulateEvent(SessionEventCode.SUBSCRIPTION_OK, sessionSubscribeCaptor.correlationKey);
-
-    // Simulate receiving a message from the Solace broker
-    await sessionFixture.simulateMessage(createTopicMessage('topic'));
-
-    // Expect message to be received outside the Angular zone
-    expect(observeCaptor.getValues()).toEqual([false]);
   });
 
   it('should allow wildcard subscriptions', async () => {

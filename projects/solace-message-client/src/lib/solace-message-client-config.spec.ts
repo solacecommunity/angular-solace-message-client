@@ -4,7 +4,7 @@ import {DestinationType, SessionEventCode} from 'solclientjs';
 import {SessionFixture} from './testing/session.fixture';
 import {provideSession} from './testing/session-provider';
 import {provideSolaceMessageClient} from './solace-message-client.provider';
-import {inject, InjectionToken, NgZone} from '@angular/core';
+import {inject, InjectionToken} from '@angular/core';
 import {of, Subject} from 'rxjs';
 import {initSolclientFactory} from './testing/testing.utils';
 import {SolaceMessageClientConfig} from './solace-message-client.config';
@@ -140,21 +140,4 @@ describe('SolaceMessageClient Configuration', () => {
     await expectAsync(solaceMessageClient.session).toBeResolved();
   });
 
-  it('should invoke config function in Angular zone', async () => {
-    const sessionFixture = new SessionFixture();
-    let invokedInAngularZone: boolean | undefined;
-    TestBed.configureTestingModule({
-      providers: [
-        provideSolaceMessageClient(() => {
-          invokedInAngularZone = NgZone.isInAngularZone();
-          return {url: 'url', vpnName: 'vpn'};
-        }),
-        provideSession(sessionFixture),
-      ],
-    });
-
-    TestBed.inject(NgZone).run(() => TestBed.inject(SolaceMessageClient));
-    await sessionFixture.simulateEvent(SessionEventCode.UP_NOTICE);
-    expect(invokedInAngularZone).toBeTrue();
-  });
 });
