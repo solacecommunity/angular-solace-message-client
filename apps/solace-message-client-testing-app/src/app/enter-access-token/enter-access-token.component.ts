@@ -1,4 +1,4 @@
-import {Component, inject} from '@angular/core';
+import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
 import {MatDialogActions, MatDialogContent, MatDialogRef, MatDialogTitle} from '@angular/material/dialog';
 import {FormControl, ReactiveFormsModule, Validators} from '@angular/forms';
 import {PromptAccessTokenProvider} from '../prompt-access-token.provider';
@@ -9,6 +9,7 @@ import {MatButton} from '@angular/material/button';
   selector: 'app-enter-access-token',
   templateUrl: './enter-access-token.component.html',
   styleUrls: ['./enter-access-token.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     MatDialogTitle,
     MatDialogContent,

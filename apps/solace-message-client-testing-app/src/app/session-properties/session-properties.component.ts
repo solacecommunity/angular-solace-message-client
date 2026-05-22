@@ -1,4 +1,4 @@
-import {Component, inject} from '@angular/core';
+import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
 import {MAT_SNACK_BAR_DATA, MatSnackBar} from '@angular/material/snack-bar';
 import {Clipboard} from '@angular/cdk/clipboard';
 import {SessionProperties} from 'solclientjs';
@@ -10,6 +10,7 @@ import {MatIcon} from '@angular/material/icon';
   selector: 'app-session-properties',
   templateUrl: './session-properties.component.html',
   styleUrls: ['./session-properties.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     KeyValuePipe,
     MatIcon,

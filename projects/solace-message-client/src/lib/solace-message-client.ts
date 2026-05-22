@@ -27,7 +27,7 @@ export abstract class SolaceMessageClient {
   public abstract readonly session: Promise<Session>;
 
   /**
-   * Receives messages published to the given topic. Messages are received in the zone in which subscribed to the Observable.
+   * Receives messages published to the given topic. If running with zone change detection, messages are received in the zone in which subscribed to the Observable.
    *
    * The Observable never completes, unless invoking {@link disconnect}. If not connected to the broker yet, or if the connect attempt failed, the Observable errors.
    *
@@ -64,7 +64,7 @@ export abstract class SolaceMessageClient {
   public abstract observe$(topic: string, options?: ObserveOptions): Observable<MessageEnvelope>;
 
   /**
-   * Consumes messages from a given topic endpoint or queue endpoint. Messages are received in the zone in which subscribed to the Observable.
+   * Consumes messages from a given topic endpoint or queue endpoint. If running with zone change detection, messages are received in the zone in which subscribed to the Observable.
    *
    * Endpoint names are case-sensitive and consist of one or more segments, each separated by a forward slash.
    *
@@ -131,7 +131,7 @@ export abstract class SolaceMessageClient {
   public abstract consume$(topicOrDescriptor: string | (MessageConsumerProperties & ConsumeOptions)): Observable<MessageEnvelope>;
 
   /**
-   * Browses messages in a queue, without removing/consuming the messages. Messages are received in the zone in which subscribed to the Observable.
+   * Browses messages in a queue, without removing/consuming the messages. If running with zone change detection, messages are received in the zone in which subscribed to the Observable.
    *
    * @param queueOrDescriptor - Specifies the queue to browse, or a descriptor object describing how to connect to the queue browser.
    * @return Observable that emits spooled messages in the specified queue. The Observable never completes. If not connected to the broker yet, or if the connect attempt failed, the Observable errors.
@@ -202,7 +202,7 @@ export abstract class SolaceMessageClient {
   public abstract publish(destination: string | Destination, data?: Data | Message, options?: PublishOptions): Promise<void>;
 
   /**
-   * Sends a request to the specified destination and waits for the response to arrive. Replies are received in the zone in which subscribed to the Observable.
+   * Sends a request to the specified destination and waits for the response to arrive. If running with zone change detection, replies are received in the zone in which subscribed to the Observable.
    *
    * - If sending the request to a topic, the request is transported to all subscribers subscribed to the topic at the time of sending the request.
    * - If sending the request to a queue, the request is transported to a single subscriber. The request is retained if there was no subscriber

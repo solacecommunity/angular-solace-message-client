@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {Arrays} from '@scion/toolkit/util';
 import {MatCard, MatCardContent, MatCardHeader} from '@angular/material/card';
 import {MatDivider} from '@angular/material/divider';
@@ -13,6 +13,7 @@ import {MatTooltip} from '@angular/material/tooltip';
   selector: 'app-subscribers',
   templateUrl: './subscribers.component.html',
   styleUrls: ['./subscribers.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     SciViewportComponent,
     SubscriberComponent,
