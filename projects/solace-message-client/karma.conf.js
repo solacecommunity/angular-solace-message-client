@@ -3,9 +3,10 @@
 
 // Angular's built-in Karma config: node_modules/@angular/build/src/builders/karma/index.js
 
-process.env.CHROME_BIN = require('puppeteer').executablePath();
 
-module.exports = function (config) {
+module.exports = async function (config) {
+  process.env.CHROME_BIN = await require('puppeteer').executablePath();
+
   config.set({
     basePath: '',
     frameworks: ['jasmine'],

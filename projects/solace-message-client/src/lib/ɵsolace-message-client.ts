@@ -46,7 +46,7 @@ export class ɵSolaceMessageClient implements SolaceMessageClient {
       })
       .catch((error: unknown) => {
         this._logger.error('Failed to connect to the Solace message broker.', error);
-        return Promise.reject(error as Error);
+        return Promise.reject(error); // eslint-disable-line @typescript-eslint/prefer-promise-reject-errors
       });
     this._destroyRef.onDestroy(() => void this.dispose());
   }
@@ -784,7 +784,7 @@ function mapEmptyError(errorFactory: () => Error): (error: unknown) => Promise<n
       return Promise.reject(errorFactory());
     }
     else {
-      return Promise.reject(error as Error);
+      return Promise.reject(error); // eslint-disable-line @typescript-eslint/prefer-promise-reject-errors
     }
   };
 }
