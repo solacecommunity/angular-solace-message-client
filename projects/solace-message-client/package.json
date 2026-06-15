@@ -15,9 +15,9 @@
     "name": "Solace Community contributors"
   },
   "peerDependencies": {
-    "@angular/common": "^21.0.0",
-    "@angular/core": "^21.0.0",
-    "@scion/toolkit": "^2.0.0",
+    "@angular/common": "^22.0.0",
+    "@angular/core": "^22.0.0",
+    "@scion/toolkit": "^2.1.0",
     "rxjs": "^7.8.0",
     "solclientjs": "^10.18.0"
   },

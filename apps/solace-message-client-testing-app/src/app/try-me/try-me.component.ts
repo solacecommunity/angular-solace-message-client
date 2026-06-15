@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
+import {Component, inject} from '@angular/core';
 import {SolaceMessageClient} from '@solace-community/angular-solace-message-client';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {SessionPropertiesComponent} from '../session-properties/session-properties.component';
@@ -19,7 +19,6 @@ import {MatIcon} from '@angular/material/icon';
   selector: 'app-try-me',
   templateUrl: './try-me.component.html',
   styleUrls: ['./try-me.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AsyncPipe,
     SciSashboxComponent,

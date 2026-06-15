@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, inject} from '@angular/core';
+import {ChangeDetectorRef, Component, DestroyRef, inject} from '@angular/core';
 import {NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {DestinationType, MessageDeliveryModeType, MessageType, SDTField, SDTFieldType, SolclientFactory} from 'solclientjs';
 import {Data, MessageEnvelope, PublishOptions, SolaceMessageClient} from '@solace-community/angular-solace-message-client';
@@ -19,7 +19,6 @@ import {MatCheckbox} from '@angular/material/checkbox';
   selector: 'app-publisher',
   templateUrl: './publisher.component.html',
   styleUrls: ['./publisher.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ReactiveFormsModule,
     SciViewportComponent,

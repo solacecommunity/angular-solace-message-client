@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, inject, output, viewChild} from '@angular/core';
+import {ChangeDetectorRef, Component, DestroyRef, inject, output, viewChild} from '@angular/core';
 import {NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {MessageEnvelope, SolaceMessageClient} from '@solace-community/angular-solace-message-client';
 import {Observable, Subscription} from 'rxjs';
@@ -19,7 +19,6 @@ import {MatButton} from '@angular/material/button';
   selector: 'app-subscriber',
   templateUrl: './subscriber.component.html',
   styleUrls: ['./subscriber.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ReactiveFormsModule,
     MessageListItemComponent,

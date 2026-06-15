@@ -38,7 +38,7 @@ Before you start development, we recommend that you build all projects using the
 
 **Node Version**
 
-Make sure to use Node.js version `24.11.0` for contributing to this project. We recommend using [Node Version Manager](https://github.com/nvm-sh/nvm) if you need different Node.js versions for other projects.
+Make sure to use Node.js version `26.3.0` for contributing to this project. We recommend using [Node Version Manager](https://github.com/nvm-sh/nvm) if you need different Node.js versions for other projects.
 
 
 **Enable Hot Code Replacement**

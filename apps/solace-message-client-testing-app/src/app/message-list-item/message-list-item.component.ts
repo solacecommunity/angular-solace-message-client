@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, input, output, Signal, untracked} from '@angular/core';
+import {Component, computed, input, output, Signal, untracked} from '@angular/core';
 import {MessageEnvelope} from '@solace-community/angular-solace-message-client';
 import {ungzip} from 'pako';
 import {MessageDumpFlag, MessageType} from 'solclientjs';
@@ -12,7 +12,6 @@ import {MatMiniFabButton} from '@angular/material/button';
   selector: 'app-message-list-item',
   templateUrl: './message-list-item.component.html',
   styleUrls: ['./message-list-item.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     DatePipe,
     StringifyMapPipe,
