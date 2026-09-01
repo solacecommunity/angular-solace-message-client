@@ -1,0 +1,25 @@
+version: 3
+
+project:
+  locator: solacecommunity_angular-solace-message-client
+  id: solacecommunity_angular-solace-message-client
+  name: angular-solace-message-client
+  teams: []
+  labels:
+    - typescript
+
+vendoredDependencies:
+  forceRescans: false
+  scanMethod: CLILicenseScan
+  licenseScanPathFilters:
+    exclude:
+      - "./.git"
+      - "./.github"
+
+paths:
+  exclude:
+    - ./.git
+    - ./.github
+
+telemetry:
+  scope: full
