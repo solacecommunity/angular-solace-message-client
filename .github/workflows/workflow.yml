@@ -10,12 +10,12 @@ jobs:
     name: 'Installing NPM modules'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: 'Running npm ci (if node_modules not cached)'
-        uses: actions/cache@v5
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
         id: node-modules-cache
         with:
           path: ./node_modules
@@ -29,17 +29,17 @@ jobs:
     outputs:
       version: ${{ steps.solace-message-client-package-json.outputs.version }}
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: 'Reading package.json version of solace-message-client'
-        uses: SchweizerischeBundesbahnen/scion-toolkit/.github/actions/package-json@master
+        uses: SchweizerischeBundesbahnen/scion-toolkit/.github/actions/package-json@b66c4338379cea65a85584af49d06e3f6c4541e5 # master
         id: solace-message-client-package-json
         with:
           path: projects/solace-message-client/package.json
       - name: 'Restoring NPM modules from cache'
-        uses: actions/cache@v5
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: ./node_modules
           key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -47,11 +47,11 @@ jobs:
         run: npm run solace-message-client:build
       - name: 'Building API Documentation (TypeDoc)'
         run: npm run solace-message-client:typedoc
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: solace-message-client
           path: dist/@solace-community/angular-solace-message-client
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: solace-message-client-api
           path: dist/solace-message-client-api
@@ -60,17 +60,17 @@ jobs:
     needs: build-solace-message-client
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: 'Restoring NPM modules from cache'
-        uses: actions/cache@v5
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: ./node_modules
           key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
       - name: 'Downloading solace-message-client'
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: solace-message-client
           path: dist/@solace-community/angular-solace-message-client
@@ -80,23 +80,23 @@ jobs:
     needs: build-solace-message-client
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: 'Restoring NPM modules from cache'
-        uses: actions/cache@v5
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: ./node_modules
           key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
       - name: 'Downloading solace-message-client'
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: solace-message-client
           path: dist/@solace-community/angular-solace-message-client
       - name: 'Building TryMe App'
         run: npm run solace-message-client-testing-app:build
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: tryme-app
           path: dist/solace-message-client-testing-app/browser
@@ -105,12 +105,12 @@ jobs:
     needs: install
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: 'Restoring NPM modules from cache'
-        uses: actions/cache@v5
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: ./node_modules
           key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -129,9 +129,9 @@ jobs:
     outputs:
       should-release: ${{ steps.tag-release-commit.outputs.is-release-commit }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - name: 'If release commit present, add release tag'
-        uses: SchweizerischeBundesbahnen/scion-toolkit/.github/actions/tag-release-commit@master
+        uses: SchweizerischeBundesbahnen/scion-toolkit/.github/actions/tag-release-commit@b66c4338379cea65a85584af49d06e3f6c4541e5 # master
         id: tag-release-commit
         with:
           release-commit-message-pattern: 'release\(solace-message-client\): v(.*)'
@@ -144,14 +144,14 @@ jobs:
     needs: [ release-guard ]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - name: 'Downloading API'
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: solace-message-client-api
           path: dist/api
       - name: 'Deploying API to GitHub Pages'
-        uses: JamesIves/github-pages-deploy-action@v4
+        uses: JamesIves/github-pages-deploy-action@fa24774553152dd7873cd16ebd8d959b010c5445 # v4
         with:
           branch: gh-pages
           commit-message: 'release(api): publish API documentation'
@@ -171,14 +171,14 @@ jobs:
       - test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - name: 'Downloading TryMe App'
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: tryme-app
           path: dist/tryme
       - name: 'Deploying TryMe App to GitHub Pages'
-        uses: JamesIves/github-pages-deploy-action@v4
+        uses: JamesIves/github-pages-deploy-action@fa24774553152dd7873cd16ebd8d959b010c5445 # v4
         with:
           branch: gh-pages
           commit-message: 'release(tryme): publish TryMe application'
@@ -195,12 +195,12 @@ jobs:
     needs: [ build-solace-message-client, release-guard ]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: 'Downloading dist/solace-message-client'
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: solace-message-client
           path: dist/@solace-community/angular-solace-message-client
